@@ -3,7 +3,11 @@ language: python
 services:
 - docker
 script:
-- docker run --rm --privileged multiarch/qemu-user-static:register --reset
+- apt update
+- apt install -y qemu qemu-user-static qemu-user binfmt-support
+- uname -a
+- docker run -it --rm -v /usr/bin/qemu-arm-static:/usr/bin/qemu-arm-static arm32v7/debian /bin/bash
+- uname -a
 - docker build -t jrcichra/smartcar_test test/
 - docker run -it jrcichra/smartcar_test 
 - echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin 
