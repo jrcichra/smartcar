@@ -9,16 +9,16 @@ before_install:
   - export DOCKER_CLI_EXPERIMENTAL=enabled
   - docker version
   - docker buildx --help
-  - docker buildx ls
-  - docker buildx create --help
+  - docker run --rm --privileged docker/binfmt:820fdd95a9972a5308930a2bdfb8573dd4447ad3
+  - cat /proc/sys/fs/binfmt_misc/qemu-aarch64
   - docker buildx create --name testbuilder
-  - docker buildx ls
   - docker buildx use testbuilder
-  - docker buildx ls
   - docker buildx inspect --bootstrap
+  
   - echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin 
 script:
 - docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t jrcichra/smartcar_python_base --push python_base/ 
+- docker buildx imagetools inspect jrcichra/smartcar_python_base
 env:
   global:
   - secure: yLX9jx381n3qAk18BaqpAD7ptsez1b7/dXghGMFy8g3y+TxjNP4enuvnHd0KRa4OIqq28rHoqFKiq6p6EKH2tKDgytbV7Q5BAYjFBSZsiyk6esiKqWprDa2CDZloSG7m2buyT/o1L2/TtMPkfdPwJTkvZZYWy4NN8s/be+sazZ4KLKashunpXYt76sYGFPTbMSrvDJiNt8NiYTXCnNlBa+QDHvXImiiksmgxL9GhB5Jd516lEY7XT0hJAABIvl7K6Eu1BAoDqRnlQtu6RMGb748GTJgVoz9fx4kzEN0RGU409kVKwYaZKLoBJBIr7Wn3RyhsCoc5oJNnlvDrnf8KrDVqxUDk+Wl6Tmj1FKf25TDsKv9aA1zJbGwqFnrAY2+HuSyNdhY+TGuvxoy9HqL+2dYevRS8RuI9vCER+8ve6WHjjhsOuhdeDdhBaG3AN1CXW8juJUrtsDfn/oXU976m4TO3tpjrCEpQFKoK866lgTskGGMct8tM3Z7gROyt1wf3MO2YLra4PCfqF071WbbwkwfYvmZRNV9cngkNMsWwf70d3reQ9UsVKYvauG8CvUjxsCN8Qvv5RQvp9ts0UBC8NffA2+sMpegab/D2NrtAdigpKquQGPoSmW1SBg1WtkXZljDrQWSgytkc+EGOAXhNc0t14TnKqsJ40zO97D2giu4=
