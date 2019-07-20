@@ -1,11 +1,12 @@
+sudo: required
 language: python
 services:
 - docker
-install:
-- docker build -t jrcichra/smartcar_test test/
 script:
+- docker run --rm --privileged multiarch/qemu-user-static:register --reset
+- docker build -t jrcichra/smartcar_test test/
+- docker run -it jrcichra/smartcar_test 
 - echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin 
-after_success:
 - docker push jrcichra/smartcar_test
 env:
   global:
