@@ -3,8 +3,8 @@ language: python
 services:
 - docker
 script:
-- apt update
-- apt install -y qemu qemu-user-static qemu-user binfmt-support
+- sudo apt update
+- sudo apt install -y qemu qemu-user-static qemu-user binfmt-support
 - uname -a
 - docker run -it --rm -v /usr/bin/qemu-arm-static:/usr/bin/qemu-arm-static arm32v7/debian /bin/bash
 - uname -a
