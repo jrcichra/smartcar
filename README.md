@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/jrcichra/smartcar.svg?branch=master)](https://travis-ci.org/jrcichra/smartcar)
 # SmartCar
 
 ## An event-driven car network platform to intellegently control your car.
