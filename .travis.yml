@@ -3,7 +3,7 @@ services:
 - docker
 before_install:
 - docker build -t jrcichra/smartcar_test test/
-script: docker login -u "$DOCKER_USERNAME" --password "$DOCKER_PASSWORD"  && docker push jrcichra/smartcar_test
+script:  echo "DOCKER_PASSWORD" | docker login -u "DOCKER_USERNAME" --password-stdin  && docker push jrcichra/smartcar_test
 env:
   matrix:
   - secure: yLX9jx381n3qAk18BaqpAD7ptsez1b7/dXghGMFy8g3y+TxjNP4enuvnHd0KRa4OIqq28rHoqFKiq6p6EKH2tKDgytbV7Q5BAYjFBSZsiyk6esiKqWprDa2CDZloSG7m2buyT/o1L2/TtMPkfdPwJTkvZZYWy4NN8s/be+sazZ4KLKashunpXYt76sYGFPTbMSrvDJiNt8NiYTXCnNlBa+QDHvXImiiksmgxL9GhB5Jd516lEY7XT0hJAABIvl7K6Eu1BAoDqRnlQtu6RMGb748GTJgVoz9fx4kzEN0RGU409kVKwYaZKLoBJBIr7Wn3RyhsCoc5oJNnlvDrnf8KrDVqxUDk+Wl6Tmj1FKf25TDsKv9aA1zJbGwqFnrAY2+HuSyNdhY+TGuvxoy9HqL+2dYevRS8RuI9vCER+8ve6WHjjhsOuhdeDdhBaG3AN1CXW8juJUrtsDfn/oXU976m4TO3tpjrCEpQFKoK866lgTskGGMct8tM3Z7gROyt1wf3MO2YLra4PCfqF071WbbwkwfYvmZRNV9cngkNMsWwf70d3reQ9UsVKYvauG8CvUjxsCN8Qvv5RQvp9ts0UBC8NffA2+sMpegab/D2NrtAdigpKquQGPoSmW1SBg1WtkXZljDrQWSgytkc+EGOAXhNc0t14TnKqsJ40zO97D2giu4=
