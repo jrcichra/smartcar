@@ -3,8 +3,10 @@ dist: bionic
 language: python
 before_install:
   - sudo apt purge -y docker-ce
+  - export DOCKER_CLI_EXPERIMENTAL=enabled
   - curl -fsSL https://get.docker.com/ -o docker-install.sh
   - CHANNEL=nightly sh docker-install.sh
+  - export DOCKER_CLI_EXPERIMENTAL=enabled
   - docker version
   - docker buildx --help
   - docker buildx ls
