@@ -1,15 +1,14 @@
 sudo: required
 language: python
-services:
-- docker
+before_install:
+  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+  - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) nightly"
+  - sudo apt-get update
+  - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
+  - docker version
+  - docker buildx --help
 script:
-- sudo apt update
-- sudo apt install -y qemu qemu-user-static qemu-user binfmt-support
-- uname -a
-- docker run -it --rm -v /usr/bin/qemu-arm-static:/usr/bin/qemu-arm-static arm32v7/debian /bin/bash
-- uname -a
 - docker build -t jrcichra/smartcar_test test/
-- docker run -it jrcichra/smartcar_test 
 - echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin 
 - docker push jrcichra/smartcar_test
 env:
