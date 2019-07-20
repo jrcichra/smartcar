@@ -1,3 +1,3 @@
 #!/bin/bash
-docker login --username "$DOCKER_USERNAME" --password "$DOCKER_PASSWORD"
+echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
 docker push jrcichra/smartcar_test
