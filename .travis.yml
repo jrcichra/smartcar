@@ -1,0 +1,8 @@
+language: python
+
+services:
+        - docker
+before_install:
+        - docker build -t jrcichra/smartcar_test test/
+script: bash docker_push.sh jrcichra/smartcar_test
+
