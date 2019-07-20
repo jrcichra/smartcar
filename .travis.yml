@@ -2,7 +2,7 @@ sudo: required
 dist: bionic
 language: python
 before_install:
-  - sudo apt purge docker-ce docker-ce-cli
+  - sudo apt purge -y docker-ce
   - curl -fsSL https://get.docker.com/ -o docker-install.sh
   - CHANNEL=nightly sh docker-install.sh
   - docker version
