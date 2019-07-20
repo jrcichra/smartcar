@@ -7,6 +7,7 @@ before_install:
   - CHANNEL=nightly sh docker-install.sh
   - docker version
   - docker buildx --help
+  - docker buildx ls
 script:
 - docker build -t jrcichra/smartcar_python_base python_base/
 - echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin 
