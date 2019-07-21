@@ -28,7 +28,7 @@ install:
 script:
   - docker run -it --rm jrcichra/smartcar_python_base ls /
   - docker-compose up &
-  - DC = $$ 
+  - DC= $$ 
   - sleep 120
   - kill $$
 env:
