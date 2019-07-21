@@ -10,4 +10,3 @@ do
     cd ..
 done
 cd ..
-exit 0
