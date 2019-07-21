@@ -5,7 +5,7 @@ services:
     ports:
       - "8080:8080"
   test_client:
-   build: jrcichra/smartcar_test_client
+   image: jrcichra/smartcar_test_client
    ports:
       - "8080:8080"
    depends_on:
