@@ -19,6 +19,10 @@ before_install:
   - echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin 
   - docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t jrcichra/smartcar_python_base --push python_base/ 
   - docker buildx imagetools inspect jrcichra/smartcar_python_base
+  - sudo curl -L "https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+  - sudo chmod +x /usr/local/bin/docker-compose
+  - sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+  - docker-compose --version
 install:
   - docker run -it --rm jrcichra/smartcar_python_base ls /
   - docker compose up
