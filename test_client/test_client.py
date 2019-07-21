@@ -1,5 +1,5 @@
 import socketio
-
+import requests
 # https://python-socketio.readthedocs.io/en/latest/intro.html#client-examples
 
 sio = socketio.Client()
