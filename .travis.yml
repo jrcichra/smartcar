@@ -6,6 +6,7 @@ python:
 jobs:
   include:
     - stage: Build
+      name: Build all Docker containers
       install:
         # Phase1 - install nightly docker release for buildx cross platform builds
         - sudo apt purge -y docker-ce
@@ -29,9 +30,19 @@ jobs:
           # Phase 3 - build all containers
         - bash -x buildx.sh
     - stage: Test
+      name: Test base container can start
       script:
         - docker run -it --rm jrcichra/smartcar_python_base ls /
     - 
+     name: Test controller container can start
+      script:
+        - docker run -it --rm jrcichra/smartcar_controller ls /
+    - 
+     name: Test test client container can start
+      script:
+        - docker run -it --rm jrcichra/smartcar_test_client ls /
+    - 
+      name: Docker Compose networking test
       script:
         - docker-compose up --abort-on-container-exit --exit-code-from jrcichra/smartcar_test_client
         
