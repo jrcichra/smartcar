@@ -13,7 +13,7 @@ def connect():
 @sio.event
 def my_message(data):
     print('message received with ', data)
-    sio.emit('my response', {'response': 'my response'})
+    sio.emit('my_response', {'response': data['message'][::-1]})
 
 
 @sio.event

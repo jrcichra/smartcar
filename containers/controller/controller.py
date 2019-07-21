@@ -12,11 +12,13 @@ app = socketio.WSGIApp(sio, static_files={
 @sio.event
 def connect(sid, environ):
     print('connect ', sid)
+    sio.emit('my_message', {'message': 'tomato'})
 
 
 @sio.event
-def my_message(sid, data):
-    print('message ', data)
+def my_response(sid, data):
+    print('response: ', data)
+    sio.disconnect()
 
 
 @sio.event
