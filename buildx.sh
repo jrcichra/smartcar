@@ -1,6 +1,6 @@
 #!/bin/bash
 cd containers
-for i in $(ls -d)
+for i in $(ls -d */)
 do
     cd $i
     docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t jrcichra/smartcar_$i --push .
