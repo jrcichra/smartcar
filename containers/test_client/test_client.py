@@ -18,7 +18,8 @@ def my_message(data):
 
 @sio.event
 def disconnect():
-    print('disconnected from server')
+    print('disconnected from server, going to disconnect...')
+    sio.disconnect()
     exit(0)
 
 
