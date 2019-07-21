@@ -34,11 +34,11 @@ jobs:
       script:
         - docker run -it --rm jrcichra/smartcar_python_base ls /
     - 
-     name: Test controller container can start
+      name: Test controller container can start
       script:
         - docker run -it --rm jrcichra/smartcar_controller ls /
     - 
-     name: Test test client container can start
+      name: Test test client container can start
       script:
         - docker run -it --rm jrcichra/smartcar_test_client ls /
     - 
