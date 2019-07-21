@@ -24,15 +24,7 @@ install:
     # Phase 2 - sign in
   - echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin 
     # Phase 3 - build all containers
-        # Python base image
-  - docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t jrcichra/smartcar_python_base --push python_base/ 
-  - docker buildx imagetools inspect jrcichra/smartcar_python_base
-        # Controller image
-  - docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t jrcichra/smartcar_controller --push controller/ 
-  - docker buildx imagetools inspect jrcichra/smartcar_controller
-        # Test Client image
-  - docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t jrcichra/smartcar_test_client --push test_client/ 
-  - docker buildx imagetools inspect jrcichra/smartcar_test_client
+  - ./buildx.sh
 script:
   - docker run -it --rm jrcichra/smartcar_python_base ls /
   - docker-compose up
