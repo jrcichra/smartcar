@@ -6,7 +6,6 @@ python:
 install:
     # Phase1 - install nightly docker release for buildx cross platform builds
   - sudo apt purge -y docker-ce
-  - sudo apt install -y gcc
   - export DOCKER_CLI_EXPERIMENTAL=enabled
   - curl -fsSL https://get.docker.com/ -o docker-install.sh
   - CHANNEL=nightly sh docker-install.sh
