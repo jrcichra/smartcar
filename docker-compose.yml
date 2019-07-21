@@ -1,0 +1,12 @@
+version: '3'
+services:
+  controller:
+    build: ./controller
+    ports:
+      - "8080:8080"
+  test_client:
+   build: ./test_client
+   ports:
+      - "8080:8080"
+   depends_on:
+      - controller
