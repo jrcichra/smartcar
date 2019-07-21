@@ -28,7 +28,7 @@ install:
   - docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t jrcichra/smartcar_python_base --push python_base/ 
   - docker buildx imagetools inspect jrcichra/smartcar_python_base
         # Controller image
-  - docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t jrcichra/smartcar_controller --push smartcar_controller/ 
+  - docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t jrcichra/smartcar_controller --push controller/ 
   - docker buildx imagetools inspect jrcichra/smartcar_controller
         # Test Client image
   - docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t jrcichra/smartcar_test_client --push test_client/ 
