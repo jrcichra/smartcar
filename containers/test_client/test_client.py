@@ -14,13 +14,12 @@ def connect():
 def my_message(data):
     print('message received with ', data)
     sio.emit('my_response', {'response': data['message'][::-1]})
-    sio.disconnect()
-    exit(0)
 
 
 @sio.event
 def disconnect():
     print('disconnected from server')
+    exit(0)
 
 
 sio.connect('http://controller:8080')
