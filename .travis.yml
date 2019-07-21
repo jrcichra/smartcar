@@ -3,7 +3,7 @@ dist: bionic
 language: python
 python:
   - "3.6"
-before_install:
+install:
   - sudo apt purge -y docker-ce
   - export DOCKER_CLI_EXPERIMENTAL=enabled
   - curl -fsSL https://get.docker.com/ -o docker-install.sh
@@ -23,7 +23,7 @@ before_install:
   - sudo chmod +x /usr/local/bin/docker-compose
   - sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
   - docker-compose --version
-install:
+script:
   - docker run -it --rm jrcichra/smartcar_python_base ls /
   - docker-compose up
 env:
