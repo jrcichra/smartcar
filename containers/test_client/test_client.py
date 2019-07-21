@@ -14,6 +14,8 @@ def connect():
 def my_message(data):
     print('message received with ', data)
     sio.emit('my_response', {'response': data['message'][::-1]})
+    sio.disconnect()
+    exit(0)
 
 
 @sio.event

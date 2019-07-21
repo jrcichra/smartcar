@@ -18,7 +18,6 @@ def connect(sid, environ):
 @sio.event
 def my_response(sid, data):
     print('response: ', data)
-    sio.disconnect(sid)
 
 
 @sio.event
