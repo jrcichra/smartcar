@@ -1,4 +1,8 @@
 #!/bin/bash
+echo "PWD=$(pwd)"
+echo "Here's an ls..."
+ls
+echo "doing stuff now"
 for i in $(ls containers/)
 do
     cd $i
