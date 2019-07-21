@@ -24,6 +24,7 @@ install:
     # Phase 2 - sign in
   - echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin 
     # Phase 3 - build all containers
+  - chmod +x buildx.sh
   - ./buildx.sh
 script:
   - docker run -it --rm jrcichra/smartcar_python_base ls /
