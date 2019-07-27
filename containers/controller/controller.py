@@ -1,3 +1,4 @@
+import redis
 from rejson import Client, Path
 
 r = Client(host='redis', port=6379, decode_responses=True)
