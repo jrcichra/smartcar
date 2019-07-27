@@ -19,6 +19,10 @@ docker buildx inspect --bootstrap
 echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin 
 # Phase 3 - build a container based on the arg passed in
 cd containers/$1
+if [ $1 == "rejson" ];then
+  git clone https://github.com/RedisJSON/RedisJSON.git;
+  cp Dockerfile RedisJSON/
+  cd RedisJSON;
+fi
 docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t jrcichra/smartcar_$1 --push .
 docker buildx imagetools inspect jrcichra/smartcar_$1
-cd ../..
