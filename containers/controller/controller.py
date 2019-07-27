@@ -11,6 +11,7 @@ DB_HOST = "redis"
 DB_PORT = 6379
 CONTROLLER_PORT = 8080
 
+logging.basicConfig(level=logging.DEBUG,format='%(asctime)s:%(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
 
 def handle_container_message(client_socket, client_address, container_object, rc):
     # This function makes the appropriate calls to other functions based on the context of the packet
