@@ -11,7 +11,7 @@ class redisController:
         self.port = port
         # Create the basic redis connection
         logging.debug("Connecting to the database with hostname: " +
-                      hostname + " on port: " + port + ".")
+                      str(hostname) + " on port: " + str(port) + ".")
         self.db = Client(host=hostname, port=port, decode_responses=True)
 
     def registerContainer(self, obj):

@@ -79,12 +79,12 @@ def serve_container(client_socket, client_address):
 
 
 # Create the server socket
-logging.debug("Creating the server socket on port: " + CONTROLLER_PORT)
+logging.debug("Creating the server socket on port: " + str(CONTROLLER_PORT))
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 server_socket.bind(("0.0.0.0", CONTROLLER_PORT))
 logging.info("Controller server up and listening on port: " +
-             CONTROLLER_PORT + ".")
+             str(CONTROLLER_PORT) + ".")
 
 # Listen for other containers to connect
 server_socket.listen()
