@@ -29,6 +29,7 @@ script:
   - docker run -it --rm jrcichra/smartcar_python_base ls /
   - docker run -it --rm jrcichra/smartcar_controller ls /
   - docker run -it --rm jrcichra/smartcar_test_client ls /
+  - docker run -it --rm jrcichra/smartcar_rejson ls /
   - docker-compose up --abort-on-container-exit --exit-code-from test_client
 env:
   global:
