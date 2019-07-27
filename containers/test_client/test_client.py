@@ -12,7 +12,7 @@ register_container = {
     "data": {
         "container": {
             "name": "test_client",
-            "id": socket.gethostname()
+            "container_id": socket.gethostname()
         }
     }
 }
