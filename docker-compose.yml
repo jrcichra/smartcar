@@ -6,3 +6,5 @@ services:
    image: jrcichra/smartcar_test_client
    depends_on:
       - controller
+  redis:
+   image: jrcichra/redisjson-buildx
