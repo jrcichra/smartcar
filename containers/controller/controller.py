@@ -3,8 +3,8 @@ import logging
 import socket
 import threading
 from datetime import datetime
-from .redisController import redisController
-from .networking import *
+from redisController import redisController
+from networking import *
 import time
 
 DB_HOST = "redis"
