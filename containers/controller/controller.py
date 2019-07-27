@@ -1,30 +1,20 @@
-import eventlet
-import socketio
+from rejson import Client, Path
 
-# https://python-socketio.readthedocs.io/en/latest/intro.html#server-examples
+r = Client(host='redis', port=6379, decode_responses=True)
 
-sio = socketio.Server()
-app = socketio.WSGIApp(sio, static_files={
-    '/': {'content_type': 'text/html', 'filename': 'index.html'}
-})
+# Set the key `obj` to some object
+obj = {
+    'answer': 42,
+    'arr': [None, True, 3.14],
+    'truth': {
+        'coord': 'out there'
+    }
+}
+r.jsonset('obj', Path.rootPath(), obj)
 
+# Get something
+print('Is there anybody... {}?').format(
+    r.jsonget('obj', Path('.truth.coord'))
+)
 
-@sio.event
-def connect(sid, environ):
-    print('connect ', sid)
-    sio.emit('my_message', {'message': 'tomato'})
-
-
-@sio.event
-def my_response(sid, data):
-    print('response: ', data)
-    sio.disconnect(sid)
-
-
-@sio.event
-def disconnect(sid):
-    print('disconnect ', sid)
-
-
-if __name__ == '__main__':
-    eventlet.wsgi.server(eventlet.listen(('0.0.0.0', 8080)), app)
+exit(0)
