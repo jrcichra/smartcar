@@ -14,8 +14,6 @@ obj = {
 r.jsonset('obj', Path.rootPath(), obj)
 
 # Get something
-print('Is there anybody... {}?').format(
-    r.jsonget('obj', Path('.truth.coord'))
-)
+print(r.jsonget('obj', Path('.truth.coord')))
 
 exit(0)
