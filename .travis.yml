@@ -12,15 +12,15 @@ jobs:
     - stage: test
       script: 
       - echo $TRAVIS_COMMIT
-      - test $(docker run -it --rm jrcichra/smartcar_python_base cat commit.txt) -eq $TRAVIS_COMMIT
+      - test $(docker run -it --rm jrcichra/smartcar_python_base cat commit.txt) = $TRAVIS_COMMIT
     - 
       script: 
       - echo $TRAVIS_COMMIT 
-      - test $(docker run -it --rm jrcichra/smartcar_controller cat commit.txt) -eq $TRAVIS_COMMIT
+      - test $(docker run -it --rm jrcichra/smartcar_controller cat commit.txt) = $TRAVIS_COMMIT
     -   
       script:  
       - echo $TRAVIS_COMMIT
-      - test $(docker run -it --rm jrcichra/smartcar_test_client cat commit.txt) -eq $TRAVIS_COMMIT
+      - test $(docker run -it --rm jrcichra/smartcar_test_client cat commit.txt) = $TRAVIS_COMMIT
     - 
       script: docker-compose up --abort-on-container-exit --exit-code-from test_client
 env:
