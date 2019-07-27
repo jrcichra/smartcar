@@ -1,0 +1,9 @@
+{
+    "type": "register-container",
+    "timestamp": "epochhere",
+    "data": {
+        "containers": [{
+            "name": "gpio"
+        }]
+    }
+}

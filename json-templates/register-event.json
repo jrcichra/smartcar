@@ -1,0 +1,9 @@
+{
+    "type": "register-event",
+    "timestamp": "epochhere",
+    "data": {
+        "events": [{
+            "name": "key_on"
+        }]
+    }
+}
