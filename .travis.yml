@@ -11,16 +11,13 @@ jobs:
       install: bash -x build.sh test_client
     - stage: test
       script: 
-      - echo $TRAVIS_COMMIT
-      - test $(docker run -it --rm jrcichra/smartcar_python_base cat commit.txt) = $TRAVIS_COMMIT
+      - bash -x check_commit.sh python_base
     - 
       script: 
-      - echo $TRAVIS_COMMIT 
-      - test $(docker run -it --rm jrcichra/smartcar_controller cat commit.txt) = $TRAVIS_COMMIT
+      - bash -x check_commit.sh controller
     -   
       script:  
-      - echo $TRAVIS_COMMIT
-      - test $(docker run -it --rm jrcichra/smartcar_test_client cat commit.txt) = $TRAVIS_COMMIT
+      - bash -x check_commit.sh test_client
     - 
       script: docker-compose up --abort-on-container-exit --exit-code-from test_client
 env:

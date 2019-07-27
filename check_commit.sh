@@ -1,0 +1,1 @@
+test $(docker run -it --rm jrcichra/smartcar_$1 cat commit.txt) = $TRAVIS_COMMIT
