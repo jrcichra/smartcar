@@ -26,10 +26,11 @@ class redisController:
         name = container['name']
         container_id = container['container_id']
         # Check if this container already exists in redis
-        existing_container = json.loads(self.db.jsonget(container_id))
+        existing_container_string = self.db.jsonget(container_id)
         logging.debug(
-            "Checking for an existing container returned: " + existing_container)
-        if existing_container != None:
+            "Checking for an existing container returned: " + existing_container_string)
+        if existing_container_string != None:
+            existing_container = json.loads(existing_container_string)
             msg = "Container " + container + \
                 " was already registered in redis at " + \
                 existing_container['timestamp']
@@ -64,11 +65,11 @@ class redisController:
         name = event['name']
         container_id = obj['container_id']
         # Check if this already exists in redis by first pulling all events for this container
-        existing_events = json.loads(self.db.jsonget(id, Path('.events')))
+        existing_events_string = self.db.jsonget(id, Path('.events'))
         logging.debug(
-            "Checking for existing events returned: " + existing_events)
+            "Checking for existing events returned: " + existing_events_string)
         # See if the event name we are trying to register already exists
-        if name in existing_events:
+        if existing_events_string is not None and name in json.loads(existing_events_string):
             msg = "Event " + name + \
                 " is already registered in redis."
             code = 1
