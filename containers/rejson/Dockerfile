@@ -9,7 +9,8 @@ RUN set -ex;\
     deps="$DEPS";\
     apt-get update; \
     apt-get install -y --no-install-recommends $deps;\
-    pip install wheel rmtest; 
+    pip install wheel; \ 
+    pip install rmtest; 
 
 # Build the source
 ADD . /REJSON
