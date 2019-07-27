@@ -11,7 +11,9 @@ DB_HOST = "redis"
 DB_PORT = 6379
 CONTROLLER_PORT = 8080
 
-logging.basicConfig(level=logging.DEBUG,format='%(asctime)s:%(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s:%(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
+
 
 def handle_container_message(client_socket, client_address, container_object, rc):
     # This function makes the appropriate calls to other functions based on the context of the packet
@@ -56,7 +58,7 @@ def serve_container(client_socket, client_address):
             # Block until we get a packet from them
             logging.debug("Blocking for " + client_address +
                           " waiting to receive a packet...")
-            raw_packet, err = recieve_packet(client_socket)
+            raw_packet, err = receive_packet(client_socket)
             # See if they left
             if(err):
                 logging.warning("Container at " + client_address + "has left.")
