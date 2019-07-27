@@ -2,11 +2,11 @@
     "type": "trigger-action",
     "timestamp": "epochhere",
     "data": {
-        "actions": [{
+        "action": {
             "name": "turn_off_pi",
             "payload": {
 
             }
-        }]
+        }
     }
 }

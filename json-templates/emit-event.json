@@ -2,11 +2,11 @@
     "type": "emit-event",
     "timestamp": "epochhere",
     "data": {
-        "events": [{
+        "event": {
             "name": "key_off",
             "payload": {
 
             }
-        }]
+        }
     }
 }

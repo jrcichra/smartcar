@@ -7,4 +7,4 @@ services:
    depends_on:
       - controller
   redis:
-   image: jrcichra/redisjson-buildx
+   image: jrcichra/redisjson

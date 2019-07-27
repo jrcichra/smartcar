@@ -2,8 +2,9 @@
     "type": "register-container",
     "timestamp": "epochhere",
     "data": {
-        "containers": [{
-            "name": "gpio"
-        }]
+        "container": {
+            "name": "gpio",
+            "id": "asdf453jsdf"
+        }
     }
 }

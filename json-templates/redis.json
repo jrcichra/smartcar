@@ -1,8 +1,15 @@
 {
-    "container-id": {
+    "a7dc61f2fa41": {
+        "name": "gpio",
         "state": "online",
+        "timestamp": 12345678,
         "events": [{
             "name": "key_on"
+        }, {
+            "name": "key_off"
+        }],
+        "actions": [{
+            "name": "power_off"
         }]
     }
 }

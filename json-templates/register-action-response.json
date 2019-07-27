@@ -2,10 +2,10 @@
     "type": "register-action-response",
     "timestamp": "epochhere",
     "data": {
-        "actions": [{
+        "action": {
             "name": "turn_off_pi",
             "status": 0,
             "message": "Message if status is a nonzero return code"
-        }]
+        }
     }
 }
