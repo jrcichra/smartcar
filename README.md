@@ -33,5 +33,5 @@ This is a redesign on the original rpi-dashcam project, but uses a modular desig
 + NAS 
   + Sends data to a network attached storage device
   
-# Socket.io
-I plan on using Socket.io for my protocol of choice. It will allow easy communication between Docker containers for this event-driven system, as well as easy tie-ins for a Electron-based GUI (which is most likely going to be my GUI language of choice). It has support for Python and JavaScript, so I'll be set :)
+# TCP based
+I am currently designing a TCP JSON protocol to handle the inter-container communication. I am looking at in-memory databases to manage the state of the containers, like redis.
