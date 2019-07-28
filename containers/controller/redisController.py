@@ -97,14 +97,13 @@ class redisController:
         logging.debug(
             "Checking for existing events returned: " + str(existing_events_string))
         # See if the event name we are trying to register already exists
-        if existing_events_string is not None and name in json.loads(existing_events_string):
+        if existing_events_string is not None and name in existing_events_string:
             response = {
                 'type': "register-event-response",
                 'timestamp': time.time(),
                 'data': {
                     'message': "Event " + name +
-                    " was already registered in redis at " +
-                    str(json.loads(existing_events_string)['timestamp']),
+                    " was already registered in redis",
                     'status': 1
                 }
             }
