@@ -56,13 +56,11 @@ class redisController:
         else:
             # Build a redis object
             robj = {
-                container_id: {
-                    'state': "online",
-                    'name': name,
-                    'timestamp': timestamp,
-                    'events': [],
-                    'actions': []
-                }
+                'state': "online",
+                'name': name,
+                'timestamp': timestamp,
+                'events': [],
+                'actions': []
             }
             self.db.jsonset(container_id, Path.rootPath(), robj)
 
