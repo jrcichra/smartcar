@@ -126,6 +126,57 @@ class redisController:
             }
         return response
 
+    def registerAction(self, obj):
+        # Internal error if we somehow don't go through the if or else
+        response = {
+            'type': "register-action-error",
+            'timestamp': time.time(),
+            'data': {
+                    'message': "Internal registerAction error",
+                    'status': 505
+            }
+        }
+        # Grab the timestamp in the packet
+        timestamp = obj['timestamp']
+        # Go the event being registered
+        event = obj['data']['event']
+        # Pull out the valuable attributes from this layer
+        name = event['name']
+        container_id = obj['container_id']
+        # Check if this already exists in redis by first pulling all events for this container
+        existing_events_string = self.db.jsonget(container_id, Path('.events'))
+        logging.debug(
+            "Checking for existing events returned: " + str(existing_events_string))
+        # See if the event name we are trying to register already exists
+        if existing_events_string is not None and name in existing_events_string:
+            response = {
+                'type': "register-event-response",
+                'timestamp': time.time(),
+                'data': {
+                    'message': "Event " + name +
+                    " was already registered in redis",
+                    'status': 1
+                }
+            }
+
+            logging.warning(response['data']['messsage'])
+
+        else:
+            # Insert the event into the proper container's object
+            robj = {
+                'name': name
+            }
+            self.db.jsonarrappend(container_id, Path('.events'), robj)
+            response = {
+                'type': "register-event-response",
+                'timestamp': time.time(),
+                'data': {
+                    'message': "OK",
+                    'status': 0
+                }
+            }
+        return response
+
     def dump(self, container_id):
         s = self.db.jsonget(container_id)
         obj = None

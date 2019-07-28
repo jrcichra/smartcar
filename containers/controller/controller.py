@@ -31,10 +31,10 @@ def handle_container_message(client_socket, client_address, container_object, rc
         response = rc.registerContainer(container_object)
     elif container_object['type'] == "register-event":
         response = rc.registerEvent(container_object)
-    # elif container_object['type'] == "register-action":
-    #    response = rc.registerAction(container_object)
-    # elif container_object['type'] == "emit-event":
-    #    response = rc.event(container_object)
+    elif container_object['type'] == "register-action":
+        response = rc.registerAction(container_object)
+    elif container_object['type'] == "emit-event":
+        response = rc.event(container_object)
     else:
         response = {
             'type': container_object['type'] + "-error",
