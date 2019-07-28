@@ -2,6 +2,7 @@ import redis
 from rejson import Client, Path
 import logging
 import json
+import time
 
 
 class redisController:
@@ -16,8 +17,15 @@ class redisController:
 
     def registerContainer(self, obj):
         # Internal error if we somehow don't go through the if or else
-        msg = "Internal registerContainer error"
-        code = 503
+        response = {
+            'type': "register-container-error",
+            'timestamp': time.time(),
+            'data': {
+                    'message': "Internal registerContainer error",
+                    'status': 503
+            }
+        }
+
         # Grab the timestamp in the packet
         timestamp = obj['timestamp']
         # Go the container being registered
@@ -29,13 +37,21 @@ class redisController:
         existing_container_string = self.db.jsonget(container_id)
         logging.debug(
             "Checking for an existing container returned: " + str(existing_container_string))
-        if existing_container_string != None:
+        if existing_container_string is not None:
             existing_container = json.loads(existing_container_string)
-            msg = "Container " + container + \
-                " was already registered in redis at " + \
-                existing_container['timestamp']
-            code = 1
-            logging.warning(msg)
+
+            response = {
+                'type': "register-container-response",
+                'timestamp': time.time(),
+                'data': {
+                    'message': "Container " + container +
+                    " was already registered in redis at " +
+                    existing_container['timestamp'],
+                    'status': 1
+                }
+            }
+
+            logging.warning(response['data']['messsage'])
 
         else:
             # Build a redis object
@@ -49,14 +65,28 @@ class redisController:
                 }
             }
             self.db.jsonset(container_id, Path.rootPath(), robj)
-            msg = "OK"
-            code = 0
-        return code, msg
+
+            response = {
+                'type': "register-container-response",
+                'timestamp': time.time(),
+                'data': {
+                    'message': "OK",
+                    'status': 0
+                }
+            }
+
+        return response
 
     def registerEvent(self, obj):
         # Internal error if we somehow don't go through the if or else
-        msg = "Internal registerEvent error"
-        code = 504
+        response = {
+            'type': "register-event-error",
+            'timestamp': time.time(),
+            'data': {
+                    'message': "Internal registerEvent error",
+                    'status': 504
+            }
+        }
         # Grab the timestamp in the packet
         timestamp = obj['timestamp']
         # Go the event being registered
