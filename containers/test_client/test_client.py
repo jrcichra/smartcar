@@ -25,6 +25,7 @@ print("Phase 2 - Register an event")
 register_event = {
     "type": "register-event",
     "timestamp": time.time(),
+    "container_id": socket.gethostname(),
     "data": {
         "event": {
             "name": "key_on"
