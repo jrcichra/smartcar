@@ -19,4 +19,4 @@ register_container = {
 
 s.sendall(packetize(json.dumps(register_container)))
 
-print(json.loads(depacketize(receive_packet(s))))
+print(json.loads(depacketize(receive_packet(s)[0])))
