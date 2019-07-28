@@ -74,6 +74,9 @@ def serve_container(client_socket, client_address):
                 client_socket, client_address, container_object, rc)
             # Now we can send the response back
             client_socket.sendall(packetize(json.dumps(response)))
+            logging.debug("Dumping the redis db for this key...")
+            rc.dump(container_object['data']['container_id']
+                    | container_object['container_id'])
     except socket.timeout:
         logging.debug("Lost connection to " + client_address)
         client_socket.close()

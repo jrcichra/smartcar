@@ -46,7 +46,7 @@ class redisController:
                 'data': {
                     'message': "Container " + container +
                     " was already registered in redis at " +
-                    existing_container['timestamp'],
+                    str(existing_container['timestamp']),
                     'status': 1
                 }
             }
@@ -100,10 +100,18 @@ class redisController:
             "Checking for existing events returned: " + str(existing_events_string))
         # See if the event name we are trying to register already exists
         if existing_events_string is not None and name in json.loads(existing_events_string):
-            msg = "Event " + str(name) + \
-                " is already registered in redis."
-            code = 1
-            logging.warning(msg)
+            response = {
+                'type': "register-event-response",
+                'timestamp': time.time(),
+                'data': {
+                    'message': "Event " + name +
+                    " was already registered in redis at " +
+                    str(json.loads(existing_events_string)['timestamp']),
+                    'status': 1
+                }
+            }
+
+            logging.warning(response['data']['messsage'])
 
         else:
             # Insert the event into the proper container's object
@@ -111,6 +119,19 @@ class redisController:
                 'name': name
             }
             self.db.jsonarrappend(id, Path('.events'), robj)
-            msg = "OK"
-            code = 0
-        return code, msg
+            response = {
+                'type': "register-event-response",
+                'timestamp': time.time(),
+                'data': {
+                    'message': "OK",
+                    'status': 0
+                }
+            }
+        return response
+
+    def dump(self, container_id):
+        s = self.db.jsonget(container_id)
+        obj = None
+        if s is not None:
+            obj = json.loads(s)
+        return obj
