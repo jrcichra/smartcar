@@ -43,7 +43,10 @@ I am currently designing a TCP JSON protocol to handle the inter-container commu
   + Have the controller keep a list of event-actions without relations and occasionally fill in the gaps (not ideal)
   + Use an RDBMS instead
 
-# Scratch Redis, use an RDBMS
-This project is heavily relational. We have events relating to actions, and actions relating to events. In Redis, I'm having a circular reference issue, which made me think it's not the tool for this job.
+# Issues with RDBMS
++ Tables are confusing
++ Relationships between options that could change in a heartbeat are too rigid
++ Hard to change the relationship if needs change
 
-Going forward, I'll be opting for an in-memory RDBMS to manage state since this is a complex structure.
+# What needs to happen
+A redesign of the Redis JSON structure. I need more level 0 keys with values that circle back to "joined" level0 keys. This would give me the most flexability to "join" all the objects together, while providing a large "options" flexability. I am trying this method next. I also do not see any great RDBMS that does the job in memory like Redis does for key-value. I have no need for persistence in the state. If the computer shuts down, I don't care (unless I choose to save the state to disk for debugging later, which redis allows).
