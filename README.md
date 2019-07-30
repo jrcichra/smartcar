@@ -34,4 +34,16 @@ This is a redesign on the original rpi-dashcam project, but uses a modular desig
   + Sends data to a network attached storage device
   
 # TCP based
-I am currently designing a TCP JSON protocol to handle the inter-container communication. I am looking at in-memory databases to manage the state of the containers, like redis.
+I am currently designing a TCP JSON protocol to handle the inter-container communication. It is using redis with the rejson plugin to store JSON objects in memory with no persistence.
+
+# Issues with Redis
++ Needed an external plugin to handle JSON objects
++ Relating events and actions requires intervalled scans to relate actions to be triggered by an event. In other words, to the controller, an event's action's container is unknown until that action is registered. Once that action is registered, it can search through the remaining containers to find what actions it provides, and fill in the container_id accordingly. However, if an action is registered before an event, it will not find the appropriate event actions to populate. There are two potential solutions to this problem:
+  + Don't allow actions to be registered before all events are registered (an unlikely choice since it restricts the flexability of the system)
+  + Have the controller keep a list of event-actions without relations and occasionally fill in the gaps (not ideal)
+  + Use an RDBMS instead
+
+# Scratch Redis, use an RDBMS
+This project is heavily relational. We have events relating to actions, and actions relating to events. In Redis, I'm having a circular reference issue, which made me think it's not the tool for this job.
+
+Going forward, I'll be opting for an in-memory RDBMS to manage state since this is a complex structure.
