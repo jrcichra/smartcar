@@ -22,7 +22,7 @@ jobs:
       script: 
       - docker-compose up &
       - sleep 120
-      - docker-compose exec redis redis-cli KEYS * | cut -d'"' -f2 | xargs -L1 redis-cli JSON.GET
+      - docker-compose exec redis sh -c 'redis-cli KEYS * | cut -d\" -f2 | xargs -L1 redis-cli JSON.GET'
 
 env:
   global:
