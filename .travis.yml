@@ -22,6 +22,7 @@ jobs:
       script: 
       - docker-compose up &
       - sleep 120
+      - docker-compose exec redis sh -c 'redis-cli JSON.GET *'
 
 env:
   global:

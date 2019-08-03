@@ -1,0 +1,24 @@
+{
+    "container_gpio": {
+        "container_id": "gpio",
+        "state": "online",
+        "timestamp": 12345678
+    },
+    "container_dashcam": {
+        "container_name": "dashcam",
+        "state": "online",
+        "timestamp": 12345678
+    },
+    "event_key-on": {
+        "name": "key-on",
+        "container_id": "gpio",
+        "options": {
+            "ignore": ["key_on"],
+            "method": "parallel"
+        }
+    },
+    "action_start-recording": {
+        "name": "start-recording",
+        "container_id": "dashcam"
+    }
+}

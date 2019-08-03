@@ -31,10 +31,10 @@ class redisController:
         # Go the container being registered
         container = obj['data']['container']
         # Pull out the valuable attributes from this layer
-        name = container['name']
         container_id = container['container_id']
         # Check if this container already exists in redis
-        existing_container_string = self.db.jsonget(container_id)
+        existing_container_string = self.db.jsonget(
+            "container_" + str(container_id))
         logging.debug(
             "Checking for an existing container returned: " + str(existing_container_string))
         if existing_container_string is not None:
@@ -44,7 +44,7 @@ class redisController:
                 'type': "register-container-response",
                 'timestamp': time.time(),
                 'data': {
-                    'message': "Container " + container +
+                    'message': "Container id:" + container_id +
                     " was already registered in redis at " +
                     str(existing_container['timestamp']),
                     'status': 1
@@ -57,12 +57,13 @@ class redisController:
             # Build a redis object
             robj = {
                 'state': "online",
-                'name': name,
+                'container_id': container_id,
                 'timestamp': timestamp,
                 'events': [],
                 'actions': []
             }
-            self.db.jsonset(container_id, Path.rootPath(), robj)
+            self.db.jsonset("container_" + str(container_id),
+                            Path.rootPath(), robj)
 
             response = {
                 'type': "register-container-response",
@@ -90,19 +91,19 @@ class redisController:
         # Go the event being registered
         event = obj['data']['event']
         # Pull out the valuable attributes from this layer
-        name = event['name']
+        event_name = event['name']
         container_id = obj['container_id']
         # Check if this already exists in redis by first pulling all events for this container
-        existing_events_string = self.db.jsonget(container_id, Path('.events'))
+        existing_events_string = self.db.jsonget("event_" + str(event_name))
         logging.debug(
             "Checking for existing events returned: " + str(existing_events_string))
         # See if the event name we are trying to register already exists
-        if existing_events_string is not None and name in existing_events_string:
+        if existing_events_string is not None and event_name in existing_events_string:
             response = {
                 'type': "register-event-response",
                 'timestamp': time.time(),
                 'data': {
-                    'message': "Event " + name +
+                    'message': "Event " + event_name +
                     " was already registered in redis",
                     'status': 1
                 }
@@ -113,9 +114,11 @@ class redisController:
         else:
             # Insert the event into the proper container's object
             robj = {
-                'name': name
+                'name': event_name,
+                'container_id': container_id
             }
-            self.db.jsonarrappend(container_id, Path('.events'), robj)
+            self.db.jsonset("event_" + str(event_name),
+                            Path.rootPath(), robj)
             response = {
                 'type': "register-event-response",
                 'timestamp': time.time(),
@@ -139,21 +142,22 @@ class redisController:
         # Grab the timestamp in the packet
         timestamp = obj['timestamp']
         # Go the event being registered
-        event = obj['data']['event']
+        action = obj['data']['action']
         # Pull out the valuable attributes from this layer
-        name = event['name']
+        action_name = action['name']
         container_id = obj['container_id']
         # Check if this already exists in redis by first pulling all events for this container
-        existing_events_string = self.db.jsonget(container_id, Path('.events'))
+        existing_actions_string = self.db.jsonget("action_" + str(
+            container_id))
         logging.debug(
-            "Checking for existing events returned: " + str(existing_events_string))
+            "Checking for existing actions returned: " + str(existing_actions_string))
         # See if the event name we are trying to register already exists
-        if existing_events_string is not None and name in existing_events_string:
+        if existing_actions_string is not None and action_name in existing_actions_string:
             response = {
                 'type': "register-event-response",
                 'timestamp': time.time(),
                 'data': {
-                    'message': "Event " + name +
+                    'message': "Event " + action_name +
                     " was already registered in redis",
                     'status': 1
                 }
@@ -164,9 +168,11 @@ class redisController:
         else:
             # Insert the event into the proper container's object
             robj = {
-                'name': name
+                'name': action_name,
+                'container_id': container_id
             }
-            self.db.jsonarrappend(container_id, Path('.events'), robj)
+            self.db.jsonset("action_" + str(action_name),
+                            Path.rootPath(), robj)
             response = {
                 'type': "register-event-response",
                 'timestamp': time.time(),
