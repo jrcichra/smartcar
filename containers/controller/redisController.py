@@ -112,13 +112,25 @@ class redisController:
             logging.warning(response['data']['messsage'])
 
         else:
-            # Insert the event into the proper container's object
+            # Insert the event object
             robj = {
                 'name': event_name,
                 'container_id': container_id
             }
             self.db.jsonset("event_" + str(event_name),
                             Path.rootPath(), robj)
+
+            # Append yourself to the proper container's event list
+
+            robj = {
+                'name': event_name
+            }
+
+            self.db.jsonarrappend(
+                "container_" + str(container_id), Path('.events'), robj)
+
+            # Build a response
+
             response = {
                 'type': "register-event-response",
                 'timestamp': time.time(),
@@ -141,23 +153,23 @@ class redisController:
         }
         # Grab the timestamp in the packet
         timestamp = obj['timestamp']
-        # Go the event being registered
+        # Go the action being registered
         action = obj['data']['action']
         # Pull out the valuable attributes from this layer
         action_name = action['name']
         container_id = obj['container_id']
-        # Check if this already exists in redis by first pulling all events for this container
+        # Check if this already exists in redis by first pulling all actions for this container
         existing_actions_string = self.db.jsonget("action_" + str(
             container_id))
         logging.debug(
             "Checking for existing actions returned: " + str(existing_actions_string))
-        # See if the event name we are trying to register already exists
+        # See if the action name we are trying to register already exists
         if existing_actions_string is not None and action_name in existing_actions_string:
             response = {
-                'type': "register-event-response",
+                'type': "register-action-response",
                 'timestamp': time.time(),
                 'data': {
-                    'message': "Event " + action_name +
+                    'message': "Action " + action_name +
                     " was already registered in redis",
                     'status': 1
                 }
@@ -166,13 +178,25 @@ class redisController:
             logging.warning(response['data']['messsage'])
 
         else:
-            # Insert the event into the proper container's object
+            # Insert the action into the proper container's object
             robj = {
                 'name': action_name,
                 'container_id': container_id
             }
             self.db.jsonset("action_" + str(action_name),
                             Path.rootPath(), robj)
+
+            # Append yourself to the proper container's event list
+
+            robj = {
+                'name': action_name,
+                'container_id': container_id
+            }
+
+            self.db.jsonarrappend(
+                "container_" + str(container_id), Path('.actions'), robj)
+
+            # Build a response
             response = {
                 'type': "register-event-response",
                 'timestamp': time.time(),

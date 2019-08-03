@@ -2,20 +2,32 @@
     "container_gpio": {
         "container_id": "gpio",
         "state": "online",
-        "timestamp": 12345678
+        "timestamp": 12345678,
+        "events": [{
+            "name": "key-on"
+        }],
+        "actions": []
     },
     "container_dashcam": {
         "container_name": "dashcam",
         "state": "online",
-        "timestamp": 12345678
+        "timestamp": 12345678,
+        "events": [],
+        "actions": [{
+            "name": "start-recording"
+        }]
     },
     "event_key-on": {
         "name": "key-on",
         "container_id": "gpio",
+        "timestamp": 12345678,
         "options": {
             "ignore": ["key_on"],
             "method": "parallel"
-        }
+        },
+        "actions": [{
+            "name": "start-recording"
+        }]
     },
     "action_start-recording": {
         "name": "start-recording",
