@@ -1,10 +1,13 @@
 version: '3'
 services:
   controller:
+    hostname: controller
     image: jrcichra/smartcar_controller
   test_client:
+   hostname: test_client
    image: jrcichra/smartcar_test_client
    depends_on:
       - controller
   redis:
+   hostname: redis
    image: jrcichra/redisjson

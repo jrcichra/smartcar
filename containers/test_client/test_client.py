@@ -11,7 +11,6 @@ register_container = {
     "timestamp": time.time(),
     "data": {
         "container": {
-            "name": "test_client",
             "container_id": socket.gethostname()
         }
     }
