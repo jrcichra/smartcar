@@ -108,7 +108,7 @@ class redisController:
                 }
             }
 
-            logging.warning(response['data']['messsage'])
+            logging.warning(response['data']['message'])
 
         else:
             # Insert the event object
