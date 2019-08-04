@@ -174,7 +174,7 @@ class redisController:
                 }
             }
 
-            logging.warning(response['data']['messsage'])
+            logging.warning(response['data']['message'])
 
         else:
             # Insert the action into the proper container's object
