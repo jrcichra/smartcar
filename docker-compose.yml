@@ -6,6 +6,8 @@ services:
   controller:
     hostname: controller
     image: jrcichra/smartcar_controller
+    volumes:
+      - "${PWD}/config.yml:/config.yml"
     depends_on:
       - redis
   test_client:
