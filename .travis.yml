@@ -21,7 +21,7 @@ jobs:
       script:  
       - bash -x check_commit.sh test_client
     - 
-       script:  
+      script:  
       - bash -x check_commit.sh test_client_2
     -
       script: 
