@@ -33,12 +33,11 @@ class redisController:
         # Pull out the valuable attributes from this layer
         container_id = container['container_id']
         # Check if this container already exists in redis
-        existing_container_string = self.db.jsonget(
+        existing_container = self.db.jsonget(
             "container_" + str(container_id))
         logging.debug(
-            "Checking for an existing container returned: " + str(existing_container_string))
-        if existing_container_string is not None:
-            existing_container = json.loads(existing_container_string)
+            "Checking for an existing container returned: " + str(json.dumps(existing_container)))
+        if existing_container is not None:
 
             response = {
                 'type': "register-container-response",
@@ -94,11 +93,11 @@ class redisController:
         event_name = event['name']
         container_id = obj['container_id']
         # Check if this already exists in redis by first pulling all events for this container
-        existing_events_string = self.db.jsonget("event_" + str(event_name))
+        existing_events = self.db.jsonget("event_" + str(event_name))
         logging.debug(
-            "Checking for existing events returned: " + str(existing_events_string))
+            "Checking for existing events returned: " + str(json.dumps(existing_events)))
         # See if the event name we are trying to register already exists
-        if existing_events_string is not None and event_name in existing_events_string:
+        if existing_events is not None and event_name in existing_events:
             response = {
                 'type': "register-event-response",
                 'timestamp': time.time(),
@@ -159,12 +158,12 @@ class redisController:
         action_name = action['name']
         container_id = obj['container_id']
         # Check if this already exists in redis by first pulling all actions for this container
-        existing_actions_string = self.db.jsonget("action_" + str(
+        existing_actions = self.db.jsonget("action_" + str(
             container_id))
         logging.debug(
-            "Checking for existing actions returned: " + str(existing_actions_string))
+            "Checking for existing actions returned: " + str(json.dumps(existing_actions)))
         # See if the action name we are trying to register already exists
-        if existing_actions_string is not None and action_name in existing_actions_string:
+        if existing_actions is not None and action_name in existing_actions:
             response = {
                 'type': "register-action-response",
                 'timestamp': time.time(),
