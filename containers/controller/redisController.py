@@ -97,7 +97,7 @@ class redisController:
         logging.debug(
             "Checking for existing events returned: " + str(json.dumps(existing_events)))
         # See if the event name we are trying to register already exists
-        if existing_events is not None and event_name in existing_events:
+        if existing_events is not None:
             response = {
                 'type': "register-event-response",
                 'timestamp': time.time(),
@@ -163,7 +163,7 @@ class redisController:
         logging.debug(
             "Checking for existing actions returned: " + str(json.dumps(existing_actions)))
         # See if the action name we are trying to register already exists
-        if existing_actions is not None and action_name in existing_actions:
+        if existing_actions is not None:
             response = {
                 'type': "register-action-response",
                 'timestamp': time.time(),
