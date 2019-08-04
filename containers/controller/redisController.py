@@ -159,7 +159,7 @@ class redisController:
         container_id = obj['container_id']
         # Check if this already exists in redis by first pulling all actions for this container
         existing_actions = self.db.jsonget("action_" + str(
-            container_id))
+            action_name))
         logging.debug(
             "Checking for existing actions returned: " + str(json.dumps(existing_actions)))
         # See if the action name we are trying to register already exists
