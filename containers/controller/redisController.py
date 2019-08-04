@@ -19,7 +19,8 @@ class redisController:
     def setConfig(self, path):
         with open(path, 'r') as f:
             config = yaml.safe_load(f)
-            logging.debug(str(f))
+            logging.debug("Printing the config.yml...")
+            logging.debug(config)
 
     def registerContainer(self, obj):
         # Internal error if we somehow don't go through the if or else
