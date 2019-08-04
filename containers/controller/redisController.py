@@ -133,31 +133,31 @@ class redisController:
                 event_config = self.config[event_name]
                 try:
                     robj['ignore'] = event_config['ignore']
-                except NameError:
+                except KeyError:
                     logging.debug(
                         "No ignore found while registering event: " + event_name)
                 try:
                     robj['listen'] = event_config['listen']
-                except NameError:
+                except KeyError:
                     logging.debug(
                         "No listen found while registering event: " + event_name)
                 try:
                     robj['break'] = event_config['break']
-                except NameError:
+                except KeyError:
                     logging.debug(
                         "No break found while registering event: " + event_name)
                 try:
                     robj['parallel'] = event_config['parallel']
-                except NameError:
+                except KeyError:
                     logging.debug(
                         "No parallel found while registering event: " + event_name)
-                try:
+                try: 
                     robj['serial'] = event_config['serial']
-                except NameError:
+                except KeyError:
                     logging.debug(
                         "No serial found while registering event: " + event_name)
 
-            except NameError:
+            except KeyError:
                 logging.warn(
                     "Missing event in config.yml, cannot preform actions for this event. Please check your config.yml")
 
