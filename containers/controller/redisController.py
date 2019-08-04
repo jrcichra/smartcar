@@ -50,7 +50,7 @@ class redisController:
                 }
             }
 
-            logging.warning(response['data']['messsage'])
+            logging.warning(response['data']['message'])
 
         else:
             # Build a redis object
