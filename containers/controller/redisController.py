@@ -21,6 +21,8 @@ class redisController:
             config = yaml.safe_load(f)
             logging.debug("Printing the config.yml...")
             logging.debug(config)
+            logging.debug("Setting the config for this object...")
+            self.config = config
 
     def registerContainer(self, obj):
         # Internal error if we somehow don't go through the if or else
@@ -118,11 +120,47 @@ class redisController:
             logging.warning(response['data']['message'])
 
         else:
-            # Insert the event object
+
+            # Create the base event object, add more as we go through the config parsing
             robj = {
                 'name': event_name,
                 'container_id': container_id
             }
+
+            # Get data from the config.yml file and put it into redis
+            try:
+                # Grab the whole object for the event
+                event_config = self.config[event_name]
+                try:
+                    robj['ignore'] = event_config['ignore']
+                except NameError:
+                    logging.debug(
+                        "No ignore found while registering event: " + event_name)
+                try:
+                    robj['listen'] = event_config['listen']
+                except NameError:
+                    logging.debug(
+                        "No listen found while registering event: " + event_name)
+                try:
+                    robj['break'] = event_config['break']
+                except NameError:
+                    logging.debug(
+                        "No break found while registering event: " + event_name)
+                try:
+                    robj['parallel'] = event_config['parallel']
+                except NameError:
+                    logging.debug(
+                        "No parallel found while registering event: " + event_name)
+                try:
+                    robj['serial'] = event_config['serial']
+                except NameError:
+                    logging.debug(
+                        "No serial found while registering event: " + event_name)
+
+            except NameError:
+                logging.warn(
+                    "Missing event in config.yml, cannot preform actions for this event. Please check your config.yml")
+
             self.db.jsonset("event_" + str(event_name),
                             Path.rootPath(), robj)
 
