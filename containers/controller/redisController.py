@@ -17,8 +17,9 @@ class redisController:
         self.db = Client(host=hostname, port=port, decode_responses=True)
 
     def setConfig(self, path):
-        config = yaml.safe_load(path)
-        logging.debug(str(config))
+        with open(path, 'r') as f:
+            config = yaml.safe_load(f)
+            logging.debug(f)
 
     def registerContainer(self, obj):
         # Internal error if we somehow don't go through the if or else
