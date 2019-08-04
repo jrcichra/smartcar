@@ -1,3 +1,4 @@
 redis
 rejson
 six
+pyyaml

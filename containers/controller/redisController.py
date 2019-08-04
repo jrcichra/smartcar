@@ -3,6 +3,7 @@ from rejson import Client, Path
 import logging
 import json
 import time
+import yaml
 
 
 class redisController:
@@ -14,6 +15,10 @@ class redisController:
         logging.debug("Connecting to the database with hostname: " +
                       str(hostname) + " on port: " + str(port) + ".")
         self.db = Client(host=hostname, port=port, decode_responses=True)
+
+    def setConfig(self, path):
+        config = yaml.load(path)
+        logging.debug(yaml.dump(config))
 
     def registerContainer(self, obj):
         # Internal error if we somehow don't go through the if or else

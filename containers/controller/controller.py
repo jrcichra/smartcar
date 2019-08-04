@@ -53,6 +53,8 @@ def serve_container(client_socket, client_address):
         connected = True
         # Create the redis-controller object
         rc = redisController(DB_HOST, DB_PORT)
+        # Path to the config yaml
+        rc.setConfig("../../config.yml")
         # While they are here...
         while connected:
             # Block until we get a packet from them
