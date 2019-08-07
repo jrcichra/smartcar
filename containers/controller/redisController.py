@@ -15,6 +15,96 @@ class redisController:
         logging.debug("Connecting to the database with hostname: " +
                       str(hostname) + " on port: " + str(port) + ".")
         self.db = Client(host=hostname, port=port, decode_responses=True)
+        self.ignore = []  # List of ignored events at any point, also handles listens
+    def ignore(self, ignore):
+        # ignore should be a string
+        if isinstance(ignore,str):
+            self.ignore.append(ignore)
+        else:
+            logging.error("ignore() received a non-string. Ignoring...")
+
+    def listen(self,listen):
+        # listen should be a string
+        if isinstance(listen,str):
+            self.listen.remove(listen)
+        else:
+            logging.error("listen() received a non-string. Ignoring...")
+            
+    def handleEvent(self, obj):
+        # Internal error if we somehow don't go through the if or else
+        response = {
+            'type': "emit-event-error",
+            'timestamp': time.time(),
+            'data': {
+                    'message': "Internal emit-event error",
+                    'status': 506
+            }
+        }
+       # Grab the timestamp in the packet
+        timestamp = obj['timestamp']
+        # Go the event being registered
+        event = obj['data']['event']
+        # Pull out the valuable attributes from this layer
+        event_name = event['name']
+        event_payload = event['payload']
+        container_id = obj['container_id']
+        # Query out the actions that take place because of this event
+        redis_event = self.db.jsonget(
+            "event_" + str(event_name))
+
+        redis_parsed = {}
+
+        # Handle the ignore
+        try:
+            ignore = redis_event['ignore']
+            if isinstance(ignore, str):
+                ignore(ignore)
+            elif isinstance(ignore, list):
+                for i in ignore:
+                    ignore(i)
+            else:
+                logging.error("Could not handle ignore for event: " +
+                              event_name + ". Not string or list!!!")
+        except KeyError:
+            logging.debug(
+                "No ignore found while parsing event: " + event_name)
+        try:
+            listen = redis_event['listen']
+            if isinstance(listen,str):
+                listen(listen)
+            elif isinstance(listen,list):
+                for l in listen:
+                    listen(l)
+        except KeyError:
+            logging.debug(
+                "No listen found while parsing event: " + event_name)
+        try:
+            #We use this later when doing a serial execution
+            brk = redis_event['break']
+        except KeyError:
+            logging.debug(
+                "No break found while parsing event: " + event_name)
+        # You need either a serial or parallel. No support for both yet
+        try:
+            serial = redis_event['serial']
+            # For every serial action
+            for action in serial:
+                pass
+                #Call that action and block until we get a response
+                #callSerialAction(action)
+                #At the end of every call, check if we got the break event, and break the loop
+                #if gotBreak(brk):
+                 #  break
+        except KeyError:
+            logging.debug(
+                "No serial found while parsing event: " + event_name)
+            try:
+            parallel = redis_event['parallel']
+            except KeyError:
+                logging.debug(
+                    "No parallel found while parsing event: " + event_name)
+        
+        
 
     def setConfig(self, path):
         with open(path, 'r') as f:
@@ -151,7 +241,7 @@ class redisController:
                 except KeyError:
                     logging.debug(
                         "No parallel found while registering event: " + event_name)
-                try: 
+                try:
                     robj['serial'] = event_config['serial']
                 except KeyError:
                     logging.debug(

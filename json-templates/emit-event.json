@@ -1,6 +1,7 @@
 {
     "type": "emit-event",
     "timestamp": "epochhere",
+    "container_id": "asdf",
     "data": {
         "event": {
             "name": "key_off",

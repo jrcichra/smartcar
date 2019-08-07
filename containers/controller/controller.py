@@ -34,7 +34,7 @@ def handle_container_message(client_socket, client_address, container_object, rc
     elif container_object['type'] == "register-action":
         response = rc.registerAction(container_object)
     elif container_object['type'] == "emit-event":
-        response = rc.event(container_object)
+        response = rc.handleEvent(container_object)
     else:
         response = {
             'type': container_object['type'] + "-error",
@@ -47,14 +47,10 @@ def handle_container_message(client_socket, client_address, container_object, rc
     return response
 
 
-def serve_container(client_socket, client_address):
+def serve_container(client_socket, client_address, rc):
     try:
         # We have a client and they've connected to us
         connected = True
-        # Create the redis-controller object
-        rc = redisController(DB_HOST, DB_PORT)
-        # Path to the config yaml
-        rc.setConfig("config.yml")
         # While they are here...
         while connected:
             # Block until we get a packet from them
@@ -91,6 +87,12 @@ server_socket.bind(("0.0.0.0", CONTROLLER_PORT))
 logging.info("Controller server up and listening on port: " +
              str(CONTROLLER_PORT) + ".")
 
+# Connect to the database
+rc = redisController(DB_HOST, DB_PORT)
+
+# Path to the config yaml
+rc.setConfig("config.yml")
+
 # Listen for other containers to connect
 server_socket.listen()
 while True:
@@ -101,5 +103,5 @@ while True:
     logging.debug(
         "Spawning a new thread to handle communication with " + client_address + ".")
     t = threading.Thread(target=serve_container,
-                         args=(client_socket, client_address))
+                         args=(client_socket, client_address, rc))
     t.start()
