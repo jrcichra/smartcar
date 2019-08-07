@@ -16,20 +16,21 @@ class redisController:
                       str(hostname) + " on port: " + str(port) + ".")
         self.db = Client(host=hostname, port=port, decode_responses=True)
         self.ignore = []  # List of ignored events at any point, also handles listens
+
     def ignore(self, ignore):
         # ignore should be a string
-        if isinstance(ignore,str):
+        if isinstance(ignore, str):
             self.ignore.append(ignore)
         else:
             logging.error("ignore() received a non-string. Ignoring...")
 
-    def listen(self,listen):
+    def listen(self, listen):
         # listen should be a string
-        if isinstance(listen,str):
+        if isinstance(listen, str):
             self.listen.remove(listen)
         else:
             logging.error("listen() received a non-string. Ignoring...")
-            
+
     def handleEvent(self, obj):
         # Internal error if we somehow don't go through the if or else
         response = {
@@ -70,16 +71,16 @@ class redisController:
                 "No ignore found while parsing event: " + event_name)
         try:
             listen = redis_event['listen']
-            if isinstance(listen,str):
+            if isinstance(listen, str):
                 listen(listen)
-            elif isinstance(listen,list):
+            elif isinstance(listen, list):
                 for l in listen:
                     listen(l)
         except KeyError:
             logging.debug(
                 "No listen found while parsing event: " + event_name)
         try:
-            #We use this later when doing a serial execution
+            # We use this later when doing a serial execution
             brk = redis_event['break']
         except KeyError:
             logging.debug(
@@ -90,21 +91,19 @@ class redisController:
             # For every serial action
             for action in serial:
                 pass
-                #Call that action and block until we get a response
-                #callSerialAction(action)
-                #At the end of every call, check if we got the break event, and break the loop
-                #if gotBreak(brk):
-                 #  break
+                # Call that action and block until we get a response
+                # callSerialAction(action)
+                # At the end of every call, check if we got the break event, and break the loop
+                # if gotBreak(brk):
+                #  break
         except KeyError:
             logging.debug(
                 "No serial found while parsing event: " + event_name)
             try:
-            parallel = redis_event['parallel']
+                parallel = redis_event['parallel']
             except KeyError:
                 logging.debug(
                     "No parallel found while parsing event: " + event_name)
-        
-        
 
     def setConfig(self, path):
         with open(path, 'r') as f:
