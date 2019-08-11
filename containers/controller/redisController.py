@@ -118,7 +118,16 @@ class redisController:
                 except KeyError:
                     logging.debug(
                         "No parallel found while parsing event: " + event_name)
-
+     
+        response = {
+            'type': "emit-event-response",
+            'timestamp': time.time(),
+            'data': {
+                'message': "OK",
+                'status': 0
+            }
+        }
+        return response
     def setConfig(self, path):
         with open(path, 'r') as f:
             config = yaml.safe_load(f)
