@@ -98,4 +98,23 @@ register_action_again = {
 s.sendall(packetize(json.dumps(register_action_again)))
 print(json.loads(depacketize(receive_packet(s)[0])))
 
+print("Phase 6 - Emit an event that I have registered")
+
+emit_event = {
+    'type': "emit-event",
+    'timestamp': time.time(),
+    'container_id': socket.gethostname(),
+    'data': {
+        'event': {
+            'name': "key_on",
+            'payload':{
+
+            }
+        }
+    }
+}
+
+s.sendall(packetize(json.dumps(emit_event)))
+print(json.loads(depacketize(receive_packet(s)[0])))
+
 print("Test Client Container Completed")
