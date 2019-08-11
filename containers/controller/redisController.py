@@ -15,12 +15,12 @@ class redisController:
         logging.debug("Connecting to the database with hostname: " +
                       str(hostname) + " on port: " + str(port) + ".")
         self.db = Client(host=hostname, port=port, decode_responses=True)
-        self.ignore = []  # List of ignored events at any point, also handles listens
+        self.ignore_list = []  # List of ignored events at any point, also handles listens
 
     def ignore(self, ignore):
         # ignore should be a string
         if isinstance(ignore, str):
-            self.ignore.append(ignore)
+            self.ignore_list.append(ignore)
         else:
             logging.error("ignore() received a non-string. Ignoring...")
 
@@ -70,7 +70,7 @@ class redisController:
                         ignore(i)
                 else:
                     logging.error("Could not handle ignore for event: " +
-                                event_name + ". Not string or list!!!")
+                                  event_name + ". Not string or list!!!")
             except KeyError:
                 logging.debug(
                     "No ignore found while parsing event: " + event_name)
@@ -95,7 +95,8 @@ class redisController:
                 serial = redis_event['serial']
                 # For every serial action
                 for action in serial:
-                    logging.debug("Serial Action that would be called: " + str(action))
+                    logging.debug(
+                        "Serial Action that would be called: " + str(action))
                     # Call that action and block until we get a response
                     # callSerialAction(action)
                     # At the end of every call, check if we got the break event, and break the loop
@@ -107,7 +108,8 @@ class redisController:
                 try:
                     parallel = redis_event['parallel']
                     for action in parallel:
-                        logging.debug("Parallel Action that would be called: " + str(action))
+                        logging.debug(
+                            "Parallel Action that would be called: " + str(action))
                 except KeyError:
                     logging.debug(
                         "No parallel found while parsing event: " + event_name)
