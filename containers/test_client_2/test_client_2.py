@@ -22,7 +22,7 @@ register_container = {
 
 logging.debug("Phase 1 - register this container")
 s.sendall(packetize(json.dumps(register_container)))
-logging.debug(json.loads(depacketize(receive_packet(s)[0])))
+logging.debug(depacketize(receive_packet(s)[0]))
 logging.debug("Phase 2 - Register key_off event")
 
 register_event_two = {
@@ -37,7 +37,7 @@ register_event_two = {
 }
 
 s.sendall(packetize(json.dumps(register_event_two)))
-logging.debug(json.loads(depacketize(receive_packet(s)[0])))
+logging.debug(depacketize(receive_packet(s)[0]))
 
 logging.debug("Phase 3 - Emit key_off event")
 
@@ -53,4 +53,4 @@ emit_event = {
 }
 
 s.sendall(packetize(json.dumps(emit_event)))
-logging.debug(json.loads(depacketize(receive_packet(s)[0])))
+logging.debug(depacketize(receive_packet(s)[0]))
