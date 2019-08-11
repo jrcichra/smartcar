@@ -22,14 +22,17 @@ class redisController:
         if isinstance(ignore, str):
             self.ignore_list.append(ignore)
         else:
-            logging.error("ignore() received a non-string. Ignoring...")
+            logging.error("ignoreEvent() received a non-string. Ignoring...")
 
     def listenEvent(self, listen):
         # listen should be a string
         if isinstance(listen, str):
-            self.ignore_list.remove(listen)
+            try:
+                self.ignore_list.remove(listen)
+            except ValueError:
+                logging.warning("listenEvent() recieved " + listen + ", which was not found in the ignore list. Not removing...")
         else:
-            logging.error("listen() received a non-string. Ignoring...")
+            logging.error("listenEvent() received a non-string. Ignoring...")
 
     def handleEvent(self, obj):
         # Internal error if we somehow don't go through the if or else
