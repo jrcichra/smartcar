@@ -66,10 +66,10 @@ class redisController:
             try:
                 ignore = redis_event['ignore']
                 if isinstance(ignore, str):
-                    ignoreEvent(ignore)
+                    self.ignoreEvent(ignore)
                 elif isinstance(ignore, list):
                     for i in ignore:
-                        ignoreEvent(ignore)
+                        self.ignoreEvent(ignore)
                 else:
                     logging.error("Could not handle ignore for event: " +
                                   event_name + ". Not string or list!!!")
@@ -79,10 +79,10 @@ class redisController:
             try:
                 listen = redis_event['listen']
                 if isinstance(listen, str):
-                    listenEvent(listen)
+                    self.listenEvent(listen)
                 elif isinstance(listen, list):
                     for l in listen:
-                        listenEvent(l)
+                        self.listenEvent(l)
             except KeyError:
                 logging.debug(
                     "No listen found while parsing event: " + event_name)
