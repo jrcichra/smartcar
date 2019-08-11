@@ -27,7 +27,7 @@ class redisController:
     def listen(self, listen):
         # listen should be a string
         if isinstance(listen, str):
-            self.listen.remove(listen)
+            self.ignore_list.remove(listen)
         else:
             logging.error("listen() received a non-string. Ignoring...")
 
