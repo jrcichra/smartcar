@@ -64,7 +64,7 @@ class redisController:
             try:
                 ig = redis_event['ignore']
                 if isinstance(ig, str):
-                    ignore(ignore)
+                    ignore(ig)
                 elif isinstance(ig, list):
                     for i in ig:
                         ignore(i)
