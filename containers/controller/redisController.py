@@ -62,11 +62,11 @@ class redisController:
         else:
             # Handle the ignore
             try:
-                ignore = redis_event['ignore']
-                if isinstance(ignore, str):
+                ig = redis_event['ignore']
+                if isinstance(ig, str):
                     ignore(ignore)
-                elif isinstance(ignore, list):
-                    for i in ignore:
+                elif isinstance(ig, list):
+                    for i in ig:
                         ignore(i)
                 else:
                     logging.error("Could not handle ignore for event: " +
@@ -75,11 +75,11 @@ class redisController:
                 logging.debug(
                     "No ignore found while parsing event: " + event_name)
             try:
-                listen = redis_event['listen']
-                if isinstance(listen, str):
-                    listen(listen)
-                elif isinstance(listen, list):
-                    for l in listen:
+                lis = redis_event['listen']
+                if isinstance(lis, str):
+                    listen(lis)
+                elif isinstance(lis, list):
+                    for l in lis:
                         listen(l)
             except KeyError:
                 logging.debug(
