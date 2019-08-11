@@ -47,7 +47,9 @@ class redisController:
         event = obj['data']['event']
         # Pull out the valuable attributes from this layer
         event_name = event['name']
-        event_payload = event['payload']
+        # There may or may not be a payload per event, we should pass it if it exists..., for now don't worry
+        #event_payload = event['payload']
+
         container_id = obj['container_id']
         # Query out the actions that take place because of this event
         redis_event = self.db.jsonget(

@@ -106,10 +106,7 @@ emit_event = {
     'container_id': socket.gethostname(),
     'data': {
         'event': {
-            'name': "key_on",
-            'payload':{
-
-            }
+            'name': "key_on"
         }
     }
 }
