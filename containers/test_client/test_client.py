@@ -89,7 +89,7 @@ s.sendall(packetize(json.dumps(register_event_again)))
 logging.debug(depacketize(receive_packet(s)[0]))
 
 logging.debug(
-    "Phase 5 - Try to reregister an action that already exists - This should fail")
+    "Phase 6 - Try to reregister an action that already exists - This should fail")
 
 register_action_again = {
     'type': "register-action",
@@ -105,7 +105,7 @@ register_action_again = {
 s.sendall(packetize(json.dumps(register_action_again)))
 logging.debug(depacketize(receive_packet(s)[0]))
 
-logging.debug("Phase 6 - Emit an event that I have registered")
+logging.debug("Phase 7 - Emit an event that I have registered")
 
 emit_event = {
     'type': "emit-event",
@@ -122,7 +122,7 @@ s.sendall(packetize(json.dumps(emit_event)))
 logging.debug(depacketize(receive_packet(s)[0]))
 
 logging.debug(
-    "Phase 7 - Emit an event that I have not registered, this should fail")
+    "Phase 8 - Emit an event that I have not registered, this should fail")
 
 emit_event = {
     'type': "emit-event",

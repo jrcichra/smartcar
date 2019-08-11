@@ -62,7 +62,10 @@ class redisController:
         redis_parsed = {}
 
         # Verify the container who emitted this event is the one who registered it
-        if container_id != redis_event['container_id']:
+        if redis_event is None:
+            response['data']['message'] = "Cannot emit an event which does not exist"
+            response['data']['status'] = 508
+        elif container_id != redis_event['container_id']:
             response['data']['message'] = "container_id of request did not match container_id of registered event"
             response['data']['status'] = 507
         else:
