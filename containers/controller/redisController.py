@@ -57,7 +57,8 @@ class redisController:
         # Query out the actions that take place because of this event
         redis_event = self.db.jsonget(
             "event_" + str(event_name))
-
+        logging.debug(
+                "Checking for an existing event returned: " + str(json.dumps(redis_event)))
         redis_parsed = {}
 
         # Verify the container who emitted this event is the one who registered it
