@@ -17,14 +17,14 @@ class redisController:
         self.db = Client(host=hostname, port=port, decode_responses=True)
         self.ignore_list = []  # List of ignored events at any point, also handles listens
 
-    def ignore(self, ignore):
+    def ignoreEvent(self, ignore):
         # ignore should be a string
         if isinstance(ignore, str):
             self.ignore_list.append(ignore)
         else:
             logging.error("ignore() received a non-string. Ignoring...")
 
-    def listen(self, listen):
+    def listenEvent(self, listen):
         # listen should be a string
         if isinstance(listen, str):
             self.ignore_list.remove(listen)
@@ -64,12 +64,12 @@ class redisController:
         else:
             # Handle the ignore
             try:
-                ig = redis_event['ignore']
-                if isinstance(ig, str):
-                    ignore(ig)
-                elif isinstance(ig, list):
-                    for i in ig:
-                        ignore(i)
+                ignore = redis_event['ignore']
+                if isinstance(ignore, str):
+                    ignoreEvent(ignore)
+                elif isinstance(ignore, list):
+                    for i in ignore:
+                        ignoreEvent(ignore)
                 else:
                     logging.error("Could not handle ignore for event: " +
                                   event_name + ". Not string or list!!!")
@@ -77,12 +77,12 @@ class redisController:
                 logging.debug(
                     "No ignore found while parsing event: " + event_name)
             try:
-                lis = redis_event['listen']
-                if isinstance(lis, str):
-                    listen(lis)
-                elif isinstance(lis, list):
-                    for l in lis:
-                        listen(l)
+                listen = redis_event['listen']
+                if isinstance(listen, str):
+                    listenEvent(listen)
+                elif isinstance(listen, list):
+                    for l in listen:
+                        listenEvent(l)
             except KeyError:
                 logging.debug(
                     "No listen found while parsing event: " + event_name)
