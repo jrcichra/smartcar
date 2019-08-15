@@ -16,6 +16,31 @@ class redisController:
                       str(hostname) + " on port: " + str(port) + ".")
         self.db = Client(host=hostname, port=port, decode_responses=True)
         self.ignore_list = []  # List of ignored events at any point, also handles listens
+        self.modes = ["serial","parallel"]
+
+    def isSupportedMode(self,mode):
+        return mode in self.modes
+
+    def triggerAction(self,action,mode):
+        # check redis and make sure its actually an action that exists...if it doesn't a lot we'll need to look at queues or something...
+        redis_action = self.db.jsonget(
+            "action_" + str(action))
+        if redis_action is None:
+            logging.warn("Action: " + action + " does not exist (yet) in redis...cannot call action")
+        else:
+            #Validate the fields are there that we care about...mainly the container_id
+            try:
+                container_id = redis_action['container_id']
+                logging.debug("Found action: " + action)
+                logging.debug("Container who owns action is: " + container_id)
+                #check the mode they passed into this function: (parallel vs serial to start)
+                if not isSupportedMode(mode):
+                    logging.error("The mode passed in is not a supported mode!!! Treating as serial...")
+                    mode = "serial"
+                
+            except KeyError:
+                logging.debug("Could not find a container_id for the redis action of " + action)
+            
 
     def ignoreEvent(self, ignore):
         # ignore should be a string
