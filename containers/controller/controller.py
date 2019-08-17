@@ -250,6 +250,8 @@ def handle_container_message(client_socket, client_address, container_object, rc
             q = events[event_id]
             # Send what we got to the proper queue, which should unblock that event process
             q.put(container_object)
+            # No response needed since this is a response
+            return
         except KeyError:
             logging.error(
                 "We're missing the event id, can't determine which queue is blocked / waiting for this")
