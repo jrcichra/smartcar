@@ -28,7 +28,7 @@ def isSupportedMode(mode):
 
 def handleAction(action, mode, read_queue):
     # check redis and make sure its actually an action that exists...if it doesn't a lot we'll need to look at queues or something...
-    redis_action = rc.getAction(action)
+    redis_action = rc.queryAction(action)
     if redis_action is None:
         logging.warn("Action: " + action +
                      " does not exist (yet) in redis...cannot call action")
