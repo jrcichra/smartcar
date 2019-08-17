@@ -127,10 +127,10 @@ def handleEvent(obj, rc, read_queue):
         try:
             listen = redis_event['listen']
             if isinstance(listen, str):
-                listenEvent(listen)
+                rc.listenEvent(listen)
             elif isinstance(listen, list):
                 for l in listen:
-                    listenEvent(l)
+                    rc.listenEvent(l)
         except KeyError:
             logging.debug(
                 "No listen found while parsing event: " + event_name)
