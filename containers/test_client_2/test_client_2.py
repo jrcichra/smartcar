@@ -55,4 +55,21 @@ emit_event = {
 s.sendall(packetize(json.dumps(emit_event)))
 logging.debug(depacketize(receive_packet(s)[0]))
 
+logging.debug("Phase 4 - Register start_recording action")
+
+
+register_action = {
+    'type': "register-action",
+    'timestamp': time.time(),
+    'container_id': socket.gethostname(),
+    'data': {
+        'action': {
+            'name': "start_recording"
+        }
+    }
+}
+
+s.sendall(packetize(json.dumps(register_action)))
+logging.debug(depacketize(receive_packet(s)[0]))
+
 logging.debug("Goodbye.")
