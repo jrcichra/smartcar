@@ -26,57 +26,68 @@ def isSupportedMode(mode):
     return mode in modes
 
 
-def handleAction(action, mode, read_queue):
+def handleAction(action, mode, read_queue, q):
     # check redis and make sure its actually an action that exists...if it doesn't a lot we'll need to look at queues or something...
+
     redis_action = rc.queryAction(action)
     if redis_action is None:
         logging.warn("Action: " + action +
-                     " does not exist (yet) in redis...cannot call action")
-    else:
-        # Validate the fields are there that we care about...mainly the container_id
-        try:
-            container_id = redis_action['container_id']
-            logging.debug("Found action: " + action)
-            logging.debug("Container who owns action is: " + container_id)
-            # check the mode they passed into this function: (parallel vs serial to start)
-            if not isSupportedMode(mode):
-                logging.error(
-                    "The mode passed in is not a supported mode!!! Treating as serial...")
-            # Do something for these modes, default to serial
+                     " does not exist (yet) in redis...cannot call action. Waiting on queue instead...")
+        # block on this queue until the action we are looking for is registered
+        while q.get() != action:
+            pass
+        # now check the db, if its not there then something is internally wrong
+        redis_action = rc.queryAction(action)
+        if redis_action is None:
+            logging.error(
+                "WTF, how can it not be there? We found the action in the 'just registered' queue")
 
-            # No matter what, we send something to the proper container
-            message = {
-                'type': "trigger-action",
-                'timestamp': time.time(),
-                'data': {
-                    'name': action
-                }
+    # Validate the fields are there that we care about...mainly the container_id
+    try:
+        container_id = redis_action['container_id']
+        logging.debug("Found action: " + action)
+        logging.debug("Container who owns action is: " + container_id)
+        # check the mode they passed into this function: (parallel vs serial to start)
+        if not isSupportedMode(mode):
+            logging.error(
+                "The mode passed in is not a supported mode!!! Treating as serial...")
+        # Do something for these modes, default to serial
+
+        # No matter what, we send something to the proper container
+        message = {
+            'type': "trigger-action",
+            'timestamp': time.time(),
+            'data': {
+                'name': action
             }
-            # Determine which socket we need to send this to and lock the sock!
-            try:
-                connection = connections[container_id]
-                write_lock = connection['write_lock']
-                socket = connection['socket']
-                read_queue = connection['read_queue']
-                with write_lock:
-                    # No matter the mode, we want to send something!
-                    socket.sendall(packetize(json.dumps(message)))
-                    if mode == "parallel":
-                        # Don't block per action, we don't care what the result is (yet)
-                        pass
-                    else:  # also serial
-                        # wait for a reply from the socket (this should block)
-                        response = read_queue.get()
-            except KeyError:
-                logging.error(
-                    "Not sure how, but this connection does not have a connection in the connection hash!")
-
+        }
+        # Determine which socket we need to send this to and lock the sock!
+        try:
+            connection = connections[container_id]
+            write_lock = connection['write_lock']
+            socket = connection['socket']
+            read_queue = connection['read_queue']
+            with write_lock:
+                # No matter the mode, we want to send something!
+                socket.sendall(packetize(json.dumps(message)))
+            if mode == "parallel":
+                # Don't block per action, we don't care what the result is (yet)
+                # The responses will go into the read_queue though, for later
+                return
+            else:  # if mode == "serial" or something else...
+                # wait for a reply from the socket that is a result from this request (this should block)
+                response = read_queue.get()
+                return response
         except KeyError:
-            logging.debug(
-                "Could not find a container_id in the redis action of " + action)
+            logging.error(
+                "Not sure how, but this connection does not have a connection in the connection hash!")
+
+    except KeyError:
+        logging.debug(
+            "Could not find a container_id in the redis action of " + action)
 
 
-def handleEvent(obj, rc, read_queue):
+def handleEvent(obj, rc, read_queue, q):
     # Internal error if we somehow don't go through the if or else
     response = {
         'type': "emit-event-error",
@@ -148,7 +159,7 @@ def handleEvent(obj, rc, read_queue):
                 logging.debug(
                     "Serial Action being called: " + str(action))
                 # Call that action and block until we get a response (block happens in the function)
-                handleAction(action, "serial", read_queue)
+                handleAction(action, "serial", read_queue, q)
         except KeyError:
             logging.debug(
                 "No serial found while parsing event: " + event_name)
@@ -159,7 +170,9 @@ def handleEvent(obj, rc, read_queue):
                         "Parallel Action being called: " + str(action))
                     # Call that action but don't block waiting for a response, instead, collect
                     # them outside of here (by draining the queue later)
-                    handleAction(action, "parallel", read_queue)
+                    # TODO this needs to become a thread per action so we don't block on missing actions
+                    # like we would on serial
+                    handleAction(action, "parallel", read_queue, q)
                 # For now, drain the queue here
                 logging.debug("Draining the parallel results:")
                 while not read_queue.empty():
@@ -201,16 +214,20 @@ def handle_container_message(client_socket, client_address, container_object, rc
     elif container_object['type'] == "register-event":
         response = rc.registerEvent(container_object)
     elif container_object['type'] == "register-action":
-        response = rc.registerAction(container_object)
+        response = rc.registerAction(container_object, events)
     elif container_object['type'] == "emit-event":
         # Events may block because they trigger a serial process, need to spawn a thread
         # There also needs to be an event id to prevent overlaps from occuring. This will go in the action packets to keep track what event this is for
         event_id = str(uuid.uuid4())
         # add our queue to the events hash with the key being the event_id
-        events[event_id] = queue.Queue()
+        events[event_id] = {
+            'name': container_object['data']['event'],
+            'read_queue': queue.Queue(),
+            'action_queue': queue.Queue()
+        }
         # Spawn that thread
         t = threading.Thread(target=handleEvent, args=(
-            container_object, rc, events[event_id]))
+            container_object, rc, events[event_id]['read_queue'], events[event_id]['action_queue']))
         t.start()
         response = {
             'type': "emit-event-response",

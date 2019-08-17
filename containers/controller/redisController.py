@@ -30,11 +30,11 @@ class redisController:
             try:
                 self.ignore_list.remove(listen)
             except ValueError:
-                logging.warning("listenEvent() recieved " + listen + ", which was not found in the ignore list. Not removing...")
+                logging.warning("listenEvent() recieved " + listen +
+                                ", which was not found in the ignore list. Not removing...")
         else:
             logging.error("listenEvent() received a non-string. Ignoring...")
 
-    
     def setConfig(self, path):
         with open(path, 'r') as f:
             config = yaml.safe_load(f)
@@ -204,7 +204,7 @@ class redisController:
             }
         return response
 
-    def registerAction(self, obj):
+    def registerAction(self, obj, events):
         # Internal error if we somehow don't go through the if or else
         response = {
             'type': "register-action-error",
@@ -249,7 +249,11 @@ class redisController:
             self.db.jsonset("action_" + str(action_name),
                             Path.rootPath(), robj)
 
-            # Append yourself to the proper container's event list
+            # Tell the events waiting for your registration that you're ready, stop blocking!
+            # loop through every event that is currently happening and tell them an action that was registered
+            # they should be programmed to ignore any action that does not match what they're looking for
+            for event in events:
+                event['action_queue'].put(action_name)
 
             robj = {
                 'name': action_name,
@@ -258,6 +262,8 @@ class redisController:
 
             self.db.jsonarrappend(
                 "container_" + str(container_id), Path('.actions'), robj)
+
+            # Look in the current event list for any blocked event that is looking for this action
 
             # Build a response
             response = {
@@ -270,13 +276,13 @@ class redisController:
             }
         return response
 
-    def queryEvent(self,s):
+    def queryEvent(self, s):
         return self.db.jsonget("event_" + str(s))
 
-    def queryAction(self,s):
+    def queryAction(self, s):
         return self.db.jsonget("action_" + str(s))
 
-    def queryContainer(self,s):
+    def queryContainer(self, s):
         return self.db.jsonget("container_" + str(s))
 
     def dump(self, container_id):
