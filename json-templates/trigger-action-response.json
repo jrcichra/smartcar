@@ -1,13 +1,12 @@
 {
-    "type": "trigger-action",
+    "type": "trigger-action-response",
     "timestamp": "epochhere",
     "event_id": "uuid4",
     "data": {
         "action": {
             "name": "turn_off_pi",
-            "payload": {
-
-            }
+            "status": 0,
+            "message": "OK"
         }
     }
 }
