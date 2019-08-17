@@ -255,7 +255,7 @@ class redisController:
             for event in events:
                 logging.debug("Inside registerAction() - sending action: " +
                               action_name + " into the queue for event: " + str(event))
-                event['action_queue'].put(action_name)
+                events[event]['action_queue'].put(action_name)
 
             robj = {
                 'name': action_name,
