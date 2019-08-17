@@ -5,7 +5,7 @@ import json
 import logging
 
 logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s:%(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
+                    format='%(asctime)s.%(msecs)d:%(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
 
 s = socket.socket()
 s.connect(("controller", 8080))
