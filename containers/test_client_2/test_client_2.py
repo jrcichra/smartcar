@@ -64,7 +64,7 @@ register_action = {
     'container_id': socket.gethostname(),
     'data': {
         'action': {
-            'name': "start_recording"
+            'name': "stop_recording"
         }
     }
 }
