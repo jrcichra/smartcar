@@ -253,6 +253,8 @@ class redisController:
             # loop through every event that is currently happening and tell them an action that was registered
             # they should be programmed to ignore any action that does not match what they're looking for
             for event in events:
+                logging.debug("Inside registerAction() - sending action: " +
+                              action_name + " into the queue for event: " + event)
                 event['action_queue'].put(action_name)
 
             robj = {
