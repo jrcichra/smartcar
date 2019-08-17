@@ -6,6 +6,8 @@ from datetime import datetime
 from redisController import redisController
 from networking import *
 import time
+import queue
+import uuid
 
 DB_HOST = "redis"
 DB_PORT = 6379
@@ -14,9 +16,171 @@ CONTROLLER_PORT = 8080
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s:%(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
 
+modes = ["serial", "parallel"]
+# Thread independent hash of container ids and a socket, so we can send stuff.
+# I am using thread locks instead of another thread + a queue, much nicer :-)
+connections = {}
 
-def handle_container_message(client_socket, client_address, container_object, rc):
+
+def isSupportedMode(mode):
+    return mode in modes
+
+
+def handleAction(action, mode, read_queue):
+    # check redis and make sure its actually an action that exists...if it doesn't a lot we'll need to look at queues or something...
+    redis_action = rc.getAction(action)
+    if redis_action is None:
+        logging.warn("Action: " + action +
+                     " does not exist (yet) in redis...cannot call action")
+    else:
+        # Validate the fields are there that we care about...mainly the container_id
+        try:
+            container_id = redis_action['container_id']
+            logging.debug("Found action: " + action)
+            logging.debug("Container who owns action is: " + container_id)
+            # check the mode they passed into this function: (parallel vs serial to start)
+            if not isSupportedMode(mode):
+                logging.error(
+                    "The mode passed in is not a supported mode!!! Treating as serial...")
+            # Do something for these modes, default to serial
+
+            # No matter what, we send something to the proper container
+            message = {
+                'type': "trigger-action",
+                'timestamp': time.time(),
+                'data': {
+                    'name': action
+                }
+            }
+            # Determine which socket we need to send this to and lock the sock!
+            try:
+                connection = connections[container_id]
+                write_lock = connection['write_lock']
+                socket = connection['socket']
+                read_queue = connection['read_queue']
+                with write_lock:
+                    # No matter the mode, we want to send something!
+                    socket.sendall(packetize(json.dumps(message)))
+                    if mode == "parallel":
+                        # Don't block per action, we don't care what the result is (yet)
+                        pass
+                    else:  # also serial
+                        # wait for a reply from the socket (this should block)
+                        response = read_queue.get()
+            except KeyError:
+                logging.error(
+                    "Not sure how, but this connection does not have a connection in the connection hash!")
+
+        except KeyError:
+            logging.debug(
+                "Could not find a container_id in the redis action of " + action)
+
+
+def handleEvent(self, obj, rc, read_queue):
+    # Internal error if we somehow don't go through the if or else
+    response = {
+        'type': "emit-event-error",
+        'timestamp': time.time(),
+        'data': {
+                'message': "Internal emit-event error",
+                'status': 506
+        }
+    }
+    # Grab the timestamp in the packet
+    timestamp = obj['timestamp']
+    # Go the event being handled
+    event = obj['data']['event']
+    # Pull out the valuable attributes from this layer
+    event_name = event['name']
+    # There may or may not be a payload per event, we should pass it if it exists..., for now don't worry
+    # event_payload = event['payload']
+
+    container_id = obj['container_id']
+    # Query out the actions that take place because of this event
+    redis_event = rc.queryEvent(event_name)
+    logging.debug(
+        "Checking for an existing event returned: " + str(json.dumps(redis_event)))
+    redis_parsed = {}
+
+    # Verify the container who emitted this event is the one who registered it
+    if redis_event is None:
+        response['data']['message'] = "Cannot emit an event which does not exist"
+        response['data']['status'] = 508
+    elif container_id != redis_event['container_id']:
+        response['data']['message'] = "container_id of request did not match container_id of registered event"
+        response['data']['status'] = 507
+    else:
+        # Handle the ignore
+        try:
+            ignore = redis_event['ignore']
+            if isinstance(ignore, str):
+                rc.ignoreEvent(ignore)
+            elif isinstance(ignore, list):
+                for i in ignore:
+                    rc.ignoreEvent(ignore)
+            else:
+                logging.error("Could not handle ignore for event: " +
+                              event_name + ". Not string or list!!!")
+        except KeyError:
+            logging.debug(
+                "No ignore found while parsing event: " + event_name)
+        try:
+            listen = redis_event['listen']
+            if isinstance(listen, str):
+                self.listenEvent(listen)
+            elif isinstance(listen, list):
+                for l in listen:
+                    self.listenEvent(l)
+        except KeyError:
+            logging.debug(
+                "No listen found while parsing event: " + event_name)
+        try:
+            # We use this later when doing a serial execution
+            brk = redis_event['break']
+        except KeyError:
+            logging.debug(
+                "No break found while parsing event: " + event_name)
+        # You need either a serial or parallel. No support for both yet
+        try:
+            serial = redis_event['serial']
+            # For every serial action
+            for action in serial:
+                logging.debug(
+                    "Serial Action being called: " + str(action))
+                # Call that action and block until we get a response (block happens in the function)
+                handleAction(action, "serial", read_queue)
+        except KeyError:
+            logging.debug(
+                "No serial found while parsing event: " + event_name)
+            try:
+                parallel = redis_event['parallel']
+                for action in parallel:
+                    logging.debug(
+                        "Parallel Action being called: " + str(action))
+                    # Call that action but don't block waiting for a response, instead, collect
+                    # them outside of here (by draining the queue later)
+                    handleAction(action, "parallel", read_queue)
+                # For now, drain the queue here
+                logging.debug("Draining the parallel results:")
+                while not read_queue.empty():
+                    logging.debug(read_queue.get())
+            except KeyError:
+                logging.debug(
+                    "No parallel found while parsing event: " + event_name)
+        response = {
+            'type': "emit-event-response",
+            'timestamp': time.time(),
+            'data': {
+                'message': "OK",
+                'status': 0
+            }
+        }
+    return response
+
+
+def handle_container_message(client_socket, client_address, container_object, rc, connection, events):
     # This function makes the appropriate calls to other functions based on the context of the packet
+
     # Make a generic response object in case something goes wrong where we don't hit anything else
     response = {
         'type': "generic-error-response",
@@ -28,13 +192,48 @@ def handle_container_message(client_socket, client_address, container_object, rc
     }
 
     if container_object['type'] == "register-container":
-        response = rc.registerContainer(container_object)
+        response, rc.registerContainer(container_object)
+        if response['data']['status'] == 0:
+            # If we got a good register container response, add it to the list of lock n socks...
+            # We'll likely be communicating with it soon and we need to lock the sock!
+            container_id = container_object['container_id']
+            connections[container_id] = connection
     elif container_object['type'] == "register-event":
         response = rc.registerEvent(container_object)
     elif container_object['type'] == "register-action":
         response = rc.registerAction(container_object)
     elif container_object['type'] == "emit-event":
-        response = rc.handleEvent(container_object)
+        # Events may block because they trigger a serial process, need to spawn a thread
+        # There also needs to be an event id to prevent overlaps from occuring. This will go in the action packets to keep track what event this is for
+        event_id = str(uuid.uuid4())
+        # add our queue to the events hash with the key being the event_id
+        events[event_id] = queue.Queue()
+        # Spawn that thread
+        threading.Thread(target=handleEvent, args=(
+            container_object, rc, events[event_id]))
+        t.start()
+        response = {
+            'type': "emit-event-response",
+            'timestamp': time.time(),
+            'data': {
+                'message': "OK",
+                'status': 0
+            }
+        }
+        #handleEvent(container_object, rc, read_queue)
+    elif container_object['type'] == "trigger-action-response":
+        # We know that an emit-event thread is listening for this response. We'll put this in their queue so it unblocks
+        # Figure out who this owns to based on the data
+        try:
+            # Read what event_id this is
+            event_id = container_object['event_id']
+            # Pull the queue for this event id
+            q = events[event_id]
+            # Send what we got to the proper queue, which should unblock that event process
+            q.put(container_object)
+        except KeyError:
+            logging.error(
+                "We're missing the event id, can't determine which queue is blocked / waiting for this")
     else:
         response = {
             'type': container_object['type'] + "-error",
@@ -51,11 +250,21 @@ def serve_container(client_socket, client_address, rc):
     try:
         # We have a client and they've connected to us
         connected = True
+        # Create locks for this container
+        connection = {
+            'socket': client_socket,
+            'write_lock': threading.Lock()
+        }
+        # Hash of current events and their queues because we could be handling
+        # multiple events at similar times, ones blocked, one's not, yikes! This is insane
+        events = {}
+
         # While they are here...
         while connected:
             # Block until we get a packet from them
             logging.debug("Blocking for " + client_address +
                           " waiting to receive a packet...")
+            # This is the only place we read a packet, so no lock is needed.
             raw_packet, err = receive_packet(client_socket)
             # See if they left
             if(err):
@@ -69,9 +278,11 @@ def serve_container(client_socket, client_address, rc):
             logging.debug(container_object)
             logging.debug("Handling JSON for " + client_address)
             response = handle_container_message(
-                client_socket, client_address, container_object, rc)
-            # Now we can send the response back
-            client_socket.sendall(packetize(json.dumps(response)))
+                client_socket, client_address, container_object, rc, connection, events)
+            # Now we can send the response back, if there is something
+            if response is not None:
+                with connection['write_lock']:
+                    client_socket.sendall(packetize(json.dumps(response)))
     except socket.timeout:
         logging.debug("Lost connection to " + client_address)
         client_socket.close()

@@ -16,31 +16,6 @@ class redisController:
                       str(hostname) + " on port: " + str(port) + ".")
         self.db = Client(host=hostname, port=port, decode_responses=True)
         self.ignore_list = []  # List of ignored events at any point, also handles listens
-        self.modes = ["serial","parallel"]
-
-    def isSupportedMode(self,mode):
-        return mode in self.modes
-
-    def triggerAction(self,action,mode):
-        # check redis and make sure its actually an action that exists...if it doesn't a lot we'll need to look at queues or something...
-        redis_action = self.db.jsonget(
-            "action_" + str(action))
-        if redis_action is None:
-            logging.warn("Action: " + action + " does not exist (yet) in redis...cannot call action")
-        else:
-            #Validate the fields are there that we care about...mainly the container_id
-            try:
-                container_id = redis_action['container_id']
-                logging.debug("Found action: " + action)
-                logging.debug("Container who owns action is: " + container_id)
-                #check the mode they passed into this function: (parallel vs serial to start)
-                if not isSupportedMode(mode):
-                    logging.error("The mode passed in is not a supported mode!!! Treating as serial...")
-                    mode = "serial"
-                
-            except KeyError:
-                logging.debug("Could not find a container_id for the redis action of " + action)
-            
 
     def ignoreEvent(self, ignore):
         # ignore should be a string
@@ -59,103 +34,7 @@ class redisController:
         else:
             logging.error("listenEvent() received a non-string. Ignoring...")
 
-    def handleEvent(self, obj):
-        # Internal error if we somehow don't go through the if or else
-        response = {
-            'type': "emit-event-error",
-            'timestamp': time.time(),
-            'data': {
-                    'message': "Internal emit-event error",
-                    'status': 506
-            }
-        }
-       # Grab the timestamp in the packet
-        timestamp = obj['timestamp']
-        # Go the event being handled
-        event = obj['data']['event']
-        # Pull out the valuable attributes from this layer
-        event_name = event['name']
-        # There may or may not be a payload per event, we should pass it if it exists..., for now don't worry
-        #event_payload = event['payload']
-
-        container_id = obj['container_id']
-        # Query out the actions that take place because of this event
-        redis_event = self.db.jsonget(
-            "event_" + str(event_name))
-        logging.debug(
-                "Checking for an existing event returned: " + str(json.dumps(redis_event)))
-        redis_parsed = {}
-
-        # Verify the container who emitted this event is the one who registered it
-        if redis_event is None:
-            response['data']['message'] = "Cannot emit an event which does not exist"
-            response['data']['status'] = 508
-        elif container_id != redis_event['container_id']:
-            response['data']['message'] = "container_id of request did not match container_id of registered event"
-            response['data']['status'] = 507
-        else:
-            # Handle the ignore
-            try:
-                ignore = redis_event['ignore']
-                if isinstance(ignore, str):
-                    self.ignoreEvent(ignore)
-                elif isinstance(ignore, list):
-                    for i in ignore:
-                        self.ignoreEvent(ignore)
-                else:
-                    logging.error("Could not handle ignore for event: " +
-                                  event_name + ". Not string or list!!!")
-            except KeyError:
-                logging.debug(
-                    "No ignore found while parsing event: " + event_name)
-            try:
-                listen = redis_event['listen']
-                if isinstance(listen, str):
-                    self.listenEvent(listen)
-                elif isinstance(listen, list):
-                    for l in listen:
-                        self.listenEvent(l)
-            except KeyError:
-                logging.debug(
-                    "No listen found while parsing event: " + event_name)
-            try:
-                # We use this later when doing a serial execution
-                brk = redis_event['break']
-            except KeyError:
-                logging.debug(
-                    "No break found while parsing event: " + event_name)
-            # You need either a serial or parallel. No support for both yet
-            try:
-                serial = redis_event['serial']
-                # For every serial action
-                for action in serial:
-                    logging.debug(
-                        "Serial Action that would be called: " + str(action))
-                    # Call that action and block until we get a response
-                    # callSerialAction(action)
-                    # At the end of every call, check if we got the break event, and break the loop
-                    # if gotBreak(brk):
-                    #  break
-            except KeyError:
-                logging.debug(
-                    "No serial found while parsing event: " + event_name)
-                try:
-                    parallel = redis_event['parallel']
-                    for action in parallel:
-                        logging.debug(
-                            "Parallel Action that would be called: " + str(action))
-                except KeyError:
-                    logging.debug(
-                        "No parallel found while parsing event: " + event_name)
-            response = {
-                'type': "emit-event-response",
-                'timestamp': time.time(),
-                'data': {
-                    'message': "OK",
-                    'status': 0
-                }
-            }
-        return response
+    
     def setConfig(self, path):
         with open(path, 'r') as f:
             config = yaml.safe_load(f)
@@ -390,6 +269,15 @@ class redisController:
                 }
             }
         return response
+
+    def queryEvent(self,s):
+        return self.db.jsonget("event_" + str(s))
+
+    def queryAction(self,s):
+        return self.db.jsonget("action_" + str(s))
+
+    def queryContainer(self,s):
+        return self.db.jsonget("container_" + str(s))
 
     def dump(self, container_id):
         s = self.db.jsonget(container_id)
