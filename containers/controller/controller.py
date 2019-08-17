@@ -14,7 +14,7 @@ DB_PORT = 6379
 CONTROLLER_PORT = 8080
 
 logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s.%(msecs)d:%(thread)d:%(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
+                    format='%(asctime)s.%(msecs)d:LINE %(lineno)d:TID %(thread)d:%(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
 
 modes = ["serial", "parallel"]
 # Thread independent hash of container ids and a socket, so we can send stuff.
