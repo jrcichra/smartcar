@@ -54,3 +54,7 @@ emit_event = {
 
 s.sendall(packetize(json.dumps(emit_event)))
 logging.debug(depacketize(receive_packet(s)[0]))
+
+logging.debug("Sleeping 20...")
+time.sleep(20)
+logging.debug("Goodbye.")
