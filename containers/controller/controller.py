@@ -76,7 +76,7 @@ def handleAction(action, mode, read_queue):
                 "Could not find a container_id in the redis action of " + action)
 
 
-def handleEvent(self, obj, rc, read_queue):
+def handleEvent(obj, rc, read_queue):
     # Internal error if we somehow don't go through the if or else
     response = {
         'type': "emit-event-error",
@@ -127,10 +127,10 @@ def handleEvent(self, obj, rc, read_queue):
         try:
             listen = redis_event['listen']
             if isinstance(listen, str):
-                self.listenEvent(listen)
+                listenEvent(listen)
             elif isinstance(listen, list):
                 for l in listen:
-                    self.listenEvent(l)
+                    listenEvent(l)
         except KeyError:
             logging.debug(
                 "No listen found while parsing event: " + event_name)
