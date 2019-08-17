@@ -209,7 +209,7 @@ def handle_container_message(client_socket, client_address, container_object, rc
         # add our queue to the events hash with the key being the event_id
         events[event_id] = queue.Queue()
         # Spawn that thread
-        threading.Thread(target=handleEvent, args=(
+        t = threading.Thread(target=handleEvent, args=(
             container_object, rc, events[event_id]))
         t.start()
         response = {
