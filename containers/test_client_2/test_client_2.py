@@ -72,4 +72,9 @@ register_action = {
 s.sendall(packetize(json.dumps(register_action)))
 logging.debug(depacketize(receive_packet(s)[0]))
 
+logging.debug(
+    "Phase 5 - Dump all packets that come my way, waiting for action requests...")
+while True:
+    logging.debug(depacketize(receive_packet(s)[0]))
+
 logging.debug("Goodbye.")

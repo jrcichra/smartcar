@@ -138,4 +138,9 @@ emit_event = {
 s.sendall(packetize(json.dumps(emit_event)))
 logging.debug(depacketize(receive_packet(s)[0]))
 
+logging.debug(
+    "Phase 9 - Dump all packets that come my way, waiting for action requests...")
+while True:
+    logging.debug(depacketize(receive_packet(s)[0]))
+
 logging.debug("Goodbye.")
