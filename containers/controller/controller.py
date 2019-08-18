@@ -274,7 +274,8 @@ def serve_container(client_socket, client_address, rc):
         # Create locks for this container
         connection = {
             'socket': client_socket,
-            'write_lock': threading.Lock()
+            'write_lock': threading.Lock(),
+            'read_queue': queue.Queue()
         }
         # Hash of current events and their queues because we could be handling
         # multiple events at similar times, ones blocked, one's not, yikes! This is insane
