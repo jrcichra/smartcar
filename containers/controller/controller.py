@@ -67,6 +67,7 @@ def handleAction(action, mode, read_queue, q):
         try:
             logging.debug(
                 "Dumping all things in the 'connections' structure...")
+            global connections
             logging.debug(connections)
             connection = connections[container_id]
             write_lock = connection['write_lock']
