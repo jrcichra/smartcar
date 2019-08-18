@@ -80,11 +80,12 @@ def handleAction(action, mode, read_queue, q):
                 # wait for a reply from the socket that is a result from this request (this should block)
                 response = read_queue.get()
                 return response
-        except KeyError:
+        except KeyError as e:
+            logging.debug(e)
             logging.error(
                 "Not sure how, but this connection does not have a connection in the connection hash!")
 
-    except KeyError:
+    except KeyError as e:
         logging.debug(
             "Could not find a container_id in the redis action of " + action)
 
@@ -134,7 +135,7 @@ def handleEvent(obj, rc, read_queue, q):
             else:
                 logging.error("Could not handle ignore for event: " +
                               event_name + ". Not string or list!!!")
-        except KeyError:
+        except KeyError as e:
             logging.debug(
                 "No ignore found while parsing event: " + event_name)
         try:
@@ -144,13 +145,13 @@ def handleEvent(obj, rc, read_queue, q):
             elif isinstance(listen, list):
                 for l in listen:
                     rc.listenEvent(l)
-        except KeyError:
+        except KeyError as e:
             logging.debug(
                 "No listen found while parsing event: " + event_name)
         try:
             # We use this later when doing a serial execution
             brk = redis_event['break']
-        except KeyError:
+        except KeyError as e:
             logging.debug(
                 "No break found while parsing event: " + event_name)
         # You need either a serial or parallel. No support for both yet
@@ -162,7 +163,7 @@ def handleEvent(obj, rc, read_queue, q):
                     "Serial Action being called: " + str(action))
                 # Call that action and block until we get a response (block happens in the function)
                 handleAction(action, "serial", read_queue, q)
-        except KeyError:
+        except KeyError as e:
             logging.debug(
                 "No serial found while parsing event: " + event_name)
             try:
@@ -179,7 +180,7 @@ def handleEvent(obj, rc, read_queue, q):
                 logging.debug("Draining the parallel results:")
                 while not read_queue.empty():
                     logging.debug(read_queue.get())
-            except KeyError:
+            except KeyError as e:
                 logging.debug(
                     "No parallel found while parsing event: " + event_name)
         response = {
@@ -252,7 +253,7 @@ def handle_container_message(client_socket, client_address, container_object, rc
             q.put(container_object)
             # No response needed since this is a response
             return
-        except KeyError:
+        except KeyError as e:
             logging.error(
                 "We're missing the event id, can't determine which queue is blocked / waiting for this")
     else:
