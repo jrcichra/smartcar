@@ -216,9 +216,14 @@ def handle_container_message(client_socket, client_address, container_object, rc
         if response['data']['status'] == 0:
             # If we got a good register container response, add it to the list of lock n socks...
             # We'll likely be communicating with it soon and we need to lock the sock!
-            container_id = container_object['container_id']
-            global connections
-            connections[container_id] = connection
+            try:
+                container_id = container_object['data']['container']['id']
+                global connections
+                connections[container_id] = connection
+            except KeyError as e:
+                logging.error(e)
+                logging.error(
+                    "KeyError when trying to add connection to the global connection list")
     elif container_object['type'] == "register-event":
         response = rc.registerEvent(container_object)
     elif container_object['type'] == "register-action":
