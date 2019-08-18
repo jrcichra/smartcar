@@ -212,7 +212,7 @@ def handle_container_message(client_socket, client_address, container_object, rc
     }
 
     if container_object['type'] == "register-container":
-        response, rc.registerContainer(container_object)
+        response = rc.registerContainer(container_object)
         if response['data']['status'] == 0:
             # If we got a good register container response, add it to the list of lock n socks...
             # We'll likely be communicating with it soon and we need to lock the sock!
