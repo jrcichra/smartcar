@@ -3,8 +3,7 @@
     "timestamp": "epochhere",
     "data": {
         "container": {
-            "name": "gpio",
-            "id": "asdf453jsdf"
+            "container_id": "asdf453jsdf"
         }
     }
 }
