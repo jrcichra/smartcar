@@ -65,6 +65,9 @@ def handleAction(action, mode, read_queue, q):
         }
         # Determine which socket we need to send this to and lock the sock!
         try:
+            logging.debug(
+                "Dumping all things in the 'connections' structure...")
+            logging.debug(connections)
             connection = connections[container_id]
             write_lock = connection['write_lock']
             socket = connection['socket']
