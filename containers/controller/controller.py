@@ -217,6 +217,7 @@ def handle_container_message(client_socket, client_address, container_object, rc
             # If we got a good register container response, add it to the list of lock n socks...
             # We'll likely be communicating with it soon and we need to lock the sock!
             container_id = container_object['container_id']
+            global connections
             connections[container_id] = connection
     elif container_object['type'] == "register-event":
         response = rc.registerEvent(container_object)
