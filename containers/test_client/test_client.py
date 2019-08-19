@@ -141,6 +141,22 @@ logging.debug(depacketize(receive_packet(s)[0]))
 logging.debug(
     "Phase 9 - Dump all packets that come my way, waiting for action requests...")
 while True:
-    logging.debug(depacketize(receive_packet(s)[0]))
-
+    obj = depacketize(receive_packet(s)[0])
+    logging.debug(obj)
+    # Pretend to take some time doing stuff with your action...
+    time.sleep(5)
+    # Send a response back using the same action name we saw come in
+    action_response = {
+        "type": "trigger-action-response",
+        "timestamp": "epochhere",
+        "event_id": "uuid4",
+        "data": {
+            "action": {
+                "name": obj['data']['action']['name'],
+                "status": 0,
+                "message": "OK"
+            }
+        }
+    }
+    s.sendall(packetize(json.dumps(action_response)))
 logging.debug("Goodbye.")
