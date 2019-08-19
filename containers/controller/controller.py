@@ -82,7 +82,12 @@ def handleAction(action, mode, read_queue, q):
                 return
             else:  # if mode == "serial" or something else...
                 # wait for a reply from the socket that is a result from this request (this should block)
+                logging.debug(
+                    "We're in serial mode, waiting on the queue for a response back from the action...")
                 response = read_queue.get()
+                logging.debug(
+                    "We got a response back! Let's keep going...Response=")
+                logging.debug(response)
                 return response
         except KeyError as e:
             logging.debug(e)
@@ -162,6 +167,9 @@ def handleEvent(obj, rc, read_queue, q):
         try:
             serial = redis_event['serial']
             # For every serial action
+            logging.debug(
+                "Here are all the serial things I am going to call as part of this event:")
+            logging.debug(serial)
             for action in serial:
                 logging.debug(
                     "Serial Action being called: " + str(action))
@@ -172,6 +180,9 @@ def handleEvent(obj, rc, read_queue, q):
                 "No serial found while parsing event: " + event_name)
             try:
                 parallel = redis_event['parallel']
+                logging.debug(
+                    "Here are all the parallel things I am going to call as part of this event:")
+                logging.debug(parallel)
                 for action in parallel:
                     logging.debug(
                         "Parallel Action being called: " + str(action))
@@ -260,6 +271,9 @@ def handle_container_message(client_socket, client_address, container_object, rc
             # Pull the queue for this event id
             q = events[event_id]
             # Send what we got to the proper queue, which should unblock that event process
+            logging.debug("We got an action response back:")
+            logging.debug(container_object)
+            logging.debug("Adding to the queue for the respective event id...")
             q.put(container_object)
             # No response needed since this is a response
             return
