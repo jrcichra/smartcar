@@ -158,5 +158,7 @@ while True:
             }
         }
     }
+    logging.debug(
+        "I am sending an action response since I 'handled' this action...")
     s.sendall(packetize(json.dumps(action_response)))
 logging.debug("Goodbye.")
