@@ -149,7 +149,7 @@ while True:
     action_response = {
         "type": "trigger-action-response",
         "timestamp": "epochhere",
-        "event_id": obj['event_id'],
+        "event_id": json.loads(obj)['event_id'],
         "data": {
             "action": {
                 "name": obj['data']['action']['name'],
