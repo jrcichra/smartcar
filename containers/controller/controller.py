@@ -26,7 +26,7 @@ def isSupportedMode(mode):
     return mode in modes
 
 
-def handleAction(action, mode, read_queue, q):
+def handleAction(action, mode, read_queue, q, event_id):
     # check redis and make sure its actually an action that exists...if it doesn't a lot we'll need to look at queues or something...
 
     redis_action = rc.queryAction(action)
@@ -99,7 +99,7 @@ def handleAction(action, mode, read_queue, q):
             "Could not find a container_id in the redis action of " + action)
 
 
-def handleEvent(obj, rc, read_queue, q):
+def handleEvent(obj, rc, read_queue, q, event_id):
     # Internal error if we somehow don't go through the if or else
     response = {
         'type': "emit-event-error",
@@ -174,7 +174,7 @@ def handleEvent(obj, rc, read_queue, q):
                 logging.debug(
                     "Serial Action being called: " + str(action))
                 # Call that action and block until we get a response (block happens in the function)
-                handleAction(action, "serial", read_queue, q)
+                handleAction(action, "serial", read_queue, q, event_id)
         except KeyError as e:
             logging.debug(
                 "No serial found while parsing event: " + event_name)
@@ -190,7 +190,7 @@ def handleEvent(obj, rc, read_queue, q):
                     # them outside of here (by draining the queue later)
                     # TODO this needs to become a thread per action so we don't block on missing actions
                     # like we would on serial
-                    handleAction(action, "parallel", read_queue, q)
+                    handleAction(action, "parallel", read_queue, q, event_id)
                 # For now, drain the queue here
                 logging.debug("Draining the parallel results:")
                 while not read_queue.empty():
@@ -251,7 +251,7 @@ def handle_container_message(client_socket, client_address, container_object, rc
         }
         # Spawn that thread
         t = threading.Thread(target=handleEvent, args=(
-            container_object, rc, events[event_id]['read_queue'], events[event_id]['action_queue']))
+            container_object, rc, events[event_id]['read_queue'], events[event_id]['action_queue'], event_id))
         t.start()
         response = {
             'type': "emit-event-response",
