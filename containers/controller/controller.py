@@ -58,6 +58,7 @@ def handleAction(action, mode, read_queue, q, event_id):
         # No matter what, we send something to the proper container
         message = {
             'type': "trigger-action",
+            'event_id': event_id,
             'timestamp': time.time(),
             'data': {
                 'name': action
