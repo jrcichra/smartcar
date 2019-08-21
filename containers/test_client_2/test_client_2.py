@@ -86,7 +86,7 @@ while True:
         "event_id": json.loads(obj)['event_id'],
         "data": {
             "action": {
-                "name": obj['data']['action']['name'],
+                "name": json.loads(obj['data']['name']),
                 "status": 0,
                 "message": "OK"
             }
