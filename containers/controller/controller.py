@@ -73,7 +73,7 @@ def handleAction(action, mode, read_queue, q, event_id):
             connection = connections[container_id]
             write_lock = connection['write_lock']
             socket = connection['socket']
-            read_queue = connection['read_queue']
+            #read_queue = connection['read_queue']
             with write_lock:
                 # No matter the mode, we want to send something!
                 socket.sendall(packetize(json.dumps(message)))
@@ -304,8 +304,8 @@ def serve_container(client_socket, client_address, rc):
         # Create locks for this container
         connection = {
             'socket': client_socket,
-            'write_lock': threading.Lock(),
-            'read_queue': queue.Queue()
+            'write_lock': threading.Lock()  # ,
+            # 'read_queue': queue.Queue()
         }
         # Hash of current events and their queues because we could be handling
         # multiple events at similar times, ones blocked, one's not, yikes! This is insane
