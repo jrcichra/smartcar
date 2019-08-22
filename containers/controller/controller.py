@@ -270,7 +270,7 @@ def handle_container_message(client_socket, client_address, container_object, rc
             # Read what event_id this is
             event_id = container_object['event_id']
             # Pull the queue for this event id
-            q = events[event_id]
+            q = events[event_id]['read_queue']
             # Send what we got to the proper queue, which should unblock that event process
             logging.debug("We got an action response back:")
             logging.debug(container_object)
