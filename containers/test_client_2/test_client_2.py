@@ -77,22 +77,24 @@ logging.debug(
 while True:
     obj = depacketize(receive_packet(s)[0])
     logging.debug(obj)
-    # Pretend to take some time doing stuff with your action...
-    time.sleep(5)
-    # Send a response back using the same action name we saw come in
-    action_response = {
-        "type": "trigger-action-response",
-        "timestamp": "epochhere",
-        "event_id": json.loads(obj)['event_id'],
-        "data": {
-            "action": {
-                "name": json.loads(obj)['data']['name'],
-                "status": 0,
-                "message": "OK"
+    # make sure its what we expect before we do a response...
+    if json.loads(obj)['type'] == "trigger-action":
+        # Pretend to take some time doing stuff with your action...
+        time.sleep(5)
+        # Send a response back using the same action name we saw come in
+        action_response = {
+            "type": "trigger-action-response",
+            "timestamp": "epochhere",
+            "event_id": json.loads(obj)['event_id'],
+            "data": {
+                "action": {
+                    "name": json.loads(obj)['data']['name'],
+                    "status": 0,
+                    "message": "OK"
+                }
             }
         }
-    }
-    logging.debug(
-        "I am sending an action response since I 'handled' this action...")
-    s.sendall(packetize(json.dumps(action_response)))
+        logging.debug(
+            "I am sending an action response since I 'handled' this action...")
+        s.sendall(packetize(json.dumps(action_response)))
 logging.debug("Goodbye.")

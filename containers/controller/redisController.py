@@ -269,7 +269,7 @@ class redisController:
 
             # Build a response
             response = {
-                'type': "register-event-response",
+                'type': "register-action-response",
                 'timestamp': time.time(),
                 'data': {
                     'message': "OK",
