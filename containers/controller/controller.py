@@ -85,6 +85,8 @@ def handleAction(action, mode, read_queue, q, event_id):
                 # wait for a reply from the socket that is a result from this request (this should block)
                 logging.debug(
                     "We're in serial mode, waiting on the queue for a response back from the action...")
+                logging.debug("Dumping Queue:")
+                logging.debug(read_queue)
                 response = read_queue.get()
                 logging.debug(
                     "We got a response back! Let's keep going...Response=")
@@ -275,6 +277,8 @@ def handle_container_message(client_socket, client_address, container_object, rc
             logging.debug("We got an action response back:")
             logging.debug(container_object)
             logging.debug("Adding to the queue for the respective event id...")
+            logging.debug("Queue object:")
+            logging.debug(q)
             q.put(container_object)
             # No response needed since this is a response
             return
