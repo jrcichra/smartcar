@@ -191,9 +191,8 @@ def handleEvent(obj, rc, read_queue, q, event_id):
                         "Parallel Action being called: " + str(action))
                     # Call that action but don't block waiting for a response, instead, collect
                     # them outside of here (by draining the queue later)
-                    # TODO this needs to become a thread per action so we don't block on missing actions
-                    # like we would on serial
-                    handleAction(action, "parallel", read_queue, q, event_id)
+                    t = threading.Thread(target=handleAction, args=(action, "parallel", read_queue,q,event_id))
+                    t.start()
                 # For now, drain the queue here
                 logging.debug("Draining the parallel results:")
                 while not read_queue.empty():
