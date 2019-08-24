@@ -293,3 +293,6 @@ class redisController:
         if s is not None:
             obj = json.loads(s)
         return obj
+
+    def isIgnored(self, event):
+        return event in self.ignore_list

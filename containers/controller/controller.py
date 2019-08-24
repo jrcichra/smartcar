@@ -136,7 +136,7 @@ def handleEvent(obj, rc, read_queue, q, event_id):
         response['data']['message'] = "container_id of request did not match container_id of registered event"
         response['data']['status'] = 507
     else:
-        # Handle the ignore
+        # Insert the ignore if there is one
         try:
             ignore = redis_event['ignore']
             if isinstance(ignore, str):
@@ -150,6 +150,7 @@ def handleEvent(obj, rc, read_queue, q, event_id):
         except KeyError as e:
             logging.debug(
                 "No ignore found while parsing event: " + event_name)
+        # Remove any ignore specified by the listen
         try:
             listen = redis_event['listen']
             if isinstance(listen, str):
@@ -160,6 +161,7 @@ def handleEvent(obj, rc, read_queue, q, event_id):
         except KeyError as e:
             logging.debug(
                 "No listen found while parsing event: " + event_name)
+        # Register something that would break a serial execution
         try:
             # We use this later when doing a serial execution
             brk = redis_event['break']
@@ -210,8 +212,44 @@ def handleEvent(obj, rc, read_queue, q, event_id):
         }
     return response
 
+def initalizeEvent(events, container_object,rc):
 
-def handle_container_message(client_socket, client_address, container_object, rc, connection, events):
+    #see if we should even handle this event or if it's on the ignore list:
+    if rc.isIgnored(container_object['data']['event']):
+        logging.info("This event is currently set to be ignored. Not proceeding with the event transmission...")
+        response = {
+            'type': "emit-event-response",
+            'timestamp': time.time(),
+            'data': {
+                'message': "SKIPPED",
+                'status': 1
+            }
+        }
+    else:
+        # Events may block because they trigger a serial process, need to spawn a thread
+        # There also needs to be an event id to prevent overlaps from occuring. This will go in the action packets to keep track what event this is for
+        event_id = str(uuid.uuid4())
+        # add our queue to the events hash with the key being the event_id
+        events[event_id] = {
+            'name': container_object['data']['event'],
+            'read_queue': queue.Queue(),
+            'action_queue': queue.Queue()
+        }
+        # Spawn that thread
+        t = threading.Thread(target=handleEvent, args=(
+            container_object, rc, events[event_id]['read_queue'], events[event_id]['action_queue'], event_id))
+        t.start()
+        response = {
+            'type': "emit-event-response",
+            'timestamp': time.time(),
+            'data': {
+                'message': "OK",
+                'status': 0
+            }
+        }
+        return response
+
+def handleContainerMessage(client_socket, client_address, container_object, rc, connection, events):
     # This function makes the appropriate calls to other functions based on the context of the packet
 
     # Make a generic response object in case something goes wrong where we don't hit anything else
@@ -242,28 +280,7 @@ def handle_container_message(client_socket, client_address, container_object, rc
     elif container_object['type'] == "register-action":
         response = rc.registerAction(container_object, events)
     elif container_object['type'] == "emit-event":
-        # Events may block because they trigger a serial process, need to spawn a thread
-        # There also needs to be an event id to prevent overlaps from occuring. This will go in the action packets to keep track what event this is for
-        event_id = str(uuid.uuid4())
-        # add our queue to the events hash with the key being the event_id
-        events[event_id] = {
-            'name': container_object['data']['event'],
-            'read_queue': queue.Queue(),
-            'action_queue': queue.Queue()
-        }
-        # Spawn that thread
-        t = threading.Thread(target=handleEvent, args=(
-            container_object, rc, events[event_id]['read_queue'], events[event_id]['action_queue'], event_id))
-        t.start()
-        response = {
-            'type': "emit-event-response",
-            'timestamp': time.time(),
-            'data': {
-                'message': "OK",
-                'status': 0
-            }
-        }
-        #handleEvent(container_object, rc, read_queue)
+        response = initalizeEvent(events,container_object,rc)
     elif container_object['type'] == "trigger-action-response":
         # We know that an emit-event thread is listening for this response. We'll put this in their queue so it unblocks
         # Figure out who this owns to based on the data
@@ -328,7 +345,7 @@ def serve_container(client_socket, client_address, rc):
             logging.debug("Packet from " + client_address + " is...")
             logging.debug(container_object)
             logging.debug("Handling JSON for " + client_address)
-            response = handle_container_message(
+            response = handleContainerMessage(
                 client_socket, client_address, container_object, rc, connection, events)
             # Now we can send the response back, if there is something
             if response is not None:
