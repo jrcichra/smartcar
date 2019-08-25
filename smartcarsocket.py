@@ -170,7 +170,8 @@ class smartcarsocket:
                         logging.error(response['data']['event']['message'])
                     else:
                         logging.debug("Got a good register-event-response, all is good :)")
-
+            except Exception as e:
+                logging.error(e)
     def registerAction(self, name):
         if name is None or name == "":
             logging.error("Cannot register an action with an empty name")
@@ -196,7 +197,8 @@ class smartcarsocket:
                         logging.error(response['data']['action']['message'])
                     else:
                         logging.debug("Got a good register-action-response, all is good :)")
-
+            except Exception as e:
+                logging.error(e)
     def emitEvent(self, name):
         if name is None or name == "":
             logging.error("Cannot emit an event with an empty name")
@@ -222,7 +224,8 @@ class smartcarsocket:
                         logging.error(response['data']['message'])
                     else:
                         logging.debug("Got a good emit-event-response, all is good :)")
-
+            except Exception as e:
+                logging.error(e)
     def handleIncoming(self, temp):
         # This is run in a dedicated thread that will just listen on the socket,
         # listen for incoming things and translate it into the user queue
