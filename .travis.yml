@@ -3,9 +3,9 @@ dist: bionic
 language: generic
 jobs:
   include:
-    - stage: build
+    - stage: build base container
       install: bash -x build.sh python_base
-    -
+    - stage: build child containers
       install: bash -x build.sh controller
     -
       install: bash -x build.sh test_client
