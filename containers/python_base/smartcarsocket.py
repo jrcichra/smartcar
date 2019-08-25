@@ -145,6 +145,8 @@ class smartcarsocket:
                         logging.error(response['data']['message'])
                     else:
                         logging.debug("Got a good register-container-response, all is good :)")
+            except Exception as e:
+                logging.error(e)
     def registerEvent(self, name):
         if name is None or name == "":
             logging.error("Cannot register an event with an empty name")
