@@ -121,10 +121,10 @@ class smartcarsocket:
 
     # user functions
 
-    def registerContainer(self, name=self.socket.gethostname()):
+    def registerContainer(self, name):
         if name is None or name == "":
-            logging.error("Cannot register a container with an empty name")
-            exit(-1)
+            # default to the container name
+            name = self.socket.gethostname()
         else:
             register_container = {
                 'type': "register-container",
