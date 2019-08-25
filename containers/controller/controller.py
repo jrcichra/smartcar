@@ -26,7 +26,7 @@ def isSupportedMode(mode):
     return mode in modes
 
 
-def handleAction(action, mode, read_queue, q, event_id):
+def handleAction(action, mode, read_queue, action_queue, event_id):
     # check redis and make sure its actually an action that exists...if it doesn't a lot we'll need to look at queues or something...
 
     redis_action = rc.queryAction(action)
@@ -34,7 +34,7 @@ def handleAction(action, mode, read_queue, q, event_id):
         logging.warn("Action: " + action +
                      " does not exist (yet) in redis...cannot call action. Waiting on queue instead...")
         # block on this queue until the action we are looking for is registered
-        while q.get() != action:
+        while action_queue.get() != action:
             logging.debug(
                 "We didn't find it in redis, but something came in the queue, but it was not the action we wanted...")
         # now check the db, if its not there then something is internally wrong
@@ -102,7 +102,7 @@ def handleAction(action, mode, read_queue, q, event_id):
             "Could not find a container_id in the redis action of " + action)
 
 
-def handleEvent(obj, rc, read_queue, q, event_id):
+def handleEvent(obj, rc, events,event_id):
     # Internal error if we somehow don't go through the if or else
     response = {
         'type': "emit-event-error",
@@ -112,16 +112,25 @@ def handleEvent(obj, rc, read_queue, q, event_id):
                 'status': 506
         }
     }
+
+    event = events[event_id]
+    read_queue = event['read_queue']
+    action_queue = event['action_queue']
+    break_queue = event['break_queue']
+
     # Grab the timestamp in the packet
     timestamp = obj['timestamp']
     # Go the event being handled
-    event = obj['data']['event']
-    # Pull out the valuable attributes from this layer
-    event_name = event['name']
+    event_name = obj['data']['event']['name']
     # There may or may not be a payload per event, we should pass it if it exists..., for now don't worry
     # event_payload = event['payload']
 
     container_id = obj['container_id']
+
+    # Tell every event that is happening's break queue that a new event is happening
+    for e in events:
+        events[e]['break_queue'].put(event_name)
+
     # Query out the actions that take place because of this event
     redis_event = rc.queryEvent(event_name)
     logging.debug(
@@ -165,6 +174,7 @@ def handleEvent(obj, rc, read_queue, q, event_id):
         try:
             # We use this later when doing a serial execution
             brk = redis_event['break']
+            #This tells this event what event it should break on if it is serial and is in the middle
         except KeyError as e:
             logging.debug(
                 "No break found while parsing event: " + event_name)
@@ -176,10 +186,25 @@ def handleEvent(obj, rc, read_queue, q, event_id):
                 "Here are all the serial things I am going to call as part of this event:")
             logging.debug(serial)
             for action in serial:
+                # Do a block check here in case something happened that should stop this loop
+
                 logging.debug(
                     "Serial Action being called: " + str(action))
                 # Call that action and block until we get a response (block happens in the function)
-                handleAction(action, "serial", read_queue, q, event_id)
+                handleAction(action, "serial", read_queue, action_queue, event_id)
+                # Afrer that action comes back, we should check if we are breaking
+                try:
+                    break_flag = False
+                    while not break_queue.empty():
+                        if break_queue.get() == brk:
+                            logging.debug("We found the break we were expecting to find, " + 
+                                "prematurely exiting this event's execution")
+                            break_flag = True
+                    # Kind of a hack, but needed a way to break out of the for loop, not the while not
+                    if break_flag:
+                        break
+                except Exception as e:
+                    logging.debug("Looks like brk was not defined, which is fine, it means no break was defined.")
         except KeyError as e:
             logging.debug(
                 "No serial found while parsing event: " + event_name)
@@ -193,7 +218,7 @@ def handleEvent(obj, rc, read_queue, q, event_id):
                         "Parallel Action being called: " + str(action))
                     # Call that action but don't block waiting for a response, instead, collect
                     # them outside of here (by draining the queue later)
-                    t = threading.Thread(target=handleAction, args=(action, "parallel", read_queue,q,event_id))
+                    t = threading.Thread(target=handleAction, args=(action, "parallel", read_queue,action_queue,event_id))
                     t.start()
                 # For now, drain the queue here
                 logging.debug("Draining the parallel results:")
@@ -202,6 +227,17 @@ def handleEvent(obj, rc, read_queue, q, event_id):
             except KeyError as e:
                 logging.debug(
                     "No parallel found while parsing event: " + event_name)
+        # Since the event is done, drain the break queue, 
+        # there's probably a better way I can be doing this but this is V1
+
+        logging.debug("Draining the break queue...")
+        while not break_queue.empty():
+            break_queue.get()
+
+        logging.debug("Finished draining the break queue.")
+
+        logging.debug("Sending back the emit-event-response...")
+
         response = {
             'type': "emit-event-response",
             'timestamp': time.time(),
@@ -233,11 +269,12 @@ def initalizeEvent(events, container_object,rc):
         events[event_id] = {
             'name': container_object['data']['event'],
             'read_queue': queue.Queue(),
-            'action_queue': queue.Queue()
+            'action_queue': queue.Queue(),
+            'break_queue' : queue.Queue()
         }
         # Spawn that thread
         t = threading.Thread(target=handleEvent, args=(
-            container_object, rc, events[event_id]['read_queue'], events[event_id]['action_queue'], event_id))
+            container_object, rc, events, event_id))
         t.start()
         response = {
             'type': "emit-event-response",
@@ -288,14 +325,14 @@ def handleContainerMessage(client_socket, client_address, container_object, rc, 
             # Read what event_id this is
             event_id = container_object['event_id']
             # Pull the queue for this event id
-            q = events[event_id]['read_queue']
+            read_queue = events[event_id]['read_queue']
             # Send what we got to the proper queue, which should unblock that event process
             logging.debug("We got an action response back:")
             logging.debug(container_object)
             logging.debug("Adding to the queue for the respective event id...")
             logging.debug("Queue object:")
-            logging.debug(q)
-            q.put(container_object)
+            logging.debug(read_queue)
+            read_queue.put(container_object)
             # No response needed since this is a response
             return
         except KeyError as e:
