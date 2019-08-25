@@ -3,4 +3,4 @@ ARG commit
 EXPOSE 8080
 COPY . /
 RUN pip install -r /requirements.txt && echo -n $commit > /commit.txt
-CMD python -u test_client_2.py
+CMD python -u dashcam.py

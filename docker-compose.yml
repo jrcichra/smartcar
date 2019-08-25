@@ -10,13 +10,13 @@ services:
       - "${PWD}/config.yml:/config.yml"
     depends_on:
       - redis
+  dashcam:
+   hostname: dashcam
+   image: jrcichra/smartcar_dashcam
+   depends_on:
+      - controller
   test_client:
    hostname: test_client
    image: jrcichra/smartcar_test_client
-   depends_on:
-      - controller
-  test_client_2:
-   hostname: test_client_2
-   image: jrcichra/smartcar_test_client_2
    depends_on:
       - controller

@@ -105,7 +105,7 @@ def handleAction(action, mode, read_queue, action_queue, event_id):
 def handleEvent(obj, rc, events,event_id):
     # Internal error if we somehow don't go through the if or else
     response = {
-        'type': "emit-event-error",
+        'type': "emit-event-response",
         'timestamp': time.time(),
         'data': {
                 'message': "Internal emit-event error",
