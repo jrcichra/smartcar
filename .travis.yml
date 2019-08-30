@@ -3,34 +3,28 @@ dist: bionic
 language: generic
 jobs:
   include:
-    - stage: build base container
-      install: bash -x build.sh python_base
-    - stage: build child containers
-      install: bash -x build.sh controller
-    -
-      install: bash -x build.sh test_client
-    -
-      install: bash -x build.sh dashcam
-    - stage: test
-      script: 
-      - bash -x check_commit.sh python_base
-    - 
-      script: 
-      - bash -x check_commit.sh controller
-    -   
-      script:  
-      - bash -x check_commit.sh test_client
-    - 
-      script:  
-      - bash -x check_commit.sh dashcam
-    -
-      script: 
-      - docker-compose up &
-      - sleep 60
-      - docker-compose exec redis bash -x -c 'redis-cli KEYS *'
-      - docker-compose exec redis bash -x -c 'redis-cli KEYS * | cut -d\" -f2 | xargs -L1 redis-cli JSON.GET'
-
+  - stage: build base container
+    install: bash -x build.sh python_base
+  - stage: build child containers
+    install: bash -x build.sh controller
+  - install: bash -x build.sh test_client
+  - install: bash -x build.sh dashcam
+  - stage: test
+    script:
+    - bash -x check_commit.sh python_base
+  - script:
+    - bash -x check_commit.sh controller
+  - script:
+    - bash -x check_commit.sh test_client
+  - script:
+    - bash -x check_commit.sh dashcam
+  - script:
+    - docker-compose up &
+    - sleep 60
+    - docker-compose exec redis bash -x -c 'redis-cli KEYS *'
+    - docker-compose exec redis bash -x -c 'redis-cli KEYS * | cut -d\" -f2 | xargs
+      -L1 redis-cli JSON.GET'
 env:
   global:
-  - secure: yLX9jx381n3qAk18BaqpAD7ptsez1b7/dXghGMFy8g3y+TxjNP4enuvnHd0KRa4OIqq28rHoqFKiq6p6EKH2tKDgytbV7Q5BAYjFBSZsiyk6esiKqWprDa2CDZloSG7m2buyT/o1L2/TtMPkfdPwJTkvZZYWy4NN8s/be+sazZ4KLKashunpXYt76sYGFPTbMSrvDJiNt8NiYTXCnNlBa+QDHvXImiiksmgxL9GhB5Jd516lEY7XT0hJAABIvl7K6Eu1BAoDqRnlQtu6RMGb748GTJgVoz9fx4kzEN0RGU409kVKwYaZKLoBJBIr7Wn3RyhsCoc5oJNnlvDrnf8KrDVqxUDk+Wl6Tmj1FKf25TDsKv9aA1zJbGwqFnrAY2+HuSyNdhY+TGuvxoy9HqL+2dYevRS8RuI9vCER+8ve6WHjjhsOuhdeDdhBaG3AN1CXW8juJUrtsDfn/oXU976m4TO3tpjrCEpQFKoK866lgTskGGMct8tM3Z7gROyt1wf3MO2YLra4PCfqF071WbbwkwfYvmZRNV9cngkNMsWwf70d3reQ9UsVKYvauG8CvUjxsCN8Qvv5RQvp9ts0UBC8NffA2+sMpegab/D2NrtAdigpKquQGPoSmW1SBg1WtkXZljDrQWSgytkc+EGOAXhNc0t14TnKqsJ40zO97D2giu4=
-  - secure: PhS+e+ZIFbNxH3eKtp1N6KSruyday+mVVYb6bmxoEFh1/N7Xf9cR6UCxxVF+jPCGerAjMvKvFDiFKsmSg36MT/PS7NbwwHHwKr9TS4EShI4tu9j8barguq0gYvpIi3AiZitKN2jZgi0BP1Aph6uxOUxp+5DEuecZeC2Wj1z8ly3uZjoY3Zxt/5KkZYA7GioMbMJq2PSU6QRI1XsOcrueG29deGWxiGG0CpehagWjcYwC4O87Qn3QR78Lt3wz0asGjCU/TORUlA1T6G+s6lc5cvF7nro4jNi0dl9V2es8Ydc8yPlg5HGP7cRJkQnP3CilaCzbN2UQ6UtaolM+v49pgLv5BAuQFW2N0Mh3H4NqL7WDa0hRriOnCnV9K9ZaGDxVOHrdAWVwfTclBrz+eh2bdIk6wl+U0eXum2XEF2gjSBwGkBv35fn06gh/f3CV+coTXbV+gPg28IL05GcOg5SDc6Pcia6yurXZIXM9T9Jtfb2phYbArDdiJyD3N8wX2+75uYYkDNlrodTNqNX5I2KtmDhbeWX1ENCnlxTJHqmayqwEDKypkgFIIhwnNnBQ4Z/GSjeEEd0CXTFJe8O2FIbQY1BiePSoLCUREizpbIe0meMAtbCXFbNAE8DG4b3jkYDp1vqCgd3gvgfYWltt8juMjHEM+IWMtCcng+TRkGBkNk0=
+  - secure: sJcojDXXLmIAktdRCn0bZaM+dPXaUSvcSVIVoIU02iz7S+ubl0gVUBbZjlO1YtDLTdot2cqjR43XvVdKV2wt7hE0d6xtNS1Gaiy6k5i2IagI86UB12vRlxBYkmJTJ+/Ne70/N5vEcJYmCAnaf/Nhg/155NU/eQ5yXI/Vm8UfdpkPM2aKWalG+TLcUQfAjsgdiK2HrJQ6km0InX38o2l83ntkqq0qTwF3CbKPTbd7GBzzioM0TaGQn2MxeNd57ApPVSN4CrdOoP3jlgmvogTI1Y5ojv2tp0OxDlggI+GAAB36xPVxuDsybqCsn6526Va5TKrUUkrvItLEo1Qjeos34Ih4uxaK3S2TpyXaOv/33Tjbl2+sfuKF+DWVGNPExRr14ujAfTMhSiKpr8y/olGiva4Vcj6WWY41vss5anhMXldplczDtIAA+aZfSR0WnfZgAfRx8nyFGnAfPSxf+9wEjFYdHJdKJHGq52IGnPyrhO0KuHt4BD4RPYLC5LQ0Qn67Kc4cKAzYLDhntwrWWe34E0mO+YqAfa7e/9e1o48AlgNd6BNnANu0lU2Rix0h78GpUCQwgA/VDahABF4brQdq1cWSyt2JrK/TrXC5K0xo68idoft/jqZh62RRRI00CUINQI6oqLwSVvVplFNrURax9+WKBSQu+5NQfoleEIP6mAY=
+  - secure: GDu8v0cYQB4MHXD/CnMbBMZS4mb6oZsRNucsx5fIwpO+WgoRBm/gY7TDdGsQe+VcqiCZ7EBK0RRc0yA9BnrxxF8sEBEM+u6GatcuXvnp1lEvQSGLCxW2wT3UWdnBFm8G+15sgCgnmGF0tYIXPFxMlHAKzHpjuEWxDyBQMel+egbJc4+T7YS7r4VfOWbmEzqqLH7r0aUSUuL1hX6eAPn85pN9sBiqy+w1Utc2EOnD8QRVxJ7qcb1NJBWFaCIvhjr3wnW8wz0OpswlyXeDYaoaJWADW1gEKeQVjD4inNrfZCDUYWl8lzb1qQxpyqHlHYs0FZFt1sob3v7TVchaaRTgWp7cY8Vc6p7zi3KRnoqQaykDPxCRRofggjtRdeG89cQGqKYMe8BXaZq8kAwHLZ88zZ+nOhkFTpAi/jBA6n5kyv95Iv4gZUFd95f9NY9GEnjUY6/tgcRqS5oSexrieJSu3nzVRx8SOwO/mSiMKZjaJkG/99SuY3UDZsFwtqAv3nid8en5e0KdwjpVCW5VJ7Jt21UP12JkulAgluATPV6e8M+8SAm9AK0ffV3qqwE22G6anpcN2QG5F2t/kvig1L1YSFKbqhCTrdpMsQk+Ye8zq+wMFR5FfrHsiEuFZ2ij8RpWbKaAVVsEA4ZHtmS7A1k1HWgm/W8eI5CEY2Yn0/L7tbc=
