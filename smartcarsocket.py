@@ -108,7 +108,7 @@ class smartcarsocket:
     # internal socket functions
 
     def connect(self, host="controller", port=8080):
-        logging.debug("I am connecting to the socket with host=",host,"and port=",str(port))
+        logging.debug("I am connecting to the socket with host=" + host + "and port=" + str(port))
         logging.debug(self.socket.connect(host, port))
 
     def sendall(self, data):
