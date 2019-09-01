@@ -91,8 +91,7 @@ class smartcarsocket:
         self.socket = connector(socket.socket())
         self.user_queue = queue.Queue()         # So the client can have a thread that handles different actions
                                                 # with our library
-        self.queue_thread = threading.Thread(target=self.handleIncoming,
-                                             args=(0))
+        self.queue_thread = threading.Thread(target=self.handleIncoming)
         self.queue_thread.start()
         self.interal_queue = queue.Queue()      # For blocking on registering stuff, checking the internal JSON for problems
                                                 # The user doesn't need to know / care about our internal JSON messaging
@@ -228,7 +227,7 @@ class smartcarsocket:
                         logging.debug("Got a good emit-event-response, all is good :)")
             except Exception as e:
                 logging.error(e)
-    def handleIncoming(self, temp):
+    def handleIncoming(self):
         # This is run in a dedicated thread that will just listen on the socket,
         # listen for incoming things and translate it into the user queue
         done = False
