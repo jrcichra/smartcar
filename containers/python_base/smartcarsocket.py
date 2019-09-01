@@ -16,16 +16,16 @@ logging.basicConfig(level=logging.DEBUG,
 
 class connector:
 
-    def __init__(self, socket):
-        self.socket = socket
+    def __init__(self, s):
+        self.socket = s
         self.lock = threading.Lock()            #keeping the send thread safe
 
-    def receive_packet(self, socket):
+    def receive_packet(self, s):
         message = b""  # create an empty binary message buffer
         flag = False  # determines if we found the end or not
         err = False
         while not flag:  # while we haven't found that end \n, depicting the end of an object...
-            r = socket.recv(1024)  # copy over x bytes into our buffer
+            r = s.recv(1024)  # copy over x bytes into our buffer
             if(b"\n" in r):  # if that buffer has the \n
                 flag = True  # set the flag that we found the end
             elif(not r):  # socket dropped on us
