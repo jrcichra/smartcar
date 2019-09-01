@@ -17,7 +17,7 @@ logging.basicConfig(level=logging.DEBUG,
 class connector:
 
     def __init__(self, s):
-        self.socket = s
+        self.s = s
         self.lock = threading.Lock()            #keeping the send thread safe
 
     def receive_packet(self, s):
@@ -46,7 +46,7 @@ class connector:
 
     def connect(self, host, port):
         try:
-            self.socket.connect((host, port))
+            self.s.connect((host, port))
             return 0
         except Exception as e:
             logging.error(e)
@@ -59,7 +59,7 @@ class connector:
                 "In sendall(), found a dictionary, converting to JSON before packetizing...")
             with self.lock:
                 # Best one liner ever - send a packetsized version of the data after it's been converted
-                self.socket.sendall(self.packetize(json.dumps(data)))
+                self.s.sendall(self.packetize(json.dumps(data)))
         elif isinstance(data, str):
             logging.debug(
                 "In sendall(), found a string, making sure it's valid JSON before packetizing...")
@@ -70,20 +70,20 @@ class connector:
                     "In sendall(), string was not valid JSON. Cannot send this.")
                 exit(1)
             with self.lock:
-                self.socket.sendall(self.packetize(data))
+                self.s.sendall(self.packetize(data))
         else:
             logging.error(
                 "In sendall(), this is not a string or dict/json type, I don't know how to send this...")
             exit(-1)
 
     def recv(self):
-        return json.loads(self.depacketize(self.receive_packet(self.socket)))
+        return json.loads(self.depacketize(self.receive_packet(self.s)))
 
     def gethostname(self):
-        return self.socket.gethostname()
+        return socket.gethostname()
 
     def getSocket(self):
-        return self.socket
+        return self.s
 
 
 class smartcarsocket:
