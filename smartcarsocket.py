@@ -88,7 +88,7 @@ class connector:
 class smartcarsocket:
     def __init__(self):
         # Use my connector object to avoid any python low level stuff in this object (keep it straightforward)
-        self.socket = connector(socket.socket())
+        self.s = connector(socket.socket())
         self.user_queue = queue.Queue()         # So the client can have a thread that handles different actions
                                                 # with our library
         self.connect()                          # This needs to happen so the thread has a connection, need to investigate how we can wait...
@@ -108,24 +108,24 @@ class smartcarsocket:
     # internal socket functions
 
     def connect(self, host="controller", port=8080):
-        logging.debug("I am connecting to the socket with host=" + host + "and port=" + str(port))
-        logging.debug(self.socket.connect(host, port))
+        logging.debug("I am connecting to the socket with host= " + host + "and port= " + str(port))
+        self.s.connect(host, port)
 
     def sendall(self, data):
-        self.socket.sendall(data)
+        self.s.sendall(data)
 
     def send(self, data):
         self.sendall(data)
 
     def recv(self):
-        return self.socket.recv()
+        return self.s.recv()
 
     # user functions
 
     def registerContainer(self, name=""):
         if name is None or name == "":
             # default to the container name
-            name = self.socket.gethostname()
+            name = self.s.gethostname()
         else:
             register_container = {
                 'type': "register-container",
@@ -136,7 +136,7 @@ class smartcarsocket:
                     }
                 }
             }
-            self.socket.sendall(register_container)
+            self.s.sendall(register_container)
             # wait for a response
             response = self.interal_queue.get()
             try:
@@ -156,14 +156,14 @@ class smartcarsocket:
             register_event = {
                 'type': "register-event",
                 'timestamp': time.time(),
-                'container_id': self.socket.gethostname(),
+                'container_id': self.s.gethostname(),
                 'data': {
                         'event': {
                             'name': name
                         }
                 }
             }
-            self.socket.sendall(register_event)
+            self.s.sendall(register_event)
             # wait for a response
             response = self.interal_queue.get()
             try:
@@ -183,14 +183,14 @@ class smartcarsocket:
             register_action = {
                 'type': "register-action",
                 'timestamp': time.time(),
-                'container_id': self.socket.gethostname(),
+                'container_id': self.s.gethostname(),
                 'data': {
                     'action': {
                         'name': name
                     }
                 }
             }
-            self.socket.sendall(register_action)
+            self.s.sendall(register_action)
             # wait for a response
             response = self.interal_queue.get()
             try:
@@ -210,14 +210,14 @@ class smartcarsocket:
             emit_event = {
                 'type': "emit-event",
                 'timestamp': time.time(),
-                'container_id': socket.gethostname(),
+                'container_id': s.gethostname(),
                 'data': {
                     'event': {
                         'name': name
                     }
                 }
             }
-            self.socket.sendall(emit_event)
+            self.s.sendall(emit_event)
             # wait for a response
             response = self.interal_queue.get()
             try:
@@ -235,7 +235,7 @@ class smartcarsocket:
         done = False
         while not done:
             # This should be blocking
-            obj = self.socket.recv()
+            obj = self.s.recv()
             # obj is a json object of the internal protocol
             # look at it and determine what we should expose to the user / handle internally
             try:
@@ -274,7 +274,7 @@ class smartcarsocket:
                 }
             }
         }
-        self.socket.sendall(action_response)
+        self.s.sendall(action_response)
 
 
 
