@@ -91,7 +91,7 @@ class smartcarsocket:
         self.socket = connector(socket.socket())
         self.user_queue = queue.Queue()         # So the client can have a thread that handles different actions
                                                 # with our library
-        self.queue_thread = threading.Thread(target=handleIncoming,
+        self.queue_thread = threading.Thread(target=self.handleIncoming,
                                              args=(0))
         self.queue_thread.start()
         self.interal_queue = queue.Queue()      # For blocking on registering stuff, checking the internal JSON for problems
