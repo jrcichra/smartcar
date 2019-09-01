@@ -49,6 +49,7 @@ class connector:
             self.socket.connect(host, port)
             return 0
         except Exception as e:
+            logging.error(e)
             return 1
 
     def sendall(self, data):
