@@ -108,7 +108,8 @@ class smartcarsocket:
     # internal socket functions
 
     def connect(self, host="controller", port=8080):
-        self.socket.connect(host, port)
+        logging.debug("I am connecting to the socket with host=",host,"and port=",str(port))
+        logging.debug(self.socket.connect(host, port))
 
     def sendall(self, data):
         self.socket.sendall(data)
@@ -121,7 +122,7 @@ class smartcarsocket:
 
     # user functions
 
-    def registerContainer(self, name):
+    def registerContainer(self, name=""):
         if name is None or name == "":
             # default to the container name
             name = self.socket.gethostname()
