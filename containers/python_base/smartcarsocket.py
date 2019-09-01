@@ -89,6 +89,8 @@ class smartcarsocket:
     def __init__(self):
         # Use my connector object to avoid any python low level stuff in this object (keep it straightforward)
         self.s = connector(socket.socket())
+        logging.debug("self.s should be a socket...")
+        logging.debug(self.s)
         self.user_queue = queue.Queue()         # So the client can have a thread that handles different actions
                                                 # with our library
         self.connect()                          # This needs to happen so the thread has a connection, need to investigate how we can wait...
@@ -108,7 +110,7 @@ class smartcarsocket:
     # internal socket functions
 
     def connect(self, host="controller", port=8080):
-        logging.debug("I am connecting to the socket with host= " + host + "and port= " + str(port))
+        logging.debug("I am connecting to the socket with host= " + host + " and port= " + str(port))
         self.s.connect(host, port)
 
     def sendall(self, data):
