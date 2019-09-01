@@ -46,7 +46,7 @@ class connector:
 
     def connect(self, host, port):
         try:
-            self.socket.connect(host, port)
+            self.socket.connect((host, port))
             return 0
         except Exception as e:
             logging.error(e)
