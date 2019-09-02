@@ -119,9 +119,7 @@ class redisController:
         # Grab the timestamp in the packet
         timestamp = obj['timestamp']
         # Go the event being registered
-        event = obj['data']['name']
-        # Pull out the valuable attributes from this layer
-        event_name = event['name']
+        event_name = obj['data']['name']
         container_id = obj['container_id']
         # Check if this already exists in redis by first pulling all events for this container
         existing_events = self.db.jsonget("event_" + str(event_name))
