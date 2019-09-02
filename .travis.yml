@@ -7,7 +7,7 @@ jobs:
     install: bash -x build.sh python_base
   - stage: build child containers
     install: bash -x build.sh controller
-  - install: bash -x build.sh test_client
+  - install: bash -x build.sh gpio
   - install: bash -x build.sh dashcam
   - stage: test
     script:
@@ -15,7 +15,7 @@ jobs:
   - script:
     - bash -x check_commit.sh controller
   - script:
-    - bash -x check_commit.sh test_client
+    - bash -x check_commit.sh gpio
   - script:
     - bash -x check_commit.sh dashcam
   - script:
