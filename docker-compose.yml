@@ -15,7 +15,7 @@ services:
    image: jrcichra/smartcar_dashcam
    depends_on:
       - controller
-  test_client:
+  gpio:
    hostname: gpio
    image: jrcichra/smartcar_test_gpio
    depends_on:
