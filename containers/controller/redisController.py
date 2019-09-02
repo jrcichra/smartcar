@@ -220,7 +220,7 @@ class redisController:
         # Grab the timestamp in the packet
         timestamp = obj['timestamp']
         # Go the action name being registered
-        action_name = obj['name']
+        action_name = obj['data']['name']
         container_id = obj['container_id']
         # Check if this already exists in redis by first pulling all actions for this container
         existing_actions = self.db.jsonget("action_" + str(
