@@ -95,16 +95,15 @@ class smartcarsocket:
         self.connect()                          # This needs to happen so the thread has a connection, need to investigate how we can wait...
         self.queue_thread = threading.Thread(target=self.handleIncoming)
         self.queue_thread.start()
-        self.interal_queue = queue.Queue()      # For blocking on registering stuff, checking the internal JSON for problems
+        self.internal_queue = queue.Queue()      # For blocking on registering stuff, checking the internal JSON for problems
                                                 # The user doesn't need to know / care about our internal JSON messaging
-        #True = internally handled, False = externally handled
         self.responses = [
-            ("register-container-response",True),
-            ("register-event-response",True),
-            ("register-action-response",True),
-            ("trigger-action-response",True),
-            ("trigger-action",False),
-            ("emit-event-response",True)]
+            "register-container-response",
+            "register-event-response",
+            "register-action-response",
+            "trigger-action-response",
+            "trigger-action",
+            "emit-event-response"]
 
     # internal socket functions
 
@@ -138,7 +137,7 @@ class smartcarsocket:
         }
         self.s.sendall(register_container)
         # wait for a response
-        response = self.interal_queue.get()
+        response = self.internal_queue.get()
         try:
             if response['type'] == "register-container-response":
                 if response['data']['status'] != 0:
@@ -158,19 +157,17 @@ class smartcarsocket:
                 'timestamp': time.time(),
                 'container_id': self.s.gethostname(),
                 'data': {
-                        'event': {
-                            'name': name
-                        }
+                    'name': name
                 }
             }
             self.s.sendall(register_event)
             # wait for a response
-            response = self.interal_queue.get()
+            response = self.internal_queue.get()
             try:
                 if response['type'] == "register-event-response":
-                    if response['data']['event']['status'] != 0:
+                    if response['data']['status'] != 0:
                         logging.error("Something went wrong with register-event-response:")
-                        logging.error(response['data']['event']['message'])
+                        logging.error(response['data']['message'])
                     else:
                         logging.debug("Got a good register-event-response, all is good :)")
             except Exception as e:
@@ -185,19 +182,17 @@ class smartcarsocket:
                 'timestamp': time.time(),
                 'container_id': self.s.gethostname(),
                 'data': {
-                    'action': {
-                        'name': name
-                    }
+                    'name': name
                 }
             }
             self.s.sendall(register_action)
             # wait for a response
-            response = self.interal_queue.get()
+            response = self.internal_queue.get()
             try:
                 if response['type'] == "register-action-response":
-                    if response['data']['action']['status'] != 0:
+                    if response['data']['status'] != 0:
                         logging.error("Something went wrong with register-action-response:")
-                        logging.error(response['data']['action']['message'])
+                        logging.error(response['data']['message'])
                     else:
                         logging.debug("Got a good register-action-response, all is good :)")
             except Exception as e:
@@ -212,14 +207,12 @@ class smartcarsocket:
                 'timestamp': time.time(),
                 'container_id': s.gethostname(),
                 'data': {
-                    'event': {
                         'name': name
-                    }
                 }
             }
             self.s.sendall(emit_event)
             # wait for a response
-            response = self.interal_queue.get()
+            response = self.internal_queue.get()
             try:
                 if response['type'] == "emit-event-response":
                     if response['data']['status'] != 0:
@@ -240,21 +233,15 @@ class smartcarsocket:
             # look at it and determine what we should expose to the user / handle internally
             try:
                 obj_type = obj['type']
+                found = False
                 for r in self.responses:
-                    if r[0] == obj_type:
-                        if r[1]:
-                            # Pass the result through the internal queue, we'll handle it ourselves based on our spot in the code
-                            # Nothing that goes in this queue should be unexpected
-                            self.interal_queue.put(obj)
-                        else:
-                            if r[0] == "trigger-action":
-                                # Have this thread process the JSON and have the user get the action data
-                                # We need the user to manage the event_id, the name is not unique enough
-                                self.user_queue.put({
-                                    "name": obj['data']['action']['name'],
-                                    "event_id" : obj['event_id']
-                                    # payload would go here
-                                    })
+                    if r == obj_type:
+                        found = True
+                        # Pass the result through the internal queue, they can handle it for now
+                        # Nothing that goes in this queue should be unexpected
+                        self.internal_queue.put(obj)
+                if not found:
+                    logging.error("The server sent a response we are not aware of...")
             except Exception as e:
                 logging.error("Something went wrong when putting things in queues and doing key stuff")
                 logging.error(e)
@@ -267,11 +254,9 @@ class smartcarsocket:
             "timestamp": "epochhere",
             "event_id": event_id,
             "data": {
-                "action": {
-                    "name": name,
-                    "status": status,
-                    "message": message
-                }
+                "name": name,
+                "status": status,
+                "message": message
             }
         }
         self.s.sendall(action_response)
