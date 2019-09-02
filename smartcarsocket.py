@@ -77,7 +77,7 @@ class connector:
             exit(-1)
 
     def recv(self):
-        return json.loads(self.depacketize(self.receive_packet(self.s)))
+        return json.loads(self.depacketize(self.receive_packet(self.s)[0]))
 
     def gethostname(self):
         return socket.gethostname()
