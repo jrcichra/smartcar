@@ -2,8 +2,6 @@
     "type": "register-action",
     "timestamp": "epochhere",
     "data": {
-        "action": {
-            "name": "turn_off_pi"
-        }
+        "name": "turn_off_pi"
     }
 }

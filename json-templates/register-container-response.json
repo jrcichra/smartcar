@@ -2,10 +2,8 @@
     "type": "register-container-response",
     "timestamp": "epochhere",
     "data": {
-        "action": {
-            "name": "gpio",
-            "status": 0,
-            "message": "Message if status is a nonzero return code"
-        }
+        "name": "gpio",
+        "status": 0,
+        "message": "Message if status is a nonzero return code"
     }
 }

@@ -121,7 +121,7 @@ def handleEvent(obj, rc, events,event_id):
     # Grab the timestamp in the packet
     timestamp = obj['timestamp']
     # Go the event being handled
-    event_name = obj['data']['event']['name']
+    event_name = obj['data']['name']
     # There may or may not be a payload per event, we should pass it if it exists..., for now don't worry
     # event_payload = event['payload']
 
@@ -251,7 +251,7 @@ def handleEvent(obj, rc, events,event_id):
 def initalizeEvent(events, container_object,rc):
 
     #see if we should even handle this event or if it's on the ignore list:
-    if rc.isIgnored(container_object['data']['event']):
+    if rc.isIgnored(container_object['data']['name']):
         logging.info("This event is currently set to be ignored. Not proceeding with the event transmission...")
         response = {
             'type': "emit-event-response",
@@ -267,7 +267,7 @@ def initalizeEvent(events, container_object,rc):
         event_id = str(uuid.uuid4())
         # add our queue to the events hash with the key being the event_id
         events[event_id] = {
-            'name': container_object['data']['event'],
+            'name': container_object['data']['name'],
             'read_queue': queue.Queue(),
             'action_queue': queue.Queue(),
             'break_queue' : queue.Queue()
@@ -280,6 +280,7 @@ def initalizeEvent(events, container_object,rc):
             'type': "emit-event-response",
             'timestamp': time.time(),
             'data': {
+                'name': event_id,
                 'message': "OK",
                 'status': 0
             }
@@ -294,6 +295,7 @@ def handleContainerMessage(client_socket, client_address, container_object, rc, 
         'type': "generic-error-response",
         'timestamp': time.time(),
         'data': {
+            'name': 'unknown',
             'message': "Internal controller handler error",
             'status': 503
         }
@@ -343,6 +345,7 @@ def handleContainerMessage(client_socket, client_address, container_object, rc, 
             'type': container_object['type'] + "-error",
             'timestamp': time.time(),
             'data': {
+                'name': "unknown",
                 'message': "unrecognized type: " + container_object['type'],
                 'status': 1
             }

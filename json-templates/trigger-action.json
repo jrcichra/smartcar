@@ -3,11 +3,6 @@
     "timestamp": "epochhere",
     "event_id": "uuid4",
     "data": {
-        "action": {
-            "name": "turn_off_pi",
-            "payload": {
-
-            }
-        }
+        "name": "turn_off_pi"
     }
 }

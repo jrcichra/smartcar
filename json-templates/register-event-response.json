@@ -2,10 +2,8 @@
     "type": "register-event-response",
     "timestamp": "epochhere",
     "data": {
-        "event": {
-            "name": "key_on",
-            "status": 0,
-            "message": "Message if status is a nonzero return code"
-        }
+        "name": "key_on",
+        "status": 0,
+        "message": "Message if status is a nonzero return code"
     }
 }

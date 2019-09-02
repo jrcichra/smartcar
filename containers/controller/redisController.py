@@ -49,6 +49,7 @@ class redisController:
             'type': "register-container-error",
             'timestamp': time.time(),
             'data': {
+                    'name': 'unknown',
                     'message': "Internal registerContainer error",
                     'status': 503
             }
@@ -71,6 +72,7 @@ class redisController:
                 'type': "register-container-response",
                 'timestamp': time.time(),
                 'data': {
+                    'name': container_id,
                     'message': "Container id:" + container_id +
                     " was already registered in redis at " +
                     str(existing_container['timestamp']),
@@ -96,6 +98,7 @@ class redisController:
                 'type': "register-container-response",
                 'timestamp': time.time(),
                 'data': {
+                    'name': container_id,
                     'message': "OK",
                     'status': 0
                 }
@@ -116,7 +119,7 @@ class redisController:
         # Grab the timestamp in the packet
         timestamp = obj['timestamp']
         # Go the event being registered
-        event = obj['data']['event']
+        event = obj['data']['name']
         # Pull out the valuable attributes from this layer
         event_name = event['name']
         container_id = obj['container_id']
@@ -198,6 +201,7 @@ class redisController:
                 'type': "register-event-response",
                 'timestamp': time.time(),
                 'data': {
+                    'name': event_name,
                     'message': "OK",
                     'status': 0
                 }
@@ -210,6 +214,7 @@ class redisController:
             'type': "register-action-error",
             'timestamp': time.time(),
             'data': {
+                    'name': "unknown",
                     'message': "Internal registerAction error",
                     'status': 505
             }
@@ -217,7 +222,7 @@ class redisController:
         # Grab the timestamp in the packet
         timestamp = obj['timestamp']
         # Go the action being registered
-        action = obj['data']['action']
+        action = obj['data']['name']
         # Pull out the valuable attributes from this layer
         action_name = action['name']
         container_id = obj['container_id']
@@ -232,6 +237,7 @@ class redisController:
                 'type': "register-action-response",
                 'timestamp': time.time(),
                 'data': {
+                    'name': action_name,
                     'message': "Action " + action_name +
                     " was already registered in redis",
                     'status': 1
@@ -272,6 +278,7 @@ class redisController:
                 'type': "register-action-response",
                 'timestamp': time.time(),
                 'data': {
+                    'name': action_name,
                     'message': "OK",
                     'status': 0
                 }

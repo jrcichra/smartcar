@@ -2,8 +2,6 @@
     "type": "register-container",
     "timestamp": "epochhere",
     "data": {
-        "container": {
-            "container_id": "asdf453jsdf"
-        }
+        "name": "asdf453jsdf"
     }
 }
