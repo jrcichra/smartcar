@@ -17,6 +17,6 @@ services:
       - controller
   gpio:
    hostname: gpio
-   image: jrcichra/smartcar_test_gpio
+   image: jrcichra/smartcar_gpio
    depends_on:
       - controller
