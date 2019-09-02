@@ -127,28 +127,27 @@ class smartcarsocket:
         if name is None or name == "":
             # default to the container name
             name = self.s.gethostname()
-        else:
-            register_container = {
-                'type': "register-container",
-                'timestamp': time.time(),
-                'data': {
-                    'container': {
-                        'container_id': name
-                    }
+        register_container = {
+            'type': "register-container",
+            'timestamp': time.time(),
+            'data': {
+                'container': {
+                    'container_id': name
                 }
             }
-            self.s.sendall(register_container)
-            # wait for a response
-            response = self.interal_queue.get()
-            try:
-                if response['type'] == "register-container-response":
-                    if response['data']['status'] != 0:
-                        logging.error("Something went wrong with register-container-response:")
-                        logging.error(response['data']['message'])
-                    else:
-                        logging.debug("Got a good register-container-response, all is good :)")
-            except Exception as e:
-                logging.error(e)
+        }
+        self.s.sendall(register_container)
+        # wait for a response
+        response = self.interal_queue.get()
+        try:
+            if response['type'] == "register-container-response":
+                if response['data']['status'] != 0:
+                    logging.error("Something went wrong with register-container-response:")
+                    logging.error(response['data']['message'])
+                else:
+                    logging.debug("Got a good register-container-response, all is good :)")
+        except Exception as e:
+            logging.error(e)
     def registerEvent(self, name):
         if name is None or name == "":
             logging.error("Cannot register an event with an empty name")
