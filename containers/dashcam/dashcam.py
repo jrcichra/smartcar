@@ -13,7 +13,7 @@ def preformAction(msg):
 
 
 # Ideally we could get this into the library and not put it on the user? Not sure
-def getMessages(in_queue):
+def getMessages(in_queue, temp):
     while True:
         msg = in_queue.get()
         if msg['type'] == "trigger-action":
@@ -37,5 +37,5 @@ sc.registerContainer()
 sc.registerEvent("started_recording")
 sc.registerAction("start_recording")
 
-t = threading.Thread(target=getMessages, args=(sc.getQueue()))
+t = threading.Thread(target=getMessages, args=(sc.getQueue(), True))
 t.start()
