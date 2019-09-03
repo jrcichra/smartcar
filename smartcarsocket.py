@@ -13,7 +13,23 @@ import threading
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s.%(msecs)d:%(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
 
-
+class actionResponse:
+    def __init__(self, name):
+        self.response = {
+        'type': "trigger-action-response",
+        'timestamp': time.time(),
+        'data': {
+            'name': name,
+            'message': "unknown",
+            'status': -1
+            }
+        }
+    def setMessage(self,msg):
+        self.response['data']['message'] = msg
+    def setStatus(self,s):
+        self.response['data']['status'] = s
+    def getDict(self):
+        return self.response
 class connector:
 
     def __init__(self, s):
@@ -71,6 +87,10 @@ class connector:
                 exit(1)
             with self.lock:
                 self.s.sendall(self.packetize(data))
+        elif isinstance(data,actionResponse):
+            logging.debug(
+                "In sendall(), found an actionResponse, converting the dict inside into JSON before packetizing...")
+            self.s.sendall(self.packetize(data.getDict()))
         else:
             logging.error(
                 "In sendall(), this is not a string or dict/json type, I don't know how to send this...")
@@ -84,7 +104,6 @@ class connector:
 
     def getSocket(self):
         return self.s
-
 
 class smartcarsocket:
     def __init__(self):
@@ -261,7 +280,8 @@ class smartcarsocket:
         }
         self.s.sendall(action_response)
 
-
+    def newActionResponse(self,name):
+        return actionResponse(name)
 
     def getQueue(self):
         # Showing the user a Queue object that has the name of the event.
