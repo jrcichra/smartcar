@@ -2,28 +2,45 @@ import smartcarsocket
 import threading
 import queue
 import logging
+import time
+import os
+import picamera
+from unittest.mock import Mock
+
+# For CI Tests we don't have a real camera, so we'll need to mock the library
+if os.environ('CI') == True:
+    picamera = Mock()
 
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s.%(msecs)d:LINE %(lineno)d:TID %(thread)d:%(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
 # Does an action based on the message we get. The calls needed are made by the container coder
 
 
-def preformAction(msg):
-    pass
+def performAction(msg, sc):
+    logging.debug("I got an action:")
+    logging.debug(msg)
+    # Act like we have some work to do for this
+    time.sleep(5)
+    # Craft a response with the actionResponse object
+    response = sc.newActionResponse(msg['data']['name'])
+    response.setMessage("OK")
+    response.setStatus(0)
+    sc.sendall(response)
 
 
 # Ideally we could get this into the library and not put it on the user? Not sure
-def getMessages(in_queue, temp):
+def getActions(sc, temp):
     while True:
-        msg = in_queue.get()
+        msg = sc.getQueue().get()
         if msg['type'] == "trigger-action":
             # Trigger the action
             logging.debug("We got a trigger-action to do " +
                           msg['data']['name'])
-            t = threading.Thread(target=preformAction, args=(msg))
-            t.start()
+            a = threading.Thread(target=performAction, args=(msg, sc))
+            a.start()
         else:
-            logging.info("Got a packet response:")
+            logging.warning(
+                "Got a packet response that wasn't what we expected, the library should handle this:")
             logging.info(msg)
 
 #MAIN#
@@ -34,8 +51,23 @@ sc = smartcarsocket.smartcarsocket()
 
 # Register ourselves and what we provide to the environment
 sc.registerContainer()
-sc.registerEvent("started_recording")
-sc.registerAction("start_recording")
 
-t = threading.Thread(target=getMessages, args=(sc.getQueue(), True))
+sc.registerEvent("started_recording")
+sc.registerEvent("stopped_recording")
+
+sc.registerEvent("started_preview")
+sc.registerEvent("stopped_preview")
+
+sc.registerAction("start_recording")
+sc.registerAction("stopped_recording")
+
+sc.registerAction("start_preview")
+sc.registerAction("stop_preview")
+
+# Handle incoming action requests
+t = threading.Thread(target=getActions, args=(sc, True))
 t.start()
+
+# Do what you need to do here to emit events. In this case the dashcam is reactive
+# So we'll just have the main thread block for the endless getActions...
+t.join()
