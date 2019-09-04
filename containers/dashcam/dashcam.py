@@ -4,7 +4,8 @@ import queue
 import logging
 import time
 import os
-import picamera
+if os.uname()[4] == 'armv7l':
+    import picamera
 
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s.%(msecs)d:LINE %(lineno)d:TID %(thread)d:%(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
