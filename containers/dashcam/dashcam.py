@@ -4,12 +4,9 @@ import queue
 import logging
 import time
 import os
-import picamera
-from unittest.mock import Mock
-
 # For CI Tests we don't have a real camera, so we'll need to mock the library
-if os.environ('CI') == "true":
-    picamera = Mock()
+if os.environ.get('CI') != "true":
+    import picamera
 
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s.%(msecs)d:LINE %(lineno)d:TID %(thread)d:%(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
