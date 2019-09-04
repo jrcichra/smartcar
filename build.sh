@@ -19,5 +19,5 @@ docker buildx inspect --bootstrap
 echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin 
 # Phase 3 - build a container based on the arg passed in
 cd containers/$1
-docker buildx build --build-arg commit=$TRAVIS_COMMIT --platform linux/amd64,linux/arm64,linux/arm/v7 -t jrcichra/smartcar_$1 --push .
+docker buildx build --build-arg commit=$TRAVIS_COMMIT --platform linux/arm/v7 -t jrcichra/smartcar_$1 --push .
 docker buildx imagetools inspect jrcichra/smartcar_$1
