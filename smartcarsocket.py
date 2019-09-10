@@ -224,7 +224,7 @@ class smartcarsocket:
             emit_event = {
                 'type': "emit-event",
                 'timestamp': time.time(),
-                'container_id': s.gethostname(),
+                'container_id': self.s.gethostname(),
                 'data': {
                         'name': name
                 }
