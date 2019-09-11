@@ -55,7 +55,7 @@ sc.registerEvent("started_preview")
 sc.registerEvent("stopped_preview")
 
 sc.registerAction("start_recording")
-sc.registerAction("stopped_recording")
+sc.registerAction("stop_recording")
 
 sc.registerAction("start_preview")
 sc.registerAction("stop_preview")
