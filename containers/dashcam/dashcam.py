@@ -19,6 +19,7 @@ def performAction(msg, sc):
     time.sleep(5)
     # Craft a response with the actionResponse object
     response = sc.newActionResponse(msg['data']['name'])
+    response.setEventID(msg['event_id'])
     response.setMessage("OK")
     response.setStatus(0)
     sc.sendall(response)

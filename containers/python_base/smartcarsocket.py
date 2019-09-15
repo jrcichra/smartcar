@@ -28,6 +28,8 @@ class actionResponse:
         self.response['data']['message'] = msg
     def setStatus(self,s):
         self.response['data']['status'] = s
+    def setEventID(self,eid):
+        self.response['event_id'] = eid
     def getDict(self):
         return self.response
 class connector:
