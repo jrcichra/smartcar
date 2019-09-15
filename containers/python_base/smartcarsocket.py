@@ -248,13 +248,19 @@ class smartcarsocket:
         while not done:
             # This should be blocking
             obj = self.s.recv()
+            logging.debug("handleIncoming got something:")
+            logging.debug(obj)
             # obj is a json object of the internal protocol
             # look at it and determine what we should expose to the user / handle internally
             try:
                 obj_type = obj['type']
                 found = False
                 for r in self.responses:
-                    if r == obj_type:
+                    if r == "trigger-action":
+                        found = True
+                        logging.debug("This is a trigger-action, we want to pass this along to the user queue")
+                        self.user_queue.put(obj)
+                    elif r == obj_type:
                         found = True
                         # Pass the result through the internal queue, they can handle it for now
                         # Nothing that goes in this queue should be unexpected
