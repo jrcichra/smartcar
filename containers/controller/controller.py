@@ -103,15 +103,6 @@ def handleAction(action, mode, read_queue, action_queue, event_id):
 
 
 def handleEvent(obj, rc, events,event_id):
-    # Internal error if we somehow don't go through the if or else
-    response = {
-        'type': "emit-event-response",
-        'timestamp': time.time(),
-        'data': {
-                'message': "Internal emit-event error",
-                'status': 506
-        }
-    }
 
     event = events[event_id]
     read_queue = event['read_queue']
@@ -131,6 +122,8 @@ def handleEvent(obj, rc, events,event_id):
     for e in events:
         events[e]['break_queue'].put(event_name)
 
+    logging.debug("Dumping events::")
+    logging.debug(events)
     # Query out the actions that take place because of this event
     redis_event = rc.queryEvent(event_name)
     logging.debug(
@@ -139,11 +132,9 @@ def handleEvent(obj, rc, events,event_id):
 
     # Verify the container who emitted this event is the one who registered it
     if redis_event is None:
-        response['data']['message'] = "Cannot emit an event which does not exist"
-        response['data']['status'] = 508
+        logging.error("Cannot emit an event which does not exist")
     elif container_id != redis_event['container_id']:
-        response['data']['message'] = "container_id of request did not match container_id of registered event"
-        response['data']['status'] = 507
+        logging.error("container_id of request did not match container_id of registered event")
     else:
         # Insert the ignore if there is one
         try:
@@ -235,18 +226,7 @@ def handleEvent(obj, rc, events,event_id):
             break_queue.get()
 
         logging.debug("Finished draining the break queue.")
-
-        logging.debug("Sending back the emit-event-response...")
-
-        response = {
-            'type': "emit-event-response",
-            'timestamp': time.time(),
-            'data': {
-                'message': "OK",
-                'status': 0
-            }
-        }
-    return response
+        logging.debug("I am finished handling this event.")
 
 def initalizeEvent(events, container_object,rc):
 
@@ -272,6 +252,8 @@ def initalizeEvent(events, container_object,rc):
             'action_queue': queue.Queue(),
             'break_queue' : queue.Queue()
         }
+        logging.debug("Dumping events:::::")
+        logging.debug(events)
         # Spawn that thread
         t = threading.Thread(target=handleEvent, args=(
             container_object, rc, events, event_id))
