@@ -254,19 +254,20 @@ class smartcarsocket:
             # look at it and determine what we should expose to the user / handle internally
             try:
                 obj_type = obj['type']
-                found = False
-                for r in self.responses:
-                    if r == "trigger-action":
-                        found = True
-                        logging.debug("This is a trigger-action, we want to pass this along to the user queue")
-                        self.user_queue.put(obj)
-                    elif r == obj_type:
-                        found = True
-                        # Pass the result through the internal queue, they can handle it for now
-                        # Nothing that goes in this queue should be unexpected
-                        self.internal_queue.put(obj)
-                if not found:
-                    logging.error("The server sent a response we are not aware of...")
+                if obj_type == "trigger-action":
+                    logging.debug("This is a trigger-action, we want to pass this along to the user queue")
+                    self.user_queue.put(obj)
+                else:
+                    found = False
+                    for r in self.responses:
+                    
+                        if r == obj_type:
+                            found = True
+                            # Pass the result through the internal queue, they can handle it for now
+                            # Nothing that goes in this queue should be unexpected
+                            self.internal_queue.put(obj)
+                    if not found:
+                        logging.error("The server sent a response we are not aware of...")
             except Exception as e:
                 logging.error("Something went wrong when putting things in queues and doing key stuff")
                 logging.error(e)
