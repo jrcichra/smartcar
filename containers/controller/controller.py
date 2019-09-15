@@ -340,6 +340,7 @@ def handleContainerMessage(client_socket, client_address, container_object, rc, 
         except KeyError as e:
             logging.error(
                 "We're missing the event id, can't determine which queue is blocked / waiting for this")
+            logging.error(e)
     else:
         response = {
             'type': container_object['type'] + "-error",
