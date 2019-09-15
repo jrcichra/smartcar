@@ -20,7 +20,7 @@ modes = ["serial", "parallel"]
 # Thread independent hash of container ids and a socket, so we can send stuff.
 # I am using thread locks instead of another thread + a queue, much nicer :-)
 connections = {}
-
+events = {}
 
 def isSupportedMode(mode):
     return mode in modes
@@ -348,10 +348,7 @@ def serve_container(client_socket, client_address, rc):
             'write_lock': threading.Lock()  # ,
             # 'read_queue': queue.Queue()
         }
-        # Hash of current events and their queues because we could be handling
-        # multiple events at similar times, ones blocked, one's not, yikes! This is insane
-        events = {}
-
+        global events
         # While they are here...
         while connected:
             # Block until we get a packet from them
