@@ -90,7 +90,7 @@ class connector:
         elif isinstance(data,actionResponse):
             logging.debug(
                 "In sendall(), found an actionResponse, converting the dict inside into JSON before packetizing...")
-            self.s.sendall(self.packetize(data.getDict()))
+            self.s.sendall(self.packetize(json.dumps(data.getDict())))
         else:
             logging.error(
                 "In sendall(), this is not a string or dict/json type, I don't know how to send this...")
