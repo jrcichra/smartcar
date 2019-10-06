@@ -41,7 +41,6 @@ def get_new_filename():
 if not isCI():
     # Do all the camera setup, this will probably come from a config file at some point...
     import picamera
-    global camera
     camera = picamera.PiCamera()  # the camera object
     camera.resolution = (HRES, VRES)
     # annotations
