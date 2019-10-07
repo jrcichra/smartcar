@@ -76,7 +76,10 @@ def getActions(sc, temp):
 
 # Double check the key actually went off
 def is_off():
-  return GPIO.input(KEY_OFF) and not GPIO.input(KEY_ON)
+    if not isCI():
+        return GPIO.input(KEY_OFF) and not GPIO.input(KEY_ON)
+    else:
+        return True
 
 ##print pins##
 def print_pins():
