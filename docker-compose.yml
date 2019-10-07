@@ -20,3 +20,8 @@ services:
    image: jrcichra/smartcar_gpio
    depends_on:
       - controller
+  transfer:
+   hostname: transfer
+   image: jrcichra/smartcar_transfer
+   depends_on:
+      - controller
