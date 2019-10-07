@@ -9,6 +9,7 @@ jobs:
     install: bash -x build.sh controller
   - install: bash -x build.sh gpio
   - install: bash -x build.sh dashcam
+  - install: bash -x build.sh transfer
   - stage: test
     script:
     - bash -x check_commit.sh python_base
@@ -18,6 +19,8 @@ jobs:
     - bash -x check_commit.sh gpio
   - script:
     - bash -x check_commit.sh dashcam
+  - script:
+    - bash -x check_commit.sh transfer
   - script:
     - docker-compose up &
     - sleep 60
