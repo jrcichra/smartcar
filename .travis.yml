@@ -22,6 +22,7 @@ jobs:
   - script:
     - bash -x check_commit.sh transfer
   - script:
+    - mkdir ~/recordings
     - docker-compose up &
     - sleep 60
     - docker-compose exec redis bash -x -c 'redis-cli KEYS *'
