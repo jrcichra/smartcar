@@ -80,13 +80,13 @@ def is_off():
 
 ##print pins##
 def print_pins():
-  global KEY_OFF
-  global KEY_ON
-  
-  logging.info("##############################")
-  logging.info("KEY_OFF (PIN 33)="+str(GPIO.input(KEY_OFF)))
-  logging.info("KEY_ON (PIN 35)="+str(GPIO.input(KEY_ON)))
-  logging.info("##############################")
+    if not isCI():
+        global KEY_OFF
+        global KEY_ON
+        logging.info("##############################")
+        logging.info("KEY_OFF (PIN 33)="+str(GPIO.input(KEY_OFF)))
+        logging.info("KEY_ON (PIN 35)="+str(GPIO.input(KEY_ON)))
+        logging.info("##############################")
 
 def key_went_off(self):
     logging.info("We got a change in key state...")
@@ -127,7 +127,6 @@ sc = smartcarsocket.smartcarsocket()
 # Register ourselves and what we provide to the environment
 sc.registerContainer()
 
-sc.registerContainer()
 sc.registerEvent("key_on")
 sc.registerEvent("key_off")
 sc.registerAction("power_off")
