@@ -1,4 +1,11 @@
 version: '3'
+volumes:
+  recordings:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ~/recordings
 services:
   redis:
    hostname: redis
@@ -13,6 +20,10 @@ services:
   dashcam:
    hostname: dashcam
    image: jrcichra/smartcar_dashcam
+   volumes:
+    - type: volume
+      source: recordings
+      target: /recordings
    depends_on:
       - controller
   gpio:
@@ -23,5 +34,9 @@ services:
   transfer:
    hostname: transfer
    image: jrcichra/smartcar_transfer
+   volumes:
+    - type: volume
+      source: recordings
+      target: /recordings
    depends_on:
       - controller

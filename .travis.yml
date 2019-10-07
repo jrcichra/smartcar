@@ -27,6 +27,7 @@ jobs:
     - docker-compose exec redis bash -x -c 'redis-cli KEYS *'
     - docker-compose exec redis bash -x -c 'redis-cli KEYS * | cut -d\" -f2 | xargs
       -L1 redis-cli JSON.GET'
+    - ls -lrt ~/recordings
 env:
   global:
   - secure: sJcojDXXLmIAktdRCn0bZaM+dPXaUSvcSVIVoIU02iz7S+ubl0gVUBbZjlO1YtDLTdot2cqjR43XvVdKV2wt7hE0d6xtNS1Gaiy6k5i2IagI86UB12vRlxBYkmJTJ+/Ne70/N5vEcJYmCAnaf/Nhg/155NU/eQ5yXI/Vm8UfdpkPM2aKWalG+TLcUQfAjsgdiK2HrJQ6km0InX38o2l83ntkqq0qTwF3CbKPTbd7GBzzioM0TaGQn2MxeNd57ApPVSN4CrdOoP3jlgmvogTI1Y5ojv2tp0OxDlggI+GAAB36xPVxuDsybqCsn6526Va5TKrUUkrvItLEo1Qjeos34Ih4uxaK3S2TpyXaOv/33Tjbl2+sfuKF+DWVGNPExRr14ujAfTMhSiKpr8y/olGiva4Vcj6WWY41vss5anhMXldplczDtIAA+aZfSR0WnfZgAfRx8nyFGnAfPSxf+9wEjFYdHJdKJHGq52IGnPyrhO0KuHt4BD4RPYLC5LQ0Qn67Kc4cKAzYLDhntwrWWe34E0mO+YqAfa7e/9e1o48AlgNd6BNnANu0lU2Rix0h78GpUCQwgA/VDahABF4brQdq1cWSyt2JrK/TrXC5K0xo68idoft/jqZh62RRRI00CUINQI6oqLwSVvVplFNrURax9+WKBSQu+5NQfoleEIP6mAY=
