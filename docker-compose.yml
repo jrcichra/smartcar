@@ -14,10 +14,9 @@ services:
    hostname: dashcam
    image: jrcichra/smartcar_dashcam
    volumes:
-    - ~/recordings:/recordings
+    - "${PWD}/recordings:/recordings"
    depends_on:
       - controller
-   command: "-rot 0 -fps 10 -h 1280 -v 720"
   gpio:
    hostname: gpio
    image: jrcichra/smartcar_gpio
@@ -27,7 +26,6 @@ services:
    hostname: transfer
    image: jrcichra/smartcar_transfer
    volumes:
-    - ~/recordings:/recordings
+    - "${PWD}/recordings:/recordings"
    depends_on:
       - controller
-   command: "-nas_path ~/media/5tb/dashcam/recordings -nas_host 10.0.0.10 -nas_username pi -ci True"
