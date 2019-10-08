@@ -11,7 +11,7 @@ jobs:
   - install: bash -x build.sh dashcam
   - install: bash -x build.sh transfer
   - stage: test
-  - script:
+    script:
     - mkdir ~/recordings
     - docker-compose up &
     - sleep 60
