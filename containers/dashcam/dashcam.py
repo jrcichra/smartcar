@@ -5,19 +5,18 @@ import logging
 import time
 import os
 import datetime
-import sys
-import argparse
+
+FRAMERATE = 10           # Framerate used
+HRES = 1280  # Horizontal pixels
+VRES = 720  # Vertical pixels
 
 
 def isCI():
     return os.uname()[4] != 'armv7l'
 
 
-FRAMERATE = 10           # Framerate used
-HRES = 1280  # Horizontal pixels
-VRES = 720  # Vertical pixels
-
 camera = None
+##get_new_filename##
 
 
 def getserial():

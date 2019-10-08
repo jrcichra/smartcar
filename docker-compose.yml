@@ -14,7 +14,7 @@ services:
    hostname: dashcam
    image: jrcichra/smartcar_dashcam
    volumes:
-    - "${PWD}/recordings:/recordings"
+    - ~/recordings:/recordings
    depends_on:
       - controller
   gpio:
@@ -26,6 +26,6 @@ services:
    hostname: transfer
    image: jrcichra/smartcar_transfer
    volumes:
-    - "${PWD}/recordings:/recordings"
+    - ~/recordings:/recordings
    depends_on:
       - controller

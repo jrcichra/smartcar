@@ -4,15 +4,10 @@ import queue
 import logging
 import time
 import os
-import sys
-import argparse
 
 
 def isCI():
     return os.uname()[4] != 'armv7l'
-
-
-# set up the place where we should transfer the footage
 
 
 logging.basicConfig(level=logging.DEBUG,
