@@ -30,4 +30,4 @@ services:
     - ~/recordings:/recordings
    depends_on:
       - controller
-    command: "-nas_path ~/media/5tb/dashcam/recordings -nas_host 10.0.0.10 -nas_username pi -ci True"
+   command: "-nas_path ~/media/5tb/dashcam/recordings -nas_host 10.0.0.10 -nas_username pi -ci True"
