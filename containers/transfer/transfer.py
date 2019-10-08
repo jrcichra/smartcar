@@ -12,20 +12,6 @@ def isCI():
     return os.uname()[4] != 'armv7l'
 
 
-parser = argparse.ArgumentParser(
-    description="Handles transfer commands for the smartcar project")
-parser.add_argument("-nas_path",
-                    help="path on the nas where we should copy the footage", type=str)
-parser.add_argument("-nas_host",
-                    help="hostname/ip of the nas", type=str)
-parser.add_argument("-nas_username",
-                    help="username for the nas", type=str)
-parser.add_argument("-ci",
-                    help="rotation in degrees of camera", type=bool)
-
-args = parser.parse_args()
-
-
 # set up the place where we should transfer the footage
 
 
