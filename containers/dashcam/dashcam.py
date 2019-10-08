@@ -5,18 +5,33 @@ import logging
 import time
 import os
 import datetime
-
-FRAMERATE = 10           # Framerate used
-HRES = 1280  # Horizontal pixels
-VRES = 720  # Vertical pixels
+import sys
+import argparse
 
 
 def isCI():
     return os.uname()[4] != 'armv7l'
 
 
+parser = argparse.ArgumentParser(
+    description="Handles dashcam commands for the smartcar project")
+parser.add_argument("-fps",
+                    help="number of frames per second that should be recorded", type=int)
+parser.add_argument("-h",
+                    help="horizontal pixels", type=int)
+parser.add_argument("-v",
+                    help="vertical pixels", type=int)
+parser.add_argument("-rot",
+                    help="rotation in degrees of camera", type=int)
+
+args = parser.parse_args()
+
+FRAMERATE = args.fps            # Framerate used
+HRES = args.h                     # Horizontal pixels
+VRES = args.v                      # Vertical pixels
+ROT = args.rot
+
 camera = None
-##get_new_filename##
 
 
 def getserial():
@@ -52,7 +67,7 @@ if not isCI():
     # set the framerate
     camera.framerate = FRAMERATE
     # set the rotation
-    camera.rotation = 0
+    camera.rotation = ROT
     camera.preview.alpha = 128
     current_filename = get_new_filename()
 
