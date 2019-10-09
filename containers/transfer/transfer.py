@@ -4,6 +4,7 @@ import queue
 import logging
 import time
 import os
+import yaml
 
 
 def isCI():
@@ -60,6 +61,14 @@ def getActions(sc, temp):
 
 #MAIN#
 
+
+# Parse our settings
+with open('/settings.yml', 'r') as f:
+    y = yaml.safe_load(f)
+    try:
+        settings = y['transfer']
+    except Exception as e:
+        logging.warning("No settings found for the transfer container")
 
 # Use the library to abstract the difficulty
 sc = smartcarsocket.smartcarsocket()

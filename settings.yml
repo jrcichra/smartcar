@@ -1,0 +1,10 @@
+dashcam:
+  rot: 0
+  hres: 1280
+  vres: 720
+  fps: 10
+transfer:
+  hostname: "nas"
+  username: "ubuntu"
+  password: "password"
+  path: "/mnt/recordings"
