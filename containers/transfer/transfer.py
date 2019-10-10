@@ -5,6 +5,10 @@ import logging
 import time
 import os
 import yaml
+import glob
+import json
+
+RECORDING_PATH = '/recordings'  # because we're in a container we can do this :)
 
 
 def isCI():
@@ -26,11 +30,63 @@ def sendResponse(msg, sc):
 
 
 def transfer_all_footage(msg, sc):
-    pass
+    ping_attempts = 0
+    PING_SLEEP = 10
+    MAX_PINGS = 3
+    while os.system("ping " + HOSTNAME + " -c 1") != 0 and ping_attempts < MAX_PINGS:
+        time.sleep(PING_SLEEP)
+        ping_attempts += 1
+        if ping_attempts >= MAX_PINGS:
+            logging.warn(
+                "We did not find the host specified. Keeping the files on the local system.")
+        else:
+            logging.info(
+                "We found the host, going through all h264 files and transfering them")
+            videos = glob.glob(RECORDING_PATH + "*.h264")
+            for video in videos:
+                # loop through every video
+                if METHOD == "ssh":
+                    if os.system("scp -p " + video + " " + USERNAME + "@" + HOSTNAME + ":" + PATH) != 0:
+                        logging.error(
+                            "Something went wrong with the transfer for " + video + ", keeping file where it is")
+                    else:
+                        logging.info("Copy was successful for " +
+                                     video + "...Validating filesizes...")
+                        local_size = os.path.getsize(video)
+                        # Do the check on the ssh server we're transfering to
+                        if os.system("ssh " + USERNAME + "@" + HOSTNAME + " test $(du -b " + video + "| cut -f1" + ") = " + str(local_size)) != 0:
+                            logging.info(
+                                "Filesizes match, deleting local file: " + video + "...")
+                            os.remove(video)
+                            j = {}
+                            j['framerate'] = FRAMERATE
+                            vname = video.rsplit('/', 1)[1]
+                            if os.system("ssh " + USERNAME + "@" + HOSTNAME + " echo '" + json.dumps(j).replace(
+                                    '"', '\\"') + " > " + PATH + ".convert/" + vname.rsplit('.', 1)[0] + '.json' + "'") != 0:
+                                logging.info(
+                                    "We couldn't place the JSON file...note the video might not be converted to mp4 now...")
+                            else:
+                                logging.info(
+                                    "Successfully placed JSON file for " + video)
+                        else:
+                            logging.warn(
+                                "Filesizes don't match, something is wrong! don't delete the local file...we'll try again some other time")
+                else:
+                    logging.error(
+                        "The only method supported right now is ssh. nfs might come in a later version...")
+            # end for
+            logging.info(
+                "Finished processing all recordings. If all went well, there should be no files left")
+            sendResponse(msg, sc)
 
 
 def kick_off_conversion(msg, sc):
-    pass
+    # Let's kick off the job on the host to start converting
+    if os.system("ssh " + USERNAME + "@" + HOSTNAME + ' nohup bash -c "' + PATH + '../convert.sh >> ' + PATH + "../convert.log 2>&1 &") != 0:
+        logging.info("Could not kick off the h264->mp4 job on the backend")
+    else:
+        logging.info("Successfully kicked off the job")
+    sendResponse(msg, sc)
 
 # Ideally we could get this into the library and not put it on the user? Not sure
 
@@ -68,7 +124,38 @@ with open('/settings.yml', 'r') as f:
     try:
         settings = y['transfer']
     except Exception as e:
-        logging.warning("No settings found for the transfer container")
+        logging.warn("No settings found for the transfer container")
+
+try:
+    HOSTNAME = settings['hostname']
+except KeyError as e:
+    HOSTNAME = ""
+    logging.warn("Did not find a hostname in the settings, ignoring transfers")
+
+try:
+    USERNAME = settings['username']
+except KeyError as e:
+    USERNAME = ""
+    logging.warn(
+        "Did not find a username in the settings, ignoring transfers " +
+        "(we're in a container, I don't know your username outside this)")
+try:
+    METHOD = settings['method']
+except KeyError as e:
+    METHOD = "ssh"
+    logging.warn("Did not find a method in the settings, defaulting to ssh")
+
+try:
+    PATH = settings['path']
+except KeyError as e:
+    PATH = ""
+    logging.warn("Did not find a path in the settings, ignoring transfers")
+try:
+    FRAMERATE = y['dashcam']['fps']
+except KeyError as e:
+    FRAMERATE = 10
+    logging.warn(
+        "Transfer needs to know the framerate of the dashcam, didn't find one, defaulting to " + FRAMERATE)
 
 # Use the library to abstract the difficulty
 sc = smartcarsocket.smartcarsocket()

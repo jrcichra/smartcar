@@ -4,7 +4,7 @@ dashcam:
   vres: 720
   fps: 10
 transfer:
-  hostname: "nas"
-  username: "ubuntu"
-  password: "password"
+  hostname: "localhost"
+  username: "travis"
+  method: "ssh"
   path: "/mnt/recordings"

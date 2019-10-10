@@ -7,10 +7,6 @@ import os
 import datetime
 import yaml
 
-FRAMERATE = 10           # Framerate used
-HRES = 1280  # Horizontal pixels
-VRES = 720  # Vertical pixels
-
 
 def isCI():
     return os.uname()[4] != 'armv7l'
@@ -37,25 +33,6 @@ def getserial():
 
 def get_new_filename():
     return "travel__" + datetime.datetime.now().strftime("%Y--%m--%d__%H--%M--%S") + "__" + str(getserial()) + ".h264"
-
-
-if not isCI():
-    # Do all the camera setup, this will probably come from a config file at some point...
-    import picamera
-    camera = picamera.PiCamera()  # the camera object
-    camera.resolution = (HRES, VRES)
-    # annotations
-    camera.annotate_foreground = picamera.Color('white')
-    camera.annotate_background = picamera.Color('black')
-    camera.annotate_frame_num = True
-    camera.annotate_text_size = 48
-    camera.annotate_text = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
-    # set the framerate
-    camera.framerate = FRAMERATE
-    # set the rotation
-    camera.rotation = 0
-    camera.preview.alpha = 128
-    current_filename = get_new_filename()
 
 
 logging.basicConfig(level=logging.DEBUG,
@@ -162,6 +139,48 @@ with open('/settings.yml', 'r') as f:
         settings = y['dashcam']
     except Exception as e:
         logging.warning("No settings found for the transfer container")
+
+try:
+    FRAMERATE = settings['fps']
+except KeyError as e:
+    FRAMERATE = 10
+    logging.warn("Missing framerate, defaulting to " + FRAMERATE)
+
+try:
+    HRES = settings['hres']
+except KeyError as e:
+    HRES = 1280
+    logging.warn("Missing hres, defaulting to " + HRES)
+
+try:
+    VRES = settings['vres']
+except KeyError as e:
+    VRES = 720
+    logging.warn("Missing vres, defaulting to " + VRES)
+
+try:
+    ROT = settings['rot']
+except KeyError as e:
+    ROT = 0
+    logging.warn("Missing rot, defaulting to " + ROT)
+
+if not isCI():
+    # Do all the camera setup, this will probably come from a config file at some point...
+    import picamera
+    camera = picamera.PiCamera()  # the camera object
+    camera.resolution = (HRES, VRES)
+    # annotations
+    camera.annotate_foreground = picamera.Color('white')
+    camera.annotate_background = picamera.Color('black')
+    camera.annotate_frame_num = True
+    camera.annotate_text_size = 48
+    camera.annotate_text = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
+    # set the framerate
+    camera.framerate = FRAMERATE
+    # set the rotation
+    camera.rotation = ROT
+    camera.preview.alpha = 128
+    current_filename = get_new_filename()
 
 # Use the library to abstract the difficulty
 sc = smartcarsocket.smartcarsocket()

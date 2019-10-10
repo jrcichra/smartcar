@@ -179,7 +179,7 @@ class redisController:
 
             except KeyError:
                 logging.warn(
-                    "Missing event in config.yml, cannot preform actions for this event. Please check your config.yml")
+                    "Missing event in config.yml, cannot perform actions for this event. Please check your config.yml")
 
             self.db.jsonset("event_" + str(event_name),
                             Path.rootPath(), robj)
