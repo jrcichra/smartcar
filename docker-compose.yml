@@ -31,3 +31,6 @@ services:
     - "${PWD}/settings.yml:/settings.yml"
    depends_on:
       - controller
+  cinas:
+    hostname: cinas
+    image: rastasheep/ubuntu-sshd

@@ -41,8 +41,15 @@ def transfer_all_footage(msg, sc):
         logging.warn(
             "We did not find the host specified. Keeping the files on the local system.")
     else:
-        logging.info(
-            "We found the host, going through all h264 files and transfering them")
+        logging.info("We found the host")
+
+        # first do the ssh key
+        if os.system('sshpass -p "' + PASSWORD + '"' + "ssh-copy-id " + USERNAME + "@" + HOSTNAME) != 0:
+            logging.error("Something went wrong with sshpass")
+        else:
+            logging.info("We authenticated you through ssh")
+
+        logging.info("Going through all h264 files and transfering them")
         videos = glob.glob(RECORDING_PATH + "*.h264")
         for video in videos:
             # loop through every video
@@ -140,6 +147,13 @@ except KeyError as e:
     logging.warn(
         "Did not find a username in the settings, ignoring transfers " +
         "(we're in a container, I don't know your username outside this)")
+try:
+    PASSWORD = settings['password']
+except KeyError as e:
+    PASSWORD = ""
+    logging.warn(
+        "Did not find a password in the settings, if you haven't set up ssh keys somehow, things might not work")
+
 try:
     METHOD = settings['method']
 except KeyError as e:
