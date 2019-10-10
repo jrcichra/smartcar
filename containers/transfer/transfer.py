@@ -8,7 +8,8 @@ import yaml
 import glob
 import json
 
-RECORDING_PATH = '/recordings'  # because we're in a container we can do this :)
+# because we're in a container we can do this :)
+RECORDING_PATH = '/recordings/'
 
 
 def isCI():
@@ -51,7 +52,7 @@ def transfer_all_footage(msg, sc):
                         "Something went wrong with the transfer for " + video + ", keeping file where it is")
                 else:
                     logging.info("Copy was successful for " +
-                                    video + "...Validating filesizes...")
+                                 video + "...Validating filesizes...")
                     local_size = os.path.getsize(video)
                     # Do the check on the ssh server we're transfering to
                     if os.system("ssh " + USERNAME + "@" + HOSTNAME + " test $(du -b " + video + "| cut -f1" + ") = " + str(local_size)) != 0:
