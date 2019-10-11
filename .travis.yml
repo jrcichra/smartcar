@@ -23,9 +23,7 @@ jobs:
     - bash -x check_commit.sh transfer
   - script:
     - sudo apt update && sudo apt install -y openssh-server
-    - cat /dev/zero | ssh-keygen -q -N ""
-    - cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
-    - mkdir ~/recordings && sudo mkdir -p /mnt/recordings
+    - mkdir ~/recordings
     - docker-compose up &
     - sleep 60
     - docker-compose exec redis bash -x -c 'redis-cli KEYS *'

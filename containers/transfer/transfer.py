@@ -44,7 +44,7 @@ def transfer_all_footage(msg, sc):
         logging.info("We found the host")
 
         # first do the ssh key
-        if os.system('sshpass -p "' + PASSWORD + '"' + "ssh-copy-id " + USERNAME + "@" + HOSTNAME) != 0:
+        if os.system('sshpass -p "' + PASSWORD + '"' + " ssh-copy-id " + USERNAME + "@" + HOSTNAME) != 0:
             logging.error("Something went wrong with sshpass")
         else:
             logging.info("We authenticated you through ssh")
