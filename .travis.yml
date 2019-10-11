@@ -23,6 +23,7 @@ jobs:
     - bash -x check_commit.sh transfer
   - script:
     - sudo apt update && sudo apt install -y openssh-server
+    - cat /dev/zero | ssh-keygen -q -N ""
     - mkdir ~/recordings
     - docker-compose up &
     - sleep 60
