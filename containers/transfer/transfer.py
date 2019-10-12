@@ -44,6 +44,10 @@ def transfer_all_footage(msg, sc):
         logging.info("We found the host")
 
         # first do the ssh key
+        if os.system('cat /dev/zero | ssh-keygen -q -N ""') != 0:
+            logging.error("Something went wrong generating an ssh key")
+        else:
+            logging.info("We generated an ssh key")
         if os.system('sshpass -p "' + PASSWORD + '"' + " ssh-copy-id " + USERNAME + "@" + HOSTNAME) != 0:
             logging.error("Something went wrong with sshpass")
         else:
