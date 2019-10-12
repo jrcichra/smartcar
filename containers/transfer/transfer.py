@@ -62,10 +62,8 @@ def transfer_all_footage(msg, sc):
             logging.error("Something went wrong generating an ssh key")
         else:
             logging.info("We generated an ssh key")
-        ret = system('sshpass -p ' + PASSWORD +
-                     " ssh-copy-id " + USERNAME + "@" + HOSTNAME)
-        if ret != 0:
-            print("Return is: " + str(ret))
+        if system('sshpass -p ' + PASSWORD +
+                  " ssh-copy-id -o StrictHostKeyChecking=no " + USERNAME + "@" + HOSTNAME) != 0:
             logging.error("Something went wrong with sshpass")
         else:
             logging.info("We authenticated you through ssh")
