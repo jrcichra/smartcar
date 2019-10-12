@@ -33,7 +33,8 @@ def sendResponse(msg, sc):
 
 def system(s):
     try:
-        outp = subprocess.check_output([s], stderr=subprocess.STDOUT)
+        outp = subprocess.check_output(
+            [s], stderr=subprocess.STDOUT, shell=True)
         print(outp)
         return 0
     except subprocess.CalledProcessError as e:
