@@ -49,19 +49,19 @@ def transfer_all_footage(msg, sc):
         else:
             logging.info("We generated an ssh key")
         ret = os.system('sshpass -p ' + PASSWORD +
-                        " ssh-copy-id " + USERNAME + "@" + HOSTNAME)
-        # if ret != 0:
-        #print("Return is: " + str(ret))
-        #logging.error("Something went wrong with sshpass")
-        # else:
-        #logging.info("We authenticated you through ssh")
+                        " ssh-copy-id " + USERNAME + "@" + HOSTNAME, shell=True)
+        if ret != 0:
+            print("Return is: " + str(ret))
+            logging.error("Something went wrong with sshpass")
+        else:
+            logging.info("We authenticated you through ssh")
 
         logging.info("Going through all h264 files and transfering them")
         videos = glob.glob(RECORDING_PATH + "*.h264")
         for video in videos:
             # loop through every video
             if METHOD == "ssh":
-                if os.system("scp -p " + video + " " + USERNAME + "@" + HOSTNAME + ":" + PATH) != 0:
+                if os.system("scp -p " + video + " " + USERNAME + "@" + HOSTNAME + ":" + PATH, shell=True) != 0:
                     logging.error(
                         "Something went wrong with the transfer for " + video + ", keeping file where it is")
                 else:
