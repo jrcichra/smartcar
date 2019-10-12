@@ -7,6 +7,7 @@ import os
 import yaml
 import glob
 import json
+import subprocess
 
 # because we're in a container we can do this :)
 RECORDING_PATH = '/recordings/'
@@ -30,11 +31,22 @@ def sendResponse(msg, sc):
     sc.sendall(response)
 
 
+def system(s):
+    try:
+        outp = subprocess.check_output([s], stderr=subprocess.STDOUT)
+        print(outp)
+        return 0
+    except subprocess.CalledProcessError as e:
+        print(str(e.output))
+        print(str(e.cmd))
+        return e.returncode
+
+
 def transfer_all_footage(msg, sc):
     ping_attempts = 0
     PING_SLEEP = 10
     MAX_PINGS = 3
-    while os.system("ping " + HOSTNAME + " -c 1") != 0 and ping_attempts < MAX_PINGS:
+    while system("ping " + HOSTNAME + " -c 1") != 0 and ping_attempts < MAX_PINGS:
         time.sleep(PING_SLEEP)
         ping_attempts += 1
     if ping_attempts >= MAX_PINGS:
@@ -44,12 +56,12 @@ def transfer_all_footage(msg, sc):
         logging.info("We found the host")
 
         # first do the ssh key
-        if os.system("ssh-keygen -f $HOME/.ssh/id_rsa -t rsa -N ''") != 0:
+        if system("ssh-keygen -f $HOME/.ssh/id_rsa -t rsa -N ''") != 0:
             logging.error("Something went wrong generating an ssh key")
         else:
             logging.info("We generated an ssh key")
-        ret = os.system('sshpass -p ' + PASSWORD +
-                        " ssh-copy-id " + USERNAME + "@" + HOSTNAME, shell=True)
+        ret = system('sshpass -p ' + PASSWORD +
+                     " ssh-copy-id " + USERNAME + "@" + HOSTNAME)
         if ret != 0:
             print("Return is: " + str(ret))
             logging.error("Something went wrong with sshpass")
@@ -61,7 +73,7 @@ def transfer_all_footage(msg, sc):
         for video in videos:
             # loop through every video
             if METHOD == "ssh":
-                if os.system("scp -p " + video + " " + USERNAME + "@" + HOSTNAME + ":" + PATH, shell=True) != 0:
+                if system("scp -p " + video + " " + USERNAME + "@" + HOSTNAME + ":" + PATH, shell=True) != 0:
                     logging.error(
                         "Something went wrong with the transfer for " + video + ", keeping file where it is")
                 else:
@@ -69,14 +81,14 @@ def transfer_all_footage(msg, sc):
                                  video + "...Validating filesizes...")
                     local_size = os.path.getsize(video)
                     # Do the check on the ssh server we're transfering to
-                    if os.system("ssh " + USERNAME + "@" + HOSTNAME + " test $(du -b " + video + "| cut -f1" + ") = " + str(local_size)) != 0:
+                    if system("ssh " + USERNAME + "@" + HOSTNAME + " test $(du -b " + video + "| cut -f1" + ") = " + str(local_size)) != 0:
                         logging.info(
                             "Filesizes match, deleting local file: " + video + "...")
                         os.remove(video)
                         j = {}
                         j['framerate'] = FRAMERATE
                         vname = video.rsplit('/', 1)[1]
-                        if os.system("ssh " + USERNAME + "@" + HOSTNAME + " echo '" + json.dumps(j).replace(
+                        if system("ssh " + USERNAME + "@" + HOSTNAME + " echo '" + json.dumps(j).replace(
                                 '"', '\\"') + " > " + PATH + ".convert/" + vname.rsplit('.', 1)[0] + '.json' + "'") != 0:
                             logging.info(
                                 "We couldn't place the JSON file...note the video might not be converted to mp4 now...")
@@ -97,7 +109,7 @@ def transfer_all_footage(msg, sc):
 
 def kick_off_conversion(msg, sc):
     # Let's kick off the job on the host to start converting
-    if os.system("ssh " + USERNAME + "@" + HOSTNAME + ' nohup bash -c "' + PATH + '../convert.sh >> ' + PATH + '../convert.log 2>&1 &"') != 0:
+    if system("ssh " + USERNAME + "@" + HOSTNAME + ' nohup bash -c "' + PATH + '../convert.sh >> ' + PATH + '../convert.log 2>&1 &"') != 0:
         logging.info("Could not kick off the h264->mp4 job on the backend")
     else:
         logging.info("Successfully kicked off the job")
