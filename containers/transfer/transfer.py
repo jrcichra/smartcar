@@ -40,6 +40,7 @@ def system(s):
     except subprocess.CalledProcessError as e:
         print(str(e.output))
         print(str(e.cmd))
+        print(e)
         return e.returncode
 
 
@@ -74,7 +75,7 @@ def transfer_all_footage(msg, sc):
         for video in videos:
             # loop through every video
             if METHOD == "ssh":
-                if system("scp -p " + video + " " + USERNAME + "@" + HOSTNAME + ":" + PATH, shell=True) != 0:
+                if system("scp -p " + video + " " + USERNAME + "@" + HOSTNAME + ":" + PATH) != 0:
                     logging.error(
                         "Something went wrong with the transfer for " + video + ", keeping file where it is")
                 else:
