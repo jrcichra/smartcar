@@ -22,8 +22,8 @@ jobs:
   - script:
     - bash -x check_commit.sh transfer
   - script:
-    - mkdir ~/recordings
-    - mkdir -p ~/nas/.convert
+    - mkdir ${PWD}/recordings
+    - mkdir -p ${PWD}/nas/.convert
     - docker-compose up &
     - sleep 240
     - docker-compose exec redis bash -x -c 'redis-cli KEYS *'
