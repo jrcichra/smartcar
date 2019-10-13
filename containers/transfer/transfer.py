@@ -73,7 +73,7 @@ def transfer_all_footage(msg, sc):
         for video in videos:
             # loop through every video
             if METHOD == "ssh":
-                if os.system("scp -p " + video + " " + USERNAME + "@" + HOSTNAME + ":" + PATH) != 0:
+                if os.system("scp -o 'StrictHostKeyChecking=no' -p " + video + " " + USERNAME + "@" + HOSTNAME + ":" + PATH) != 0:
                     logging.error(
                         "Something went wrong with the transfer for " + video + ", keeping file where it is")
                 else:
@@ -83,7 +83,7 @@ def transfer_all_footage(msg, sc):
                     j = {}
                     j['framerate'] = FRAMERATE
                     vname = video.rsplit('/', 1)[1]
-                    if os.system("ssh " + USERNAME + "@" + HOSTNAME + " echo '" + json.dumps(j).replace(
+                    if os.system("ssh -o 'StrictHostKeyChecking=no' " + USERNAME + "@" + HOSTNAME + " echo '" + json.dumps(j).replace(
                             '"', '\\"') + " > " + PATH + "/.convert/" + vname.rsplit('.', 1)[0] + '.json' + "'") != 0:
                         logging.info(
                             "We couldn't place the JSON file...note the video might not be converted to mp4 now...")
@@ -101,7 +101,7 @@ def transfer_all_footage(msg, sc):
 
 def kick_off_conversion(msg, sc):
     # Let's kick off the job on the host to start converting
-    if os.system("ssh " + USERNAME + "@" + HOSTNAME + ' nohup bash -c "' + PATH + '/convert.sh >> ' + PATH + '/convert.log 2>&1 &"') != 0:
+    if os.system("ssh -o 'StrictHostKeyChecking=no' " + USERNAME + "@" + HOSTNAME + ' nohup bash -c "' + PATH + '/convert.sh >> ' + PATH + '/convert.log 2>&1 &"') != 0:
         logging.info("Could not kick off the h264->mp4 job on the backend")
     else:
         logging.info("Successfully kicked off the job")
