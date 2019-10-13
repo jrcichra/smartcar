@@ -81,7 +81,7 @@ def transfer_all_footage(msg, sc):
                                  video + "...Validating filesizes...")
                     local_size = os.path.getsize(video)
                     # Do the check on the ssh server we're transfering to
-                    if os.system("ssh " + USERNAME + "@" + HOSTNAME + " 'test $(du -b " + video + ") = " + str(local_size)) + '"' + "'" != 0:
+                    if os.system("ssh " + USERNAME + "@" + HOSTNAME + " 'test $(du -b " + video + ") = " + str(local_size)) + "'" != 0:
                         logging.info(
                             "Filesizes match, deleting local file: " + video + "...")
                         os.remove(video)
