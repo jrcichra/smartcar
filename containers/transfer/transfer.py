@@ -48,7 +48,7 @@ def transfer_all_footage(msg, sc):
     ping_attempts = 0
     PING_SLEEP = 10
     MAX_PINGS = 3
-    while system("ping " + HOSTNAME + " -c 1") != 0 and ping_attempts < MAX_PINGS:
+    while os.system("ping " + HOSTNAME + " -c 1") != 0 and ping_attempts < MAX_PINGS:
         time.sleep(PING_SLEEP)
         ping_attempts += 1
     if ping_attempts >= MAX_PINGS:
@@ -58,12 +58,12 @@ def transfer_all_footage(msg, sc):
         logging.info("We found the host")
 
         # first do the ssh key
-        if system("ssh-keygen -f $HOME/.ssh/id_rsa -t rsa -N ''") != 0:
+        if os.system("ssh-keygen -f $HOME/.ssh/id_rsa -t rsa -N ''") != 0:
             logging.error("Something went wrong generating an ssh key")
         else:
             logging.info("We generated an ssh key")
-        if system('sshpass -p ' + PASSWORD +
-                  " ssh-copy-id -o StrictHostKeyChecking=no " + USERNAME + "@" + HOSTNAME) != 0:
+        if os.system('sshpass -p ' + PASSWORD +
+                     " ssh-copy-id -o StrictHostKeyChecking=no " + USERNAME + "@" + HOSTNAME) != 0:
             logging.error("Something went wrong with sshpass")
         else:
             logging.info("We authenticated you through ssh")
@@ -73,7 +73,7 @@ def transfer_all_footage(msg, sc):
         for video in videos:
             # loop through every video
             if METHOD == "ssh":
-                if system("scp -p " + video + " " + USERNAME + "@" + HOSTNAME + ":" + PATH) != 0:
+                if os.system("scp -p " + video + " " + USERNAME + "@" + HOSTNAME + ":" + PATH) != 0:
                     logging.error(
                         "Something went wrong with the transfer for " + video + ", keeping file where it is")
                 else:
@@ -81,14 +81,14 @@ def transfer_all_footage(msg, sc):
                                  video + "...Validating filesizes...")
                     local_size = os.path.getsize(video)
                     # Do the check on the ssh server we're transfering to
-                    if system("ssh " + USERNAME + "@" + HOSTNAME + " test $(du -b " + video + "| cut -f1" + ") = " + str(local_size)) != 0:
+                    if os.system("ssh " + USERNAME + "@" + HOSTNAME + " test $(du -b " + video + "| cut -f1" + ") = " + str(local_size)) != 0:
                         logging.info(
                             "Filesizes match, deleting local file: " + video + "...")
                         os.remove(video)
                         j = {}
                         j['framerate'] = FRAMERATE
                         vname = video.rsplit('/', 1)[1]
-                        if system("ssh " + USERNAME + "@" + HOSTNAME + " echo '" + json.dumps(j).replace(
+                        if os.system("ssh " + USERNAME + "@" + HOSTNAME + " echo '" + json.dumps(j).replace(
                                 '"', '\\"') + " > " + PATH + ".convert/" + vname.rsplit('.', 1)[0] + '.json' + "'") != 0:
                             logging.info(
                                 "We couldn't place the JSON file...note the video might not be converted to mp4 now...")
@@ -109,7 +109,7 @@ def transfer_all_footage(msg, sc):
 
 def kick_off_conversion(msg, sc):
     # Let's kick off the job on the host to start converting
-    if system("ssh " + USERNAME + "@" + HOSTNAME + ' nohup bash -c "' + PATH + '../convert.sh >> ' + PATH + '../convert.log 2>&1 &"') != 0:
+    if os.system("ssh " + USERNAME + "@" + HOSTNAME + ' nohup bash -c "' + PATH + '../convert.sh >> ' + PATH + '../convert.log 2>&1 &"') != 0:
         logging.info("Could not kick off the h264->mp4 job on the backend")
     else:
         logging.info("Successfully kicked off the job")
