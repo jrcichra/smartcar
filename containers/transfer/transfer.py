@@ -80,24 +80,17 @@ def transfer_all_footage(msg, sc):
                     logging.info("Copy was successful for " +
                                  video + "...Validating filesizes...")
                     local_size = os.path.getsize(video)
-                    # Do the check on the ssh server we're transfering to
-                    if os.system("ssh " + USERNAME + "@" + HOSTNAME + " 'test $(du -b " + video + ") = " + str(local_size) + "'") != 0:
+                    os.remove(video)
+                    j = {}
+                    j['framerate'] = FRAMERATE
+                    vname = video.rsplit('/', 1)[1]
+                    if os.system("ssh " + USERNAME + "@" + HOSTNAME + " echo '" + json.dumps(j).replace(
+                            '"', '\\"') + " > " + PATH + ".convert/" + vname.rsplit('.', 1)[0] + '.json' + "'") != 0:
                         logging.info(
-                            "Filesizes match, deleting local file: " + video + "...")
-                        os.remove(video)
-                        j = {}
-                        j['framerate'] = FRAMERATE
-                        vname = video.rsplit('/', 1)[1]
-                        if os.system("ssh " + USERNAME + "@" + HOSTNAME + " echo '" + json.dumps(j).replace(
-                                '"', '\\"') + " > " + PATH + ".convert/" + vname.rsplit('.', 1)[0] + '.json' + "'") != 0:
-                            logging.info(
-                                "We couldn't place the JSON file...note the video might not be converted to mp4 now...")
-                        else:
-                            logging.info(
-                                "Successfully placed JSON file for " + video)
+                            "We couldn't place the JSON file...note the video might not be converted to mp4 now...")
                     else:
-                        logging.warn(
-                            "Filesizes don't match, something is wrong! don't delete the local file...we'll try again some other time")
+                        logging.info(
+                            "Successfully placed JSON file for " + video)
             else:
                 logging.error(
                     "The only method supported right now is ssh. nfs might come in a later version...")
