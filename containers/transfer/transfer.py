@@ -101,7 +101,7 @@ def transfer_all_footage(msg, sc):
 
 def kick_off_conversion(msg, sc):
     # Let's kick off the job on the host to start converting
-    if os.system("ssh " + USERNAME + "@" + HOSTNAME + ' nohup bash -c "' + PATH + '../convert.sh >> ' + PATH + '../convert.log 2>&1 &"') != 0:
+    if os.system("ssh " + USERNAME + "@" + HOSTNAME + ' nohup bash -c "' + PATH + '/convert.sh >> ' + PATH + '/convert.log 2>&1 &"') != 0:
         logging.info("Could not kick off the h264->mp4 job on the backend")
     else:
         logging.info("Successfully kicked off the job")
