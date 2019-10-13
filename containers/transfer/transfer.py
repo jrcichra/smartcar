@@ -77,8 +77,7 @@ def transfer_all_footage(msg, sc):
                     logging.error(
                         "Something went wrong with the transfer for " + video + ", keeping file where it is")
                 else:
-                    logging.info("Copy was successful for " +
-                                 video + "...Validating filesizes...")
+                    logging.info("Copy was successful for " + video + ".")
                     local_size = os.path.getsize(video)
                     os.remove(video)
                     j = {}
