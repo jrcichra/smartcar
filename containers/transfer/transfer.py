@@ -84,7 +84,7 @@ def transfer_all_footage(msg, sc):
                     j['framerate'] = FRAMERATE
                     vname = video.rsplit('/', 1)[1]
                     if os.system("ssh " + USERNAME + "@" + HOSTNAME + " echo '" + json.dumps(j).replace(
-                            '"', '\\"') + " > " + PATH + ".convert/" + vname.rsplit('.', 1)[0] + '.json' + "'") != 0:
+                            '"', '\\"') + " > " + PATH + "/.convert/" + vname.rsplit('.', 1)[0] + '.json' + "'") != 0:
                         logging.info(
                             "We couldn't place the JSON file...note the video might not be converted to mp4 now...")
                     else:
