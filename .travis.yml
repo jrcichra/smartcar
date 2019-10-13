@@ -24,7 +24,7 @@ jobs:
   - script:
     - mkdir ~/recordings
     - docker-compose up &
-    - sleep 60
+    - sleep 240
     - docker-compose exec redis bash -x -c 'redis-cli KEYS *'
     - docker-compose exec redis bash -x -c 'redis-cli KEYS * | cut -d\" -f2 | xargs
       -L1 redis-cli JSON.GET'
