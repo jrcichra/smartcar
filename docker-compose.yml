@@ -34,3 +34,5 @@ services:
   cinas:
     hostname: cinas
     image: rastasheep/ubuntu-sshd
+    volumes:
+      - "{$PWD}/nas:/recordings"

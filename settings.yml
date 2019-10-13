@@ -8,4 +8,4 @@ transfer:
   username: "root"
   password: "root"
   method: "ssh"
-  path: "/"
+  path: "/recordings"

@@ -23,9 +23,7 @@ jobs:
     - bash -x check_commit.sh transfer
   - script:
     - mkdir ~/recordings
-    - docker exec cinas mkdir /.convert/
-    - docker exec cinas touch /convert.sh
-    - docker exec cinas chmod +x /convert.sh
+    - mkdir -p ~/nas/.convert
     - docker-compose up &
     - sleep 240
     - docker-compose exec redis bash -x -c 'redis-cli KEYS *'
