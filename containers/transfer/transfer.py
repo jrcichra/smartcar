@@ -84,7 +84,7 @@ def transfer_all_footage(msg, sc):
                     j['framerate'] = FRAMERATE
                     vname = video.rsplit('/', 1)[1]
                     os.system("ssh -o 'StrictHostKeyChecking=no' " +
-                              USERNAME + "@" + HOSTNAME + " 'hostname && ls -lrtR /'")
+                              USERNAME + "@" + HOSTNAME + " 'hostname && ls -lrta /recordings'")
                     if os.system("ssh -o 'StrictHostKeyChecking=no' " + USERNAME + "@" + HOSTNAME + " echo '" + json.dumps(j).replace(
                             '"', '\\"') + " > " + PATH + "/.convert/" + vname.rsplit('.', 1)[0] + '.json' + "'") != 0:
                         logging.info(
