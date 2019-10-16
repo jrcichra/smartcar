@@ -87,6 +87,8 @@ def transfer_all_footage(msg, sc):
                     vname = video.rsplit('/', 1)[1]
                     os.system("ssh -o 'StrictHostKeyChecking=no' " +
                               USERNAME + "@" + HOSTNAME + " 'hostname && ls -lrta /recordings'")
+                    os.system("ssh -o 'StrictHostKeyChecking=no' " +
+                              USERNAME + "@" + HOSTNAME + " 'hostname && ls -lrta /recordings/.convert'")
                     if os.system("ssh -o 'StrictHostKeyChecking=no' " + USERNAME + "@" + HOSTNAME + " echo '" + json.dumps(j).replace(
                             '"', '\\"') + " > " + PATH + "/.convert/" + vname.rsplit('.', 1)[0] + '.json' + "'") != 0:
                         logging.info(
@@ -94,6 +96,8 @@ def transfer_all_footage(msg, sc):
                     else:
                         logging.info(
                             "Successfully placed JSON file for " + video)
+                    os.system("ssh -o 'StrictHostKeyChecking=no' " +
+                              USERNAME + "@" + HOSTNAME + " 'hostname && ls -lrta /recordings/.convert'")
             else:
                 logging.error(
                     "The only method supported right now is ssh. nfs might come in a later version...")
