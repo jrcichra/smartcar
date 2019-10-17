@@ -73,8 +73,6 @@ def transfer_all_footage(msg, sc):
         for video in videos:
             # loop through every video
             if METHOD == "ssh":
-                os.system("ssh -o 'StrictHostKeyChecking=no' " +
-                          USERNAME + "@" + HOSTNAME + " 'hostname && ls -lrta /recordings'")
                 if os.system("scp -o 'StrictHostKeyChecking=no' -p " + video + " " + USERNAME + "@" + HOSTNAME + ":" + PATH) != 0:
                     logging.error(
                         "Something went wrong with the transfer for " + video + ", keeping file where it is")
@@ -85,10 +83,6 @@ def transfer_all_footage(msg, sc):
                     j = {}
                     j['framerate'] = FRAMERATE
                     vname = video.rsplit('/', 1)[1]
-                    os.system("ssh -o 'StrictHostKeyChecking=no' " +
-                              USERNAME + "@" + HOSTNAME + " 'hostname && ls -lrta /recordings'")
-                    os.system("ssh -o 'StrictHostKeyChecking=no' " +
-                              USERNAME + "@" + HOSTNAME + " 'hostname && ls -lrta /recordings/.convert'")
                     if os.system("ssh -o 'StrictHostKeyChecking=no' " + USERNAME + "@" + HOSTNAME + " echo '" + json.dumps(j).replace(
                             '"', '\\"') + " > " + PATH + "/.convert/" + vname.rsplit('.', 1)[0] + '.json' + "'") != 0:
                         logging.info(
@@ -96,8 +90,6 @@ def transfer_all_footage(msg, sc):
                     else:
                         logging.info(
                             "Successfully placed JSON file for " + video)
-                    os.system("ssh -o 'StrictHostKeyChecking=no' " +
-                              USERNAME + "@" + HOSTNAME + " 'hostname && ls -lrta /recordings/.convert'")
             else:
                 logging.error(
                     "The only method supported right now is ssh. nfs might come in a later version...")
