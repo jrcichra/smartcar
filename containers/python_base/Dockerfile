@@ -1,4 +1,4 @@
-FROM python:3.6-alpine
+FROM python:3.8.0-alpine
 ARG commit
 RUN apk add --no-cache --virtual .build-deps gcc musl-dev && echo -n $commit > /commit.txt
 COPY requirements.txt smartcarsocket.py /
