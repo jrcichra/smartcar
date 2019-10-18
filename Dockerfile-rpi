@@ -1,5 +1,7 @@
 FROM balenalib/raspberry-pi-alpine
 ARG commit
-RUN apk add --no-cache --virtual .build-deps python3 gcc musl-dev && echo -n $commit > /commit.txt
+RUN apk add --no-cache --virtual .build-deps g++ python3-dev libffi-dev openssl-dev musl-dev && \
+    apk add --no-cache --update python3 && \
+    pip3 install --upgrade pip setuptools && echo -n $commit > /commit.txt
 COPY requirements.txt smartcarsocket.py /
 RUN pip install -r /requirements.txt
