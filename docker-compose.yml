@@ -29,8 +29,8 @@ services:
    volumes:
     - "${PWD}/recordings:/recordings"
     - "${PWD}/settings.yml:/settings.yml"
-   depe"/opt/vc/lib/nds_on:
-      - controller
+   depends_on:
+    - controller
   cinas:
     hostname: cinas
     image: rastasheep/ubuntu-sshd
