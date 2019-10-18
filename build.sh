@@ -21,3 +21,6 @@ echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-
 cd containers/$1
 docker buildx build --build-arg commit=$TRAVIS_COMMIT --platform linux/amd64,linux/arm64,linux/arm/v7 -t jrcichra/smartcar_$1 --push .
 docker buildx imagetools inspect jrcichra/smartcar_$1
+# Phase 4 - build the raspberry pi specific version if the Dockerfile-rpi file exists
+docker buildx build --build-arg commit=$TRAVIS_COMMIT -t jrcichra/smartcar_$1_rpi -f Dockerfile-rpi --push .
+docker buildx imagetools inspect jrcichra/smartcar_$1_rpi

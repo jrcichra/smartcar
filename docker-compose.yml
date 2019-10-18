@@ -29,7 +29,7 @@ services:
    volumes:
     - "${PWD}/recordings:/recordings"
     - "${PWD}/settings.yml:/settings.yml"
-   depends_on:
+   depe"/opt/vc/lib/nds_on:
       - controller
   cinas:
     hostname: cinas
