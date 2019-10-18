@@ -1,4 +1,4 @@
-FROM balenalib/raspberrypi3-alpine-python
+FROM balenalib/raspberrypi3-alpine-python:3.7
 ARG commit
 RUN apk add --no-cache --virtual .build-deps gcc musl-dev && echo -n $commit > /commit.txt
 COPY requirements.txt smartcarsocket.py /
