@@ -82,7 +82,8 @@ def start_recording(msg, sc):
         logging.info("Starting the recording...")
         try:
             global camera
-            camera.start_recording(get_new_filename(), sps_timing=True)
+            camera.start_recording(
+                '/recordings/' + get_new_filename(), sps_timing=True)
         except Exception as e:
             logging.error(e)
     else:
