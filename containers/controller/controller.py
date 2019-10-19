@@ -34,9 +34,12 @@ def handleAction(action, mode, read_queue, action_queue, event_id):
         logging.warn("Action: " + action +
                      " does not exist (yet) in redis...cannot call action. Waiting on queue instead...")
         # block on this queue until the action we are looking for is registered
-        while action_queue.get() != action:
+        qaction = action_queue.get()
+        while qaction != action:
             logging.debug(
                 "We didn't find it in redis, but something came in the queue, but it was not the action we wanted...")
+            logging.debug("We want:{} but we got:{}".format(action,qaction))
+            qaction = action_queue.get()
         # now check the db, if its not there then something is internally wrong
         logging.debug("We got the action we wanted to see...")
         redis_action = rc.queryAction(action)
