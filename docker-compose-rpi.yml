@@ -5,14 +5,14 @@ services:
    image: jrcichra/redisjson
   controller:
     hostname: controller
-    image: jrcichra/smartcar_controller
+    image: jrcichra/smartcar_controller_rpi
     volumes:
       - "${PWD}/config.yml:/config.yml"
     depends_on:
       - redis
   dashcam:
    hostname: dashcam
-   image: jrcichra/smartcar_dashcam
+   image: jrcichra/smartcar_dashcam_rpi
    volumes:
     - "${PWD}/recordings:/recordings"
     - "${PWD}/settings.yml:/settings.yml"
@@ -21,19 +21,14 @@ services:
       - controller
   gpio:
    hostname: gpio
-   image: jrcichra/smartcar_gpio
+   image: jrcichra/smartcar_gpio_rpi
    depends_on:
       - controller
   transfer:
    hostname: transfer
-   image: jrcichra/smartcar_transfer
+   image: jrcichra/smartcar_transfer_rpi
    volumes:
     - "${PWD}/recordings:/recordings"
     - "${PWD}/settings.yml:/settings.yml"
    depends_on:
     - controller
-  cinas:
-    hostname: cinas
-    image: rastasheep/ubuntu-sshd
-    volumes:
-      - "${PWD}/nas:/recordings"
