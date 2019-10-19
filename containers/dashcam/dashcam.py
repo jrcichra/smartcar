@@ -51,6 +51,7 @@ def sendResponse(msg, sc):
 
 def start_preview(msg, sc):
     if not isCI():
+        logging.info("Starting the preview...")
         try:
             global camera
             camera.start_preview()
@@ -65,6 +66,7 @@ def start_preview(msg, sc):
 
 def stop_preview(msg, sc):
     if not isCI():
+        logging.info("Stopping the preview...")
         try:
             global camera
             camera.stop_preview()
@@ -77,6 +79,7 @@ def stop_preview(msg, sc):
 
 def start_recording(msg, sc):
     if not isCI():
+        logging.info("Starting the recording...")
         try:
             global camera
             camera.start_recording(get_new_filename(), sps_timing=True)
@@ -94,6 +97,7 @@ def start_recording(msg, sc):
 
 def stop_recording(msg, sc):
     if not isCI():
+        logging.info("Stopping the recording...")
         try:
             global camera
             camera.stop_recording()
