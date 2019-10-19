@@ -11,6 +11,8 @@ import yaml
 def isCI():
     return os.uname()[4] != 'armv7l'
 
+
+camera = None
 ##get_new_filename##
 
 
@@ -52,6 +54,8 @@ def start_preview(msg, sc):
         try:
             global camera
             camera.start_preview()
+            # The preview alpha has to be set after the preview is already active
+            camera.preview.alpha = 128
         except Exception as e:
             logging.error(e)
     else:
@@ -177,7 +181,6 @@ if not isCI():
     camera.framerate = FRAMERATE
     # set the rotation
     camera.rotation = ROT
-    camera.preview.alpha = 128
     current_filename = get_new_filename()
 
 # Use the library to abstract the difficulty
