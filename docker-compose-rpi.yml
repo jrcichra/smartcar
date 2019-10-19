@@ -24,6 +24,7 @@ services:
    image: jrcichra/smartcar_gpio_rpi
    depends_on:
       - controller
+   privileged: true
   transfer:
    hostname: transfer
    image: jrcichra/smartcar_transfer_rpi
