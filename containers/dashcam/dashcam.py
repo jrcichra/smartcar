@@ -11,8 +11,6 @@ import yaml
 def isCI():
     return os.uname()[4] != 'armv7l'
 
-
-camera = None
 ##get_new_filename##
 
 
