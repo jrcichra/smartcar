@@ -1,6 +1,6 @@
 FROM resin/rpi-raspbian:buster
 ARG commit
-RUN apt update && apt install python3 python3-setuptools python3-pip python3-dev libraspberrypi-bin && usermod -a -G video root && echo -n $commit > /commit.txt
+RUN apt update && apt install python3 python3-setuptools python3-pip python3-dev libraspberrypi-bin iputils-ping && usermod -a -G video root && echo -n $commit > /commit.txt
 COPY requirements.txt smartcarsocket.py /
 RUN pip3 install wheel
 RUN pip3 install -r /requirements.txt
