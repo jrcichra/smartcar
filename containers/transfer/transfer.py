@@ -96,7 +96,7 @@ def transfer_all_footage(msg, sc):
         # end for
         logging.info(
             "Finished processing all recordings. If all went well, there should be no files left")
-        sendResponse(msg, sc)
+    sendResponse(msg, sc)
 
 
 def kick_off_conversion(msg, sc):
