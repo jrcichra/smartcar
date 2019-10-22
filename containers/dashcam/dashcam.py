@@ -84,6 +84,9 @@ def start_recording(msg, sc):
             global camera
             camera.start_recording(
                 '/recordings/' + get_new_filename(), sps_timing=True)
+            # spawn a thread that handles updating the annotations every second
+            t = threading.Thread(target=update_annotations)
+            t.start()
         except Exception as e:
             logging.error(e)
     else:
@@ -135,6 +138,12 @@ def getActions(sc, temp):
             logging.warning(
                 "Got a packet response that wasn't what we expected, the library should handle this:")
             logging.info(msg)
+
+
+def update_annotations():
+    while True:
+        camera.annotate_text = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
+        time.sleep(.2)
 
 #MAIN#
 
