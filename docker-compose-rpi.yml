@@ -1,9 +1,11 @@
-version: '3'
+version: "3"
 services:
   redis:
-   hostname: redis
-   image: jrcichra/redisjson
-   restart: always
+    environment:
+      TZ: "America/New_York"
+    hostname: redis
+    image: jrcichra/redisjson
+    restart: always
   controller:
     hostname: controller
     image: jrcichra/smartcar_controller_rpi
@@ -13,28 +15,34 @@ services:
     depends_on:
       - redis
   dashcam:
-   hostname: dashcam
-   image: jrcichra/smartcar_dashcam_rpi
-   restart: always
-   volumes:
-    - "${PWD}/recordings:/recordings"
-    - "${PWD}/settings.yml:/settings.yml"
-   privileged: true
-   depends_on:
+    environment:
+      TZ: "America/New_York"
+    hostname: dashcam
+    image: jrcichra/smartcar_dashcam_rpi
+    restart: always
+    volumes:
+      - "${PWD}/recordings:/recordings"
+      - "${PWD}/settings.yml:/settings.yml"
+    privileged: true
+    depends_on:
       - controller
   gpio:
-   hostname: gpio
-   image: jrcichra/smartcar_gpio_rpi
-   restart: always
-   depends_on:
+    environment:
+      TZ: "America/New_York"
+    hostname: gpio
+    image: jrcichra/smartcar_gpio_rpi
+    restart: always
+    depends_on:
       - controller
-   privileged: true
+    privileged: true
   transfer:
-   hostname: transfer
-   image: jrcichra/smartcar_transfer_rpi
-   restart: always
-   volumes:
-    - "${PWD}/recordings:/recordings"
-    - "${PWD}/settings.yml:/settings.yml"
-   depends_on:
-    - controller
+    environment:
+      TZ: "America/New_York"
+    hostname: transfer
+    image: jrcichra/smartcar_transfer_rpi
+    restart: always
+    volumes:
+      - "${PWD}/recordings:/recordings"
+      - "${PWD}/settings.yml:/settings.yml"
+    depends_on:
+      - controller
