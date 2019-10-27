@@ -49,7 +49,7 @@ services:
   gpsd:
     environment:
       TZ: "America/New_York"
-      hostname: gpsd
-      image: jrcichra/gpsd-rpi
-      restart: always
-      privileged: true
+    hostname: gpsd
+    image: jrcichra/gpsd-rpi
+    restart: always
+    privileged: true
