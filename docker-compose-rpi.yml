@@ -46,3 +46,10 @@ services:
       - "${PWD}/settings.yml:/settings.yml"
     depends_on:
       - controller
+  gpsd:
+    environment:
+      TZ: "America/New_York"
+      hostname: gpsd
+      image: jrcichra/gpsd-rpi
+      restart: always
+      privileged: true
