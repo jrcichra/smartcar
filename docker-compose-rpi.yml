@@ -53,3 +53,5 @@ services:
     image: jrcichra/gpsd-rpi
     restart: always
     privileged: true
+    expose:
+      - "2947"
