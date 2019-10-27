@@ -53,5 +53,8 @@ services:
     image: jrcichra/gpsd-rpi
     restart: always
     privileged: true
-    expose:
-      - "2947"
+    ports:
+      - target: 2947
+        published: 2947
+        protocol: tcp
+        mode: host
