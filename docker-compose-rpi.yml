@@ -54,7 +54,4 @@ services:
     restart: always
     privileged: true
     ports:
-      - target: 2947
-        published: 2947
-        protocol: tcp
-        mode: host
+      - "2947:2947"
