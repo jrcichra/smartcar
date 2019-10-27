@@ -1,9 +1,7 @@
 FROM jrcichra/smartcar_python_base_rpi
-ARG commit
 EXPOSE 8080
 COPY requirements.txt /
 ENV READTHEDOCS True
 RUN pip3 install -r /requirements.txt
 COPY . /
-RUN echo -n $commit > /commit.txt
 CMD python3 -u dashcam.py
