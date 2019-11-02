@@ -1,4 +1,5 @@
 cd containers
 for d in */; do
-    test $(docker run -it --rm jrcichra/smartcar_$d cat commit.txt) = $TRAVIS_COMMIT
+    dir=${d%/}
+    test $(docker run -it --rm jrcichra/smartcar_$dir cat commit.txt) = $TRAVIS_COMMIT
 done
