@@ -102,6 +102,7 @@ def key_went_off(self):
     if is_off():
         logging.info("Yes, the key did in fact go off.")
         # We emit the event
+        time.sleep(3)             #keep recording a little longer
         sc.emitEvent("key_off")
     else:
         #In some situations, we might want to send "key_on" here. Not doing this yet
