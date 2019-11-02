@@ -3,34 +3,21 @@ dist: bionic
 language: generic
 jobs:
   include:
-  - stage: build base container
-    install: bash -x build.sh python_base
-  - stage: build child containers
-    install: bash -x build.sh controller
-  - install: bash -x build.sh gpio
-  - install: bash -x build.sh dashcam
-  - install: bash -x build.sh transfer
-  - stage: test
-    script:
-    - bash -x check_commit.sh python_base
-  - script:
-    - bash -x check_commit.sh controller
-  - script:
-    - bash -x check_commit.sh gpio
-  - script:
-    - bash -x check_commit.sh dashcam
-  - script:
-    - bash -x check_commit.sh transfer
-  - script:
-    - mkdir ${PWD}/recordings
-    - mkdir -p ${PWD}/nas/.convert
-    - docker-compose up &
-    - sleep 240
-    - docker-compose exec redis bash -x -c 'redis-cli KEYS *'
-    - docker-compose exec redis bash -x -c 'redis-cli KEYS * | cut -d\" -f2 | xargs
-      -L1 redis-cli JSON.GET'
-    - ls -lrth "${PWD}/recordings"
+    - stage: build
+      install: bash -x build.sh
+    - stage: test
+      script:
+        - bash -x check_commit.sh
+    - script:
+        - mkdir ${PWD}/recordings
+        - mkdir -p ${PWD}/nas/.convert
+        - docker-compose up &
+        - sleep 240
+        - docker-compose exec redis bash -x -c 'redis-cli KEYS *'
+        - docker-compose exec redis bash -x -c 'redis-cli KEYS * | cut -d\" -f2 | xargs
+          -L1 redis-cli JSON.GET'
+        - ls -lrth "${PWD}/recordings"
 env:
   global:
-  - secure: sJcojDXXLmIAktdRCn0bZaM+dPXaUSvcSVIVoIU02iz7S+ubl0gVUBbZjlO1YtDLTdot2cqjR43XvVdKV2wt7hE0d6xtNS1Gaiy6k5i2IagI86UB12vRlxBYkmJTJ+/Ne70/N5vEcJYmCAnaf/Nhg/155NU/eQ5yXI/Vm8UfdpkPM2aKWalG+TLcUQfAjsgdiK2HrJQ6km0InX38o2l83ntkqq0qTwF3CbKPTbd7GBzzioM0TaGQn2MxeNd57ApPVSN4CrdOoP3jlgmvogTI1Y5ojv2tp0OxDlggI+GAAB36xPVxuDsybqCsn6526Va5TKrUUkrvItLEo1Qjeos34Ih4uxaK3S2TpyXaOv/33Tjbl2+sfuKF+DWVGNPExRr14ujAfTMhSiKpr8y/olGiva4Vcj6WWY41vss5anhMXldplczDtIAA+aZfSR0WnfZgAfRx8nyFGnAfPSxf+9wEjFYdHJdKJHGq52IGnPyrhO0KuHt4BD4RPYLC5LQ0Qn67Kc4cKAzYLDhntwrWWe34E0mO+YqAfa7e/9e1o48AlgNd6BNnANu0lU2Rix0h78GpUCQwgA/VDahABF4brQdq1cWSyt2JrK/TrXC5K0xo68idoft/jqZh62RRRI00CUINQI6oqLwSVvVplFNrURax9+WKBSQu+5NQfoleEIP6mAY=
-  - secure: GDu8v0cYQB4MHXD/CnMbBMZS4mb6oZsRNucsx5fIwpO+WgoRBm/gY7TDdGsQe+VcqiCZ7EBK0RRc0yA9BnrxxF8sEBEM+u6GatcuXvnp1lEvQSGLCxW2wT3UWdnBFm8G+15sgCgnmGF0tYIXPFxMlHAKzHpjuEWxDyBQMel+egbJc4+T7YS7r4VfOWbmEzqqLH7r0aUSUuL1hX6eAPn85pN9sBiqy+w1Utc2EOnD8QRVxJ7qcb1NJBWFaCIvhjr3wnW8wz0OpswlyXeDYaoaJWADW1gEKeQVjD4inNrfZCDUYWl8lzb1qQxpyqHlHYs0FZFt1sob3v7TVchaaRTgWp7cY8Vc6p7zi3KRnoqQaykDPxCRRofggjtRdeG89cQGqKYMe8BXaZq8kAwHLZ88zZ+nOhkFTpAi/jBA6n5kyv95Iv4gZUFd95f9NY9GEnjUY6/tgcRqS5oSexrieJSu3nzVRx8SOwO/mSiMKZjaJkG/99SuY3UDZsFwtqAv3nid8en5e0KdwjpVCW5VJ7Jt21UP12JkulAgluATPV6e8M+8SAm9AK0ffV3qqwE22G6anpcN2QG5F2t/kvig1L1YSFKbqhCTrdpMsQk+Ye8zq+wMFR5FfrHsiEuFZ2ij8RpWbKaAVVsEA4ZHtmS7A1k1HWgm/W8eI5CEY2Yn0/L7tbc=
+    - secure: sJcojDXXLmIAktdRCn0bZaM+dPXaUSvcSVIVoIU02iz7S+ubl0gVUBbZjlO1YtDLTdot2cqjR43XvVdKV2wt7hE0d6xtNS1Gaiy6k5i2IagI86UB12vRlxBYkmJTJ+/Ne70/N5vEcJYmCAnaf/Nhg/155NU/eQ5yXI/Vm8UfdpkPM2aKWalG+TLcUQfAjsgdiK2HrJQ6km0InX38o2l83ntkqq0qTwF3CbKPTbd7GBzzioM0TaGQn2MxeNd57ApPVSN4CrdOoP3jlgmvogTI1Y5ojv2tp0OxDlggI+GAAB36xPVxuDsybqCsn6526Va5TKrUUkrvItLEo1Qjeos34Ih4uxaK3S2TpyXaOv/33Tjbl2+sfuKF+DWVGNPExRr14ujAfTMhSiKpr8y/olGiva4Vcj6WWY41vss5anhMXldplczDtIAA+aZfSR0WnfZgAfRx8nyFGnAfPSxf+9wEjFYdHJdKJHGq52IGnPyrhO0KuHt4BD4RPYLC5LQ0Qn67Kc4cKAzYLDhntwrWWe34E0mO+YqAfa7e/9e1o48AlgNd6BNnANu0lU2Rix0h78GpUCQwgA/VDahABF4brQdq1cWSyt2JrK/TrXC5K0xo68idoft/jqZh62RRRI00CUINQI6oqLwSVvVplFNrURax9+WKBSQu+5NQfoleEIP6mAY=
+    - secure: GDu8v0cYQB4MHXD/CnMbBMZS4mb6oZsRNucsx5fIwpO+WgoRBm/gY7TDdGsQe+VcqiCZ7EBK0RRc0yA9BnrxxF8sEBEM+u6GatcuXvnp1lEvQSGLCxW2wT3UWdnBFm8G+15sgCgnmGF0tYIXPFxMlHAKzHpjuEWxDyBQMel+egbJc4+T7YS7r4VfOWbmEzqqLH7r0aUSUuL1hX6eAPn85pN9sBiqy+w1Utc2EOnD8QRVxJ7qcb1NJBWFaCIvhjr3wnW8wz0OpswlyXeDYaoaJWADW1gEKeQVjD4inNrfZCDUYWl8lzb1qQxpyqHlHYs0FZFt1sob3v7TVchaaRTgWp7cY8Vc6p7zi3KRnoqQaykDPxCRRofggjtRdeG89cQGqKYMe8BXaZq8kAwHLZ88zZ+nOhkFTpAi/jBA6n5kyv95Iv4gZUFd95f9NY9GEnjUY6/tgcRqS5oSexrieJSu3nzVRx8SOwO/mSiMKZjaJkG/99SuY3UDZsFwtqAv3nid8en5e0KdwjpVCW5VJ7Jt21UP12JkulAgluATPV6e8M+8SAm9AK0ffV3qqwE22G6anpcN2QG5F2t/kvig1L1YSFKbqhCTrdpMsQk+Ye8zq+wMFR5FfrHsiEuFZ2ij8RpWbKaAVVsEA4ZHtmS7A1k1HWgm/W8eI5CEY2Yn0/L7tbc=
