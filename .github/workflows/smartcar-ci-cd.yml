@@ -1,0 +1,26 @@
+name: smartcar CI/CD
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: build & push
+      run: |
+          bash -x build.sh
+      env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+    - name: test
+      run: |
+        mkdir ${PWD}/recordings
+        mkdir -p ${PWD}/nas/.convert
+        docker-compose up &
+        sleep 240
+        docker-compose exec redis bash -x -c 'redis-cli KEYS *'
+        docker-compose exec redis bash -x -c 'redis-cli KEYS * | cut -d\" -f2 | xargs
+        L1 redis-cli JSON.GET'
+        ls -lrth "${PWD}/recordings"
