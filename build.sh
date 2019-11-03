@@ -23,7 +23,7 @@ cd containers
 for d in */; do
     cd $d
     dir=${d%/}
-    docker buildx build --build-arg commit=$TRAVIS_COMMIT --cache-from jrcichra/smartcar_${dir} --platform linux/amd64,linux/arm64,linux/arm/v7 -t jrcichra/smartcar_${dir} --push .
+    docker buildx build --build-arg commit=$GITHUB_SHA --cache-from jrcichra/smartcar_${dir} --platform linux/amd64,linux/arm64,linux/arm/v7 -t jrcichra/smartcar_${dir} --push .
     docker buildx imagetools inspect jrcichra/smartcar_${dir}
     cd ..
 done
@@ -32,7 +32,7 @@ cd ${pwd}/containers
 for d in */; do
     cd $d
     dir=${d%/}
-    docker buildx build --build-arg commit=$TRAVIS_COMMIT -t jrcichra/smartcar_${dir}_rpi --cache-from jrcichra/smartcar_${dir}_rpi -f Dockerfile-rpi --push .
+    docker buildx build --build-arg commit=$GITHUB_SHA -t jrcichra/smartcar_${dir}_rpi --cache-from jrcichra/smartcar_${dir}_rpi -f Dockerfile-rpi --push .
     docker buildx imagetools inspect jrcichra/smartcar_${dir}_rpi
     cd ..
 done
