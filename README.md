@@ -47,4 +47,4 @@ Holds the settings for each container (camera fps, time after stopping car, etc)
 You are in total control of how your car responds to events. This lets you connect any component to any component in a predetermined way. This was not possible with pub/sub, as the containers would have to determine what events they were interested in. Containers have no concept of events, they only take in actions when told to.
 
 # TCP based
-Currently, all communication between containers is through TCP (no HTTP). This may change depending on need from GUI applications
+Currently, all communication between containers is through TCP (no HTTP). This may change depending on need from GUI applications.
