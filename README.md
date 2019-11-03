@@ -1,4 +1,4 @@
-# SmartCar [![Actions Status](https://github.com/jrcichra/smartcar/workflows/smartcar%20CI/CD/badge.svg)]
+# SmartCar ![Actions Status](https://github.com/jrcichra/smartcar/workflows/smartcar%20CI/CD/badge.svg)
 
 ## An event-driven car framework to intellegently control your car.
 
