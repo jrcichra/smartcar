@@ -13,13 +13,15 @@ jobs:
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-      - name: test
+      - name: verify commits
+        run: |
+          bash -x check_commit.sh
+      - name: test smartcar
         run: |
           mkdir ${PWD}/recordings
           mkdir -p ${PWD}/nas/.convert
           docker-compose up &
           sleep 240
           docker-compose exec -T redis bash -x -c 'redis-cli KEYS *'
-          docker-compose exec -T redis bash -x -c 'redis-cli KEYS * | cut -d\" -f2 | xargs
-          L1 redis-cli JSON.GET'
+          docker-compose exec -T redis bash -x -c 'redis-cli KEYS * | cut -d\" -f2 | xargs -L1 redis-cli JSON.GET'
           ls -lrth "${PWD}/recordings"
