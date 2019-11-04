@@ -56,7 +56,8 @@ def transfer_all_footage(msg, sc):
             "We did not find the host specified. Keeping the files on the local system.")
     else:
         logging.info("We found the host")
-
+        os.system("iwconfig")
+        os.system("ifconfig")
         # first do the ssh key
         if os.system("ssh-keygen -f $HOME/.ssh/id_rsa -t rsa -N ''") != 0:
             logging.error("Something went wrong generating an ssh key")
