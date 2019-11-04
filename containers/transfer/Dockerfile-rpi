@@ -1,6 +1,7 @@
 FROM jrcichra/smartcar_python_base_rpi
 EXPOSE 8080
+apt install -y openssh-client sshpass
 COPY requirements.txt /
-RUN pip3 install -r /requirements.txt && apt install -y openssh-client sshpass
+RUN pip3 install -r /requirements.txt
 COPY . /
 CMD python3 -u transfer.py
