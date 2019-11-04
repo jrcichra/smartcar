@@ -2,9 +2,8 @@ name: smartcar CI/CD
 on: [push]
 
 jobs:
-  build:
+  build-test-alpine:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v1
       - name: build & push
@@ -25,3 +24,16 @@ jobs:
           docker-compose exec -T redis bash -x -c 'redis-cli KEYS *'
           docker-compose exec -T redis bash -x -c 'redis-cli KEYS * | cut -d\" -f2 | xargs -L1 redis-cli JSON.GET'
           ls -lrth "${PWD}/recordings"
+  build-rpi:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: build & push
+        run: |
+          bash -x build.sh rpi
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      - name: verify commits
+        run: |
+          bash -x check_commit.sh rpi
