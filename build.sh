@@ -22,7 +22,7 @@ cd containers
 
 if [ "$1" == "rpi" ];then
     cd python_base
-    docker buildx build --build-arg commit=$GITHUB_SHA --cache-from jrcichra/smartcar_python_base_rpi -t jrcichra/smartcar_python_base_rpi -f Dockerfile-rpi --push .
+    docker buildx build --build-arg commit=$GITHUB_SHA --cache-from jrcichra/smartcar_python_base_rpi --platform linux/arm/v7 -t jrcichra/smartcar_python_base_rpi -f Dockerfile-rpi --push .
     docker buildx imagetools inspect jrcichra/smartcar_python_base_rpi
     cd ..
 
@@ -31,7 +31,7 @@ if [ "$1" == "rpi" ];then
         if [ "$dir" != "python_base" ];then
             cd $d
             
-            docker buildx build --build-arg commit=$GITHUB_SHA --cache-from jrcichra/smartcar_${dir}_rpi -t jrcichra/smartcar_${dir}_rpi -f Dockerfile-rpi --push .
+            docker buildx build --build-arg commit=$GITHUB_SHA --cache-from jrcichra/smartcar_${dir}_rpi --platform linux/arm/v7 -t jrcichra/smartcar_${dir}_rpi -f Dockerfile-rpi --push .
             docker buildx imagetools inspect jrcichra/smartcar_${dir}_rpi
             cd ..
         fi
