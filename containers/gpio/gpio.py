@@ -157,5 +157,5 @@ sc.emitEvent("key_on")
 # Set up the GPIO pins if we're not in travis
 gpio_setup()
 
-
+signal.pause()
 t.join()
