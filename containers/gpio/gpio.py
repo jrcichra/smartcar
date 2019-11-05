@@ -4,6 +4,7 @@ import queue
 import logging
 import time
 import os
+import signal
 
 def isCI():
     return os.uname()[4] != 'armv7l'
@@ -94,6 +95,10 @@ def print_pins():
         except Exception as e:
             logging.error(e)
 
+def pretend_key_off(signalNumer, frame):
+    logging.info("Pretending the key went off")
+    sc.emitEvent("key_off")
+
 def key_went_off(self):
     logging.info("We got a change in key state...")
     time.sleep(2)
@@ -141,6 +146,9 @@ sc.registerAction("power_off")
 # Handle incoming action requests
 t = threading.Thread(target=getActions, args=(sc, True))
 t.start()
+
+# For debugging, a USR1 signal simulates a keyOff (software-wise)
+signal.signal(signal.SIGUSR1,pretend_key_off)
 
 # If this code is running, the key must be on, so we'll force a key_on event
 # Change if your pi doesn't start with the car.
