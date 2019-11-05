@@ -21,17 +21,17 @@ echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-
 cd containers
 
 if [ "$1" == "rpi" ];then
-    dir=${d%/}
     cd python_base
-    docker buildx build --build-arg commit=$GITHUB_SHA --cache-from jrcichra/smartcar_${dir} -t jrcichra/smartcar_${dir}_rpi -f Dockerfile-rpi --push .
-    docker buildx imagetools inspect jrcichra/smartcar_${dir}_rpi
+    docker buildx build --build-arg commit=$GITHUB_SHA --cache-from jrcichra/smartcar_python_base_rpi -t jrcichra/smartcar_python_base_rpi -f Dockerfile-rpi --push .
+    docker buildx imagetools inspect jrcichra/smartcar_base_rpi
     cd ..
 
     for d in */; do
+        dir=${d%/}
         if [ "$d" != "python_base" ];then
             cd $d
             
-            docker buildx build --build-arg commit=$GITHUB_SHA --cache-from jrcichra/smartcar_${dir} -t jrcichra/smartcar_${dir}_rpi -f Dockerfile-rpi --push .
+            docker buildx build --build-arg commit=$GITHUB_SHA --cache-from jrcichra/smartcar_${dir}_rpi -t jrcichra/smartcar_${dir}_rpi -f Dockerfile-rpi --push .
             docker buildx imagetools inspect jrcichra/smartcar_${dir}_rpi
             cd ..
         fi
@@ -40,8 +40,8 @@ else
     for d in */; do
         dir=${d%/}
         cd python_base
-        docker buildx build --build-arg commit=$GITHUB_SHA --cache-from jrcichra/smartcar_${dir}_rpi --platform linux/amd64,linux/arm64,linux/arm/v7 -t jrcichra/smartcar_${dir} --push .
-        docker buildx imagetools inspect jrcichra/smartcar_${dir}
+        docker buildx build --build-arg commit=$GITHUB_SHA --cache-from jrcichra/smartcar_python_base --platform linux/amd64,linux/arm64,linux/arm/v7 -t jrcichra/smartcar_python_base --push .
+        docker buildx imagetools inspect jrcichra/smartcar_python_base
         cd ..
 
         if [ "$d" != "python_base" ];then
