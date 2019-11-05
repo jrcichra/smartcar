@@ -46,7 +46,7 @@ else
 
         if [ "$d" != "python_base" ];then
             cd $d
-            docker buildx build --build-arg commit=$GITHUB_SHA --cache-from jrcichra/smartcar_${dir}_rpi --platform linux/amd64,linux/arm64,linux/arm/v7 -t jrcichra/smartcar_${dir} --push .
+            docker buildx build --build-arg commit=$GITHUB_SHA --cache-from jrcichra/smartcar_${dir} --platform linux/amd64,linux/arm64,linux/arm/v7 -t jrcichra/smartcar_${dir} --push .
             docker buildx imagetools inspect jrcichra/smartcar_${dir}
             cd ..
         fi
