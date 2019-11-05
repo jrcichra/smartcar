@@ -1,6 +1,6 @@
 FROM jrcichra/smartcar_python_base_rpi
 EXPOSE 8080
-RUN apt install -y openssh-client sshpass
+RUN apt install -y openssh-client sshpass && rm -rf /var/lib/apt/lists/*
 COPY requirements.txt /
 RUN pip3 install -r /requirements.txt
 COPY . /
