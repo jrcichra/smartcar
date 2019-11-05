@@ -31,7 +31,7 @@ def handleAction(action, mode, read_queue, action_queue, event_id):
 
     redis_action = rc.queryAction(action)
     if redis_action is None:
-        logging.warn("Action: " + action +
+        logging.warning("Action: " + action +
                      " does not exist (yet) in redis...cannot call action. Waiting on queue instead...")
         # block on this queue until the action we are looking for is registered
         qaction = action_queue.get()
