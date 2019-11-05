@@ -28,7 +28,7 @@ if [ "$1" == "rpi" ];then
 
     for d in */; do
         dir=${d%/}
-        if [ "$d" != "python_base" ];then
+        if [ "$dir" != "python_base" ];then
             cd $d
             
             docker buildx build --build-arg commit=$GITHUB_SHA --cache-from jrcichra/smartcar_${dir}_rpi -t jrcichra/smartcar_${dir}_rpi -f Dockerfile-rpi --push .
@@ -44,7 +44,7 @@ else
         docker buildx imagetools inspect jrcichra/smartcar_python_base
         cd ..
 
-        if [ "$d" != "python_base" ];then
+        if [ "$dir" != "python_base" ];then
             cd $d
             docker buildx build --build-arg commit=$GITHUB_SHA --cache-from jrcichra/smartcar_${dir} --platform linux/amd64,linux/arm64,linux/arm/v7 -t jrcichra/smartcar_${dir} --push .
             docker buildx imagetools inspect jrcichra/smartcar_${dir}
