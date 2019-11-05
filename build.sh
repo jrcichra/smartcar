@@ -23,7 +23,7 @@ cd containers
 if [ "$1" == "rpi" ];then
     cd python_base
     docker buildx build --build-arg commit=$GITHUB_SHA --cache-from jrcichra/smartcar_python_base_rpi -t jrcichra/smartcar_python_base_rpi -f Dockerfile-rpi --push .
-    docker buildx imagetools inspect jrcichra/smartcar_base_rpi
+    docker buildx imagetools inspect jrcichra/smartcar_python_base_rpi
     cd ..
 
     for d in */; do
