@@ -52,7 +52,7 @@ def transfer_all_footage(msg, sc):
         time.sleep(PING_SLEEP)
         ping_attempts += 1
     if ping_attempts >= MAX_PINGS:
-        logging.warn(
+        logging.warning(
             "We did not find the host specified. Keeping the files on the local system.")
     else:
         logging.info("We found the host")
@@ -144,44 +144,44 @@ with open('/settings.yml', 'r') as f:
     try:
         settings = y['transfer']
     except Exception as e:
-        logging.warn("No settings found for the transfer container")
+        logging.warning("No settings found for the transfer container")
 
 try:
     HOSTNAME = settings['hostname']
 except KeyError as e:
     HOSTNAME = ""
-    logging.warn("Did not find a hostname in the settings, ignoring transfers")
+    logging.warning("Did not find a hostname in the settings, ignoring transfers")
 
 try:
     USERNAME = settings['username']
 except KeyError as e:
     USERNAME = ""
-    logging.warn(
+    logging.warning(
         "Did not find a username in the settings, ignoring transfers " +
         "(we're in a container, I don't know your username outside this)")
 try:
     PASSWORD = settings['password']
 except KeyError as e:
     PASSWORD = ""
-    logging.warn(
+    logging.warning(
         "Did not find a password in the settings, if you haven't set up ssh keys somehow, things might not work")
 
 try:
     METHOD = settings['method']
 except KeyError as e:
     METHOD = "ssh"
-    logging.warn("Did not find a method in the settings, defaulting to ssh")
+    logging.warning("Did not find a method in the settings, defaulting to ssh")
 
 try:
     PATH = settings['path']
 except KeyError as e:
     PATH = ""
-    logging.warn("Did not find a path in the settings, ignoring transfers")
+    logging.warning("Did not find a path in the settings, ignoring transfers")
 try:
     FRAMERATE = y['dashcam']['fps']
 except KeyError as e:
     FRAMERATE = 10
-    logging.warn(
+    logging.warning(
         "Transfer needs to know the framerate of the dashcam, didn't find one, defaulting to " + FRAMERATE)
 
 # Use the library to abstract the difficulty

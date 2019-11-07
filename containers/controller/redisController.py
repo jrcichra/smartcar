@@ -178,7 +178,7 @@ class redisController:
                         "No serial found while registering event: " + event_name)
 
             except KeyError:
-                logging.warn(
+                logging.warning(
                     "Missing event in config.yml, cannot perform actions for this event. Please check your config.yml")
 
             self.db.jsonset("event_" + str(event_name),

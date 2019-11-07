@@ -160,25 +160,25 @@ try:
     FRAMERATE = settings['fps']
 except KeyError as e:
     FRAMERATE = 10
-    logging.warn("Missing framerate, defaulting to " + FRAMERATE)
+    logging.warning("Missing framerate, defaulting to " + FRAMERATE)
 
 try:
     HRES = settings['hres']
 except KeyError as e:
     HRES = 1280
-    logging.warn("Missing hres, defaulting to " + HRES)
+    logging.warning("Missing hres, defaulting to " + HRES)
 
 try:
     VRES = settings['vres']
 except KeyError as e:
     VRES = 720
-    logging.warn("Missing vres, defaulting to " + VRES)
+    logging.warning("Missing vres, defaulting to " + VRES)
 
 try:
     ROT = settings['rot']
 except KeyError as e:
     ROT = 0
-    logging.warn("Missing rot, defaulting to " + ROT)
+    logging.warning("Missing rot, defaulting to " + ROT)
 
 if not isCI():
     # Do all the camera setup, this will probably come from a config file at some point...
