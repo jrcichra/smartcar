@@ -24,16 +24,12 @@ services:
       - "${PWD}/recordings:/recordings"
       - "${PWD}/settings.yml:/settings.yml"
     privileged: true
-    depends_on:
-      - controller
   gpio:
     environment:
       TZ: "America/New_York"
     hostname: gpio
     image: jrcichra/smartcar_gpio_rpi
     restart: always
-    depends_on:
-      - controller
     privileged: true
   transfer:
     environment:
@@ -44,8 +40,6 @@ services:
     volumes:
       - "${PWD}/recordings:/recordings"
       - "${PWD}/settings.yml:/settings.yml"
-    depends_on:
-      - controller
   gpsd:
     environment:
       TZ: "America/New_York"
