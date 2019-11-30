@@ -6,12 +6,14 @@ services:
       GITHUB_ACTIONS: "${GITHUB_ACTIONS}"
     hostname: redis
     image: jrcichra/redisjson
+    restart: always
   controller:
     environment:
       TZ: "America/New_York"
       GITHUB_ACTIONS: "${GITHUB_ACTIONS}"
     hostname: controller
     image: jrcichra/smartcar_controller
+    restart: always
     volumes:
       - "${PWD}/config.yml:/config.yml"
     depends_on:
@@ -22,6 +24,7 @@ services:
       GITHUB_ACTIONS: "${GITHUB_ACTIONS}"
     hostname: dashcam
     image: jrcichra/smartcar_dashcam
+    restart: always
     volumes:
       - "${PWD}/recordings:/recordings"
       - "${PWD}/settings.yml:/settings.yml"
@@ -33,6 +36,7 @@ services:
       TZ: "America/New_York"
       GITHUB_ACTIONS: "${GITHUB_ACTIONS}"
     hostname: gpio
+    restart: always
     image: jrcichra/smartcar_gpio
     depends_on:
       - controller
@@ -41,6 +45,7 @@ services:
       TZ: "America/New_York"
       GITHUB_ACTIONS: "${GITHUB_ACTIONS}"
     hostname: transfer
+    restart: always
     image: jrcichra/smartcar_transfer
     volumes:
       - "${PWD}/recordings:/recordings"
@@ -48,6 +53,7 @@ services:
     depends_on:
       - controller
   cinas:
+    restart: always
     environment:
       TZ: "America/New_York"
       GITHUB_ACTIONS: "${GITHUB_ACTIONS}"
