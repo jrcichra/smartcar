@@ -35,7 +35,8 @@ def power_off(msg, sc):
     # if we run this code and find that the car is actually back on, we'll emit a key_on
     if is_off():
         # Okay, the key is off, we want to pull the relay
-        # first, sync the filesystem
+        logging.info("Shutting down the system in a few seconds...")
+        # first, sync the filesystem (output before sync so things are more likely to be saved)
         os.system("sync")
         # sleep a little
         time.sleep(3)

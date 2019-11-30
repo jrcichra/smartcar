@@ -12,6 +12,8 @@ services:
     image: jrcichra/smartcar_controller
     volumes:
       - "${PWD}/config.yml:/config.yml"
+    depends_on:
+      - redis
   dashcam:
     environment:
       TZ: "America/New_York"

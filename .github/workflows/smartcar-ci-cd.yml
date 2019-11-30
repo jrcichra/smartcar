@@ -41,7 +41,7 @@ jobs:
         run: |
           mkdir ${PWD}/recordings
           mkdir -p ${PWD}/nas/.convert
-          docker-compose up &
+          docker-compose -f docker-compose-rpi.yml up &
           sleep 240
           docker-compose exec -T redis bash -x -c 'redis-cli KEYS *'
           docker-compose exec -T redis bash -x -c 'redis-cli KEYS * | cut -d\" -f2 | xargs -L1 redis-cli JSON.GET'
