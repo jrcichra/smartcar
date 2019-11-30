@@ -3,6 +3,7 @@ services:
   redis:
     environment:
       TZ: "America/New_York"
+      GITHUB_ACTIONS: "${GITHUB_ACTIONS}"
     hostname: redis
     image: jrcichra/redisjson
     restart: always
@@ -17,6 +18,7 @@ services:
   dashcam:
     environment:
       TZ: "America/New_York"
+      GITHUB_ACTIONS: "${GITHUB_ACTIONS}"
     hostname: dashcam
     image: jrcichra/smartcar_dashcam_rpi
     restart: always
@@ -29,6 +31,7 @@ services:
   gpio:
     environment:
       TZ: "America/New_York"
+      GITHUB_ACTIONS: "${GITHUB_ACTIONS}"
     hostname: gpio
     image: jrcichra/smartcar_gpio_rpi
     restart: always
@@ -38,6 +41,7 @@ services:
   transfer:
     environment:
       TZ: "America/New_York"
+      GITHUB_ACTIONS: "${GITHUB_ACTIONS}"
     hostname: transfer
     image: jrcichra/smartcar_transfer_rpi
     restart: always
