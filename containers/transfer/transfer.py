@@ -1,3 +1,4 @@
+from common import isCI
 import smartcarsocket
 import threading
 import queue
@@ -11,10 +12,6 @@ import subprocess
 
 # because we're in a container we can do this :)
 RECORDING_PATH = '/recordings/'
-
-
-def isCI():
-    return os.uname()[4] != 'armv7l'
 
 
 logging.basicConfig(level=logging.DEBUG,
@@ -150,7 +147,8 @@ try:
     HOSTNAME = settings['hostname']
 except KeyError as e:
     HOSTNAME = ""
-    logging.warning("Did not find a hostname in the settings, ignoring transfers")
+    logging.warning(
+        "Did not find a hostname in the settings, ignoring transfers")
 
 try:
     USERNAME = settings['username']

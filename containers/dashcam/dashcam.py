@@ -6,11 +6,7 @@ import time
 import os
 import datetime
 import yaml
-
-
-def isCI():
-    return os.uname()[4] != 'armv7l'
-
+from common import isCI
 
 camera = None
 ##get_new_filename##

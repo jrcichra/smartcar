@@ -5,9 +5,7 @@ import logging
 import time
 import os
 import signal
-
-def isCI():
-    return os.uname()[4] != 'armv7l'
+from common import isCI
 
 if not isCI():
     import RPi.GPIO as GPIO
