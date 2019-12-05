@@ -7,6 +7,9 @@ import RPi.GPIO as GPIO
 # PIN 31 used to unlatch the power relay (on feather board)
 UNLATCH = 6
 
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(UNLATCH, GPIO.OUT)
+
 
 def power_off():
     print("Shutting down the system in a few seconds...")
