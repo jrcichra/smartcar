@@ -42,3 +42,35 @@ You are in total control of how your car responds to events. This lets you conne
 
 # TCP based
 Currently, all communication between containers is through TCP (no HTTP). This may change depending on need from GUI applications.
+
+# Usage
+I've tried to make smartcar as easy and extensible as I could. Here's how you can register a new container on the network and handle I/O:
+```python
+
+def sendResponse(msg, sc):
+    response = sc.newActionResponse(msg['data']['name'])
+    response.setEventID(msg['event_id'])
+    response.setMessage("OK")
+    response.setStatus(0)
+    sc.sendall(response)
+
+def getActions(sc, temp):
+    while True:
+        msg = sc.getQueue().get()
+        if msg['type'] == "trigger-action":
+            if msg['data']['name'] == 'pong':
+               print("Got a pong action!)
+               sendResponse(msg,sc)       # Respond that we've handled the "pong" action
+
+## MAIN ##
+
+sc = smartcarsocket.smartcarsocket()
+sc.registerContainer()
+sc.registerEvent("ping")
+sc.registerAction("pong")
+t = threading.Thread(target=getActions, args=(sc, True))
+t.start()
+sc.emitEvent("ping")    # Emit the ping event
+```
+
+It still needs some work to be "dead-simple". This project could definitely benefit from Python async/await.
