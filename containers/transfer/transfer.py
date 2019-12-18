@@ -1,4 +1,4 @@
-from common import isCI
+from common import isCI, secondsTillMidnight
 import smartcarsocket
 import threading
 import queue
@@ -103,6 +103,13 @@ def kick_off_conversion(msg, sc):
         logging.info("Could not kick off the h264->mp4 job on the backend")
     else:
         logging.info("Successfully kicked off the job")
+        logging.debug("Checking for develop mode:")
+        if DEVELOP:
+            s = secondsTillMidnight()
+            logging.info(
+                "DEVELOP is on - sleeping until midnight ({} seconds from now)".format(s))
+            time.sleep(s)
+            logging.info("Done sleeping for DEVELOP mode! Continuing...")
     sendResponse(msg, sc)
 
 # Ideally we could get this into the library and not put it on the user? Not sure
@@ -181,6 +188,14 @@ except KeyError as e:
     FRAMERATE = 10
     logging.warning(
         "Transfer needs to know the framerate of the dashcam, didn't find one, defaulting to " + FRAMERATE)
+try:
+    if settings['develop']:
+        DEVELOP = True
+except KeyError as e:
+    DEVELOP = False
+    logging.warning(
+        "Transfer can be in develop mode, letting the car stay on past midnight for development. Default is off.")
+
 
 # Use the library to abstract the difficulty
 sc = smartcarsocket.smartcarsocket()
