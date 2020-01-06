@@ -1,0 +1,30 @@
+events:
+    gpio.key_on:
+        - parallel:
+              - dashcam.start_recording:
+                    - framerate: 10
+                    - resolution: 1280x720
+                    - rotation: 0
+              - dashcam.start_preview
+              - obdii.start:
+                    - rpm: true
+                    - speed: true
+                    - type: file
+    gpio.key_off:
+        - serial:
+              - dashcam.stop_recording
+              - dashcam.stop_preview
+              - transfer.transfer_all_footage:
+                    - hostname: cinas
+                    - username: root
+                    - password: root
+                    - method: ssh
+                    - path: /recordings
+              - transfer.kick_off_conversion
+              - gpio.power_off
+    obdii.speed_changed:
+        - when: speed > 65
+        - and: unit == "mph"
+        - serial:
+              - espeak.speak:
+                    - message: You're going too fast

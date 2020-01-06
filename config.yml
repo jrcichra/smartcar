@@ -5,6 +5,7 @@ key_on:                     # The name of the event you wish to program a routin
   parallel:                 # send out these two actions in parallel
     - start_recording       # tell someone to start recording
     - start_preview          # tell someone to show the preview (these two actions are mapped to a container in redis)
+    - collect_obd           # collect obd data
 key_off:                    # Another event we are programming
   ignore: key_off           # Disable future key_off events from being propigated
   listen: key_on            # Enable key_on events
@@ -12,6 +13,7 @@ key_off:                    # Another event we are programming
   serial:                   # Kick off the following actions serially
     - stop_recording        # Stop recording footage
     - stop_preview          # When we aren't recording, stop the preview
+    - stop_obd              # Stop collecting obd data
     - transfer_all_footage  # Transfer footage
     - kick_off_conversion   # Tell the backend to convert the footage to mp4 from h264
     - power_off             # Tells the GPIO container to off ourselves
