@@ -156,6 +156,10 @@ func (c *Controller) Start(port int) {
 	c.readConfig()
 	PORT := ":" + strconv.Itoa(port)
 	l, err := net.Listen("tcp4", PORT)
+	if err != nil {
+		c.logger.Error(err)
+		return
+	}
 	defer l.Close()
 	if err != nil {
 		c.logger.Error(err)

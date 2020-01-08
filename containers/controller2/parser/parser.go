@@ -3,6 +3,8 @@ package parser
 import (
 	"errors"
 	"io/ioutil"
+	"strconv"
+	"strings"
 
 	"github.com/davecgh/go-spew/spew"
 	"gopkg.in/yaml.v2"
@@ -20,14 +22,19 @@ type Parameters *[]Parameter
 //Operand - part of a conditional expression
 type Operand interface{} //Could be a parameter or primitive type
 
-//Comparator - just a comparison operator
-type Comparator string //==,<>,<=,>=
+//Operator - just a comparison operator
+type Operator string //==,<>,<=,>=
 
 //Condition - has one of several keywords that will conditionally execute an event's desired actions
 type Condition struct {
-	Type      string //when/and/else
-	Condition string //speed > 65 - brake down into Operands and
+	Type         string //when/and/else
+	Operator     Operator
+	LeftOperand  Operand
+	RightOperand Operand
 }
+
+//Conditions - a slice of Condition objects
+type Conditions []Condition
 
 //Action - Tell a container to do something
 type Action struct {
@@ -35,17 +42,17 @@ type Action struct {
 	Parameters *[]Parameter
 }
 
-//Actions - an array of action objects
-type Actions *[]Action
+//Actions - a slice of action objects
+type Actions []Action
 
 //Block - instruction block
 type Block struct {
-	Type     string         //serial,parallel, or conditional (or more later)
-	Children *[]interface{} //Children of this block (check what type should go here and cast it at runtime)
+	Type     string        //serial,parallel, or conditional (or more later)
+	Children []interface{} //Children of this block (check what type should go here and cast it at runtime)
 }
 
-//Blocks - an array of block objects
-type Blocks *[]Block
+//Blocks - a slice of block objects
+type Blocks []Block
 
 //Event - single event defined in a config
 type Event struct {
@@ -55,20 +62,88 @@ type Event struct {
 
 //Config - Config file represented in a go struct
 type Config struct {
-	Events *[]Event
+	Events []Event
 }
 
-func (c *Config) block(blockType interface{}, actions interface{}) (*Blocks, error) {
-	var block *Block
+//parses a yaml "condition string" - when, and, else, etc and returns a Condition
+func (c *Config) condition(conditionName string, conditionString string) (*Condition, error) {
+	var condition Condition
+	//separate the right side of the yaml by spaces first
+	conditionSlice := strings.Split(conditionString, " ")
+	condition.Type = conditionName
 
-	//check if blockName is a string
-	switch t := blockType.(type) {
-	case string:
-		//it is a string, set it
-		block.Type = t
+	//We can't trust that the conditionString slice is really a string, could be a float
+	lfloat, err := strconv.ParseFloat(conditionSlice[0], 64)
+	if err != nil {
+		//could also be a boolean
+		lbool, err := strconv.ParseBool(conditionSlice[0])
+		if err != nil {
+			//keep it a string, it can't be a float or bool
+			condition.LeftOperand = conditionSlice[0]
+		} else {
+			//must be a bool
+			condition.LeftOperand = lbool
+		}
+	} else {
+		//must be a float (or an int, but float is fine)
+		condition.LeftOperand = lfloat
+	}
+
+	//We know the operator has to be a string, do a typecast
+	condition.Operator = Operator(conditionSlice[1])
+
+	//We can't trust that the conditionString slice is really a string, could be a float
+	rfloat, err := strconv.ParseFloat(conditionSlice[2], 64)
+	if err != nil {
+		//could also be a boolean
+		rbool, err := strconv.ParseBool(conditionSlice[2])
+		if err != nil {
+			//keep it a string, it can't be a float or bool
+			condition.LeftOperand = conditionSlice[2]
+		} else {
+			//must be a bool
+			condition.LeftOperand = rbool
+		}
+	} else {
+		//must be a float (or an int, but float is fine)
+		condition.LeftOperand = rfloat
+	}
+
+	var e error
+	e = nil //just making sure initalization is right
+
+	//when we get here, the whole object should be populated
+	if condition.Type == "" || condition.Operator == "" || condition.LeftOperand == "" || condition.RightOperand == "" {
+		//Something is missing, error
+		e = errors.New("Condition is missing one of its parameters. Something went wrong when parsing the condition string")
+	}
+
+	return &condition, e
+
+}
+
+//Parses a yaml "block" (serial/parallel/condition)
+func (c *Config) block(blocksArrayInterface interface{}) (*Block, error) {
+	var block Block
+	blocksInterface := make(map[interface{}]interface{})
+
+	//get the map out of this interface array
+	switch m := blocksArrayInterface.(type) {
+	case map[interface{}]interface{}:
+		blocksInterface = m
 	default:
-		//not a string, error
-		return nil, errors.New("BlockType was not a string")
+		return nil, errors.New("Couldn't get map out of array in block")
+	}
+
+	//Get the keys for this map (there should only be one, so looping and keeping the last
+	for k := range blocksInterface {
+		switch s := k.(type) {
+		case string:
+			block.Type = s
+		default:
+			return nil, errors.New("Couln't find string key for block")
+		}
+
 	}
 
 	//decipher the string further
@@ -77,16 +152,42 @@ func (c *Config) block(blockType interface{}, actions interface{}) (*Blocks, err
 	case "and":
 	case "else":
 		//conditionals
+		switch b := blocksArrayInterface.(type) {
+		//make sure it's a map (might have map[string][boolean] later)
+		case map[string]string:
+			//loop through them (should be one at this level?)
+			for key, condition := range b {
+				cond := new(Condition)
+				cond, err := c.condition(key, condition)
+				if err != nil {
+					return nil, err
+				}
+				//put our new condition onto the block
+				block.Children = append(block.Children, cond)
+			}
+		default:
+			return nil, errors.New("Map is not what we expected")
+		}
 	case "serial":
-		//serial
 	case "parallel":
-		//parallel
-	}
+		//Under serial/parallel, we have Actions, not conditions
 
+		//TODO
+
+		switch blocksArrayInterface.(type) {
+		//if we have a map,
+		case map[interface{}]interface{}:
+
+		}
+	default:
+		return nil, errors.New("Keyword not recognized at the block level")
+	}
+	return &block, nil
 }
 
-func (c *Config) event(eventName interface{}, blocks interface{}) (*Event, error) {
-	var event *Event
+func (c *Config) event(eventName interface{}, eventsInterface interface{}) (*Event, error) {
+	var event Event
+	var blocks Blocks
 
 	//check if eventName is a string
 	switch name := eventName.(type) {
@@ -98,17 +199,29 @@ func (c *Config) event(eventName interface{}, blocks interface{}) (*Event, error
 		return nil, errors.New("EventName was not a string")
 	}
 
-	//make sure blocks is a map and loop through the blocks
+	//make sure blocks is an array and loop through the blocks
 
-	switch b := blocks.(type) {
-	case map[interface{}]interface{}:
-		//It's a map, loop through each block
-		for key, block := range b {
-			blk, err := c.block(key, block)
+	switch b := eventsInterface.(type) {
+	case []interface{}:
+		//It's an array, loop through each block
+		for _, blockArrayInterface := range b {
+			b, err := c.block(blockArrayInterface)
+			if err != nil {
+				return nil, err
+			}
+			//Deference the Blocks pointer, which gives a struct
+			//of []Block, appending the old blocks with the new block
+			//Deferencing to get something append() understands
+			blocks = append(blocks, *b)
 		}
+	default:
+		return nil, errors.New("In event, block's type wasn't anything we expected")
 	}
 
-	return event, nil
+	//Once we built the blocks array, assign it to the event
+	event.Blocks = &blocks
+
+	return &event, nil
 }
 
 //actually do the heavy lifting
@@ -129,6 +242,10 @@ func (c *Config) config(generic interface{}) error {
 						//if it is a map, loop through each event
 						for key, events := range e {
 							event, err := c.event(key, events)
+							if err != nil {
+								panic(err)
+							}
+							spew.Dump(event)
 						}
 
 					}
@@ -153,7 +270,7 @@ func (c *Config) Parse(filename string) error {
 	if err != nil {
 		return err
 	}
-	spew.Dump(g)
+	// spew.Dump(g)
 	//parse it beyond interface{}
 	c.config(g)
 	return nil
