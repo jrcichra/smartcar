@@ -99,14 +99,14 @@ func (c *Config) condition(conditionName string, conditionString string) (*Condi
 		rbool, err := strconv.ParseBool(conditionSlice[2])
 		if err != nil {
 			//keep it a string, it can't be a float or bool
-			condition.LeftOperand = conditionSlice[2]
+			condition.RightOperand = conditionSlice[2]
 		} else {
 			//must be a bool
-			condition.LeftOperand = rbool
+			condition.RightOperand = rbool
 		}
 	} else {
 		//must be a float (or an int, but float is fine)
-		condition.LeftOperand = rfloat
+		condition.RightOperand = rfloat
 	}
 
 	var e error
@@ -148,28 +148,36 @@ func (c *Config) block(blocksArrayInterface interface{}) (*Block, error) {
 
 	//decipher the string further
 	switch block.Type {
-	case "when":
-	case "and":
-	case "else":
+	case "when", "and", "else":
 		//conditionals
 		switch b := blocksArrayInterface.(type) {
-		//make sure it's a map (might have map[string][boolean] later)
-		case map[string]string:
+		//make sure it's a map
+		case map[interface{}]interface{}:
 			//loop through them (should be one at this level?)
 			for key, condition := range b {
-				cond := new(Condition)
-				cond, err := c.condition(key, condition)
-				if err != nil {
-					return nil, err
+				switch s := condition.(type) {
+				case string:
+					switch k := key.(type) {
+					case string:
+						cond, err := c.condition(k, s)
+						if err != nil {
+							return nil, err
+						}
+						//put our new condition onto the block
+						block.Children = append(block.Children, cond)
+					default:
+						return nil, errors.New("Expected string key")
+					}
+
+				default:
+					return nil, errors.New("Expected string condition")
 				}
-				//put our new condition onto the block
-				block.Children = append(block.Children, cond)
+
 			}
 		default:
 			return nil, errors.New("Map is not what we expected")
 		}
-	case "serial":
-	case "parallel":
+	case "serial", "parallel":
 		//Under serial/parallel, we have Actions, not conditions
 
 		//TODO
