@@ -1,5 +1,7 @@
 package parser
 
+// This parser uses a LOT of type switches. I apologize in advance
+
 import (
 	"errors"
 	"io/ioutil"
@@ -13,11 +15,12 @@ import (
 //Parameter - Single parameter with a name and value (of any type)
 type Parameter struct {
 	Name  string
+	Type  string
 	Value interface{}
 }
 
 //Parameters - an array of parameter objects
-type Parameters *[]Parameter
+type Parameters []Parameter
 
 //Operand - part of a conditional expression
 type Operand interface{} //Could be a parameter or primitive type
@@ -38,8 +41,9 @@ type Conditions []Condition
 
 //Action - Tell a container to do something
 type Action struct {
+	Container  string
 	Name       string
-	Parameters *[]Parameter
+	Parameters Parameters
 }
 
 //Actions - a slice of action objects
@@ -65,12 +69,112 @@ type Config struct {
 	Events []Event
 }
 
+//parses a yaml "parameter string" and returns a Parameter
+func (c *Config) parameter(parameterName string, parameter interface{}) (*Parameter, error) {
+	// Determine the type of the parameter we passed in - similar to Conditions, but with type switches (as always)
+	var p Parameter
+
+	p.Name = parameterName
+	p.Value = parameter
+
+	switch parameter.(type) {
+	case string:
+		//Their parameter is a string
+		p.Type = "string"
+	case float32, float64, int, int16, int32, int64, int8:
+		//Their parameter is a number
+		p.Type = "number"
+	case bool:
+		//Their parameter is a bool
+		p.Type = "bool"
+	default:
+		return nil, errors.New("Unknown type in parameter")
+	}
+
+	return &p, nil
+}
+
+//parses a yaml "action string" - when, and, else, etc and returns an Action
+func (c *Config) action(actionName string, action interface{}) (*Action, error) {
+	var act Action
+
+	act.Name = actionName
+	switch a := action.(type) {
+	case map[interface{}]interface{}:
+		// loop through them (should be one at this level?)
+		for key, a2 := range a {
+			switch params := a2.(type) {
+			case interface{}:
+				switch k := key.(type) {
+				case string:
+
+					// We've hit the name of the action.
+					// It should be formatted as "container.action"
+					// Let's split on the .
+
+					split := strings.Split(k, ".")
+					if len(split) > 2 {
+						return nil, errors.New("Action was invalid format. Expected 'container.action', got " + k)
+					}
+
+					act.Container = split[0]
+					act.Name = split[1]
+
+					// Now that we've disected the name of the event,
+					// let's check if there are any parameters
+					switch p := params.(type) {
+					case []interface{}:
+						//This is an array, there are parameters in here
+						for _, mapp := range p {
+							switch m := mapp.(type) {
+							case map[interface{}]interface{}:
+								//Loop through all the parameters
+								for k, v := range m {
+									switch sk := k.(type) {
+									case string:
+										param, err := c.parameter(sk, v)
+										if err != nil {
+											return nil, err
+										}
+										// append param to list of parameters for this action
+										act.Parameters = append(act.Parameters, *param)
+									default:
+										return nil, errors.New("Expected a string for the parameter name")
+									}
+								}
+							default:
+								return nil, errors.New("Expected map of parameters")
+							}
+
+						}
+
+					default:
+						return nil, errors.New("Couldn't find the name of the action? Not completely sure how we can hit this error if I'm being honest")
+					}
+				default:
+					return nil, errors.New("Expected string key")
+				}
+
+			default:
+				return nil, errors.New("Expected string condition")
+			}
+		}
+	case string:
+		// If we hit here, there are no parameters on this action, which is totally fine
+
+	default:
+		return nil, errors.New("Action couldn't be recognized as a string or a map of parameters")
+	}
+
+	return &act, nil
+}
+
 //parses a yaml "condition string" - when, and, else, etc and returns a Condition
 func (c *Config) condition(conditionName string, conditionString string) (*Condition, error) {
 	var condition Condition
 	//separate the right side of the yaml by spaces first
 	conditionSlice := strings.Split(conditionString, " ")
-	condition.Type = conditionName
+	condition.Type = "Condition"
 
 	//We can't trust that the conditionString slice is really a string, could be a float
 	lfloat, err := strconv.ParseFloat(conditionSlice[0], 64)
@@ -164,7 +268,7 @@ func (c *Config) block(blocksArrayInterface interface{}) (*Block, error) {
 							return nil, err
 						}
 						//put our new condition onto the block
-						block.Children = append(block.Children, cond)
+						block.Children = append(block.Children, *cond)
 					default:
 						return nil, errors.New("Expected string key")
 					}
@@ -179,16 +283,37 @@ func (c *Config) block(blocksArrayInterface interface{}) (*Block, error) {
 		}
 	case "serial", "parallel":
 		//Under serial/parallel, we have Actions, not conditions
-
-		//TODO
-
-		switch blocksArrayInterface.(type) {
-		//if we have a map,
+		switch b := blocksArrayInterface.(type) {
+		//make sure it's a map
 		case map[interface{}]interface{}:
+			//Should be one thing under this block
+			for key, action := range b {
+				switch k := key.(type) {
+				case string:
+					switch a := action.(type) {
+					case []interface{}:
+						//Loop through all the actions (this should be an array)
+						for _, action2 := range a {
+							//we've hit the actions, process each action in a function
+							processedAction, err := c.action(k, action2)
+							if err != nil {
+								return nil, err
+							}
+							//put our new action onto the block
+							block.Children = append(block.Children, *processedAction)
+						}
+					default:
+						return nil, errors.New("Expected string key")
+					}
 
+				default:
+					return nil, errors.New("Expected string condition")
+				}
+
+			}
+		default:
+			return nil, errors.New("Map is not what we expected")
 		}
-	default:
-		return nil, errors.New("Keyword not recognized at the block level")
 	}
 	return &block, nil
 }
