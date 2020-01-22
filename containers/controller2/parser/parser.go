@@ -94,6 +94,16 @@ func (c *Config) parameter(parameterName string, parameter interface{}) (*Parame
 	return &p, nil
 }
 
+func (c *Config) splitter(s string) ([]string, error) {
+
+	split := strings.Split(s, ".")
+	if len(split) > 2 {
+		return nil, errors.New("Action was invalid format. Expected 'container.action', got " + s)
+	}
+
+	return split, nil
+}
+
 //parses a yaml "action string" - when, and, else, etc and returns an Action
 func (c *Config) action(actionName string, action interface{}) (*Action, error) {
 	var act Action
@@ -112,11 +122,10 @@ func (c *Config) action(actionName string, action interface{}) (*Action, error) 
 					// It should be formatted as "container.action"
 					// Let's split on the .
 
-					split := strings.Split(k, ".")
-					if len(split) > 2 {
-						return nil, errors.New("Action was invalid format. Expected 'container.action', got " + k)
+					split, err := c.splitter(k)
+					if err != nil {
+						return nil, err
 					}
-
 					act.Container = split[0]
 					act.Name = split[1]
 
@@ -161,6 +170,13 @@ func (c *Config) action(actionName string, action interface{}) (*Action, error) 
 		}
 	case string:
 		// If we hit here, there are no parameters on this action, which is totally fine
+		// We still want to append the action on, it just won't have parameters
+		split, err := c.splitter(a)
+		if err != nil {
+			return nil, err
+		}
+		act.Container = split[0]
+		act.Name = split[1]
 
 	default:
 		return nil, errors.New("Action couldn't be recognized as a string or a map of parameters")
