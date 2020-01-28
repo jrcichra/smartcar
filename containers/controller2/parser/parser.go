@@ -8,7 +8,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/davecgh/go-spew/spew"
 	"gopkg.in/yaml.v2"
 )
 
@@ -60,13 +59,17 @@ type Blocks []Block
 
 //Event - single event defined in a config
 type Event struct {
-	Name   string
-	Blocks *Blocks
+	ContainerName string
+	EventName     string
+	Blocks        *Blocks
 }
+
+//Events - a slice of event objects
+type Events []Event
 
 //Config - Config file represented in a go struct
 type Config struct {
-	Events []Event
+	Events Events
 }
 
 //parses a yaml "parameter string" and returns a Parameter
@@ -341,8 +344,13 @@ func (c *Config) event(eventName interface{}, eventsInterface interface{}) (*Eve
 	//check if eventName is a string
 	switch name := eventName.(type) {
 	case string:
-		//it is a string, set it
-		event.Name = name
+		//it is a string, set the container name and name
+		split, err := c.splitter(name)
+		if err != nil {
+			return nil, err
+		}
+		event.ContainerName = split[0]
+		event.EventName = split[1]
 	default:
 		//Not a string, error
 		return nil, errors.New("EventName was not a string")
@@ -374,7 +382,8 @@ func (c *Config) event(eventName interface{}, eventsInterface interface{}) (*Eve
 }
 
 //actually do the heavy lifting
-func (c *Config) config(generic interface{}) error {
+func (c *Config) config(generic interface{}) (*Config, error) {
+	var mainEvents Events
 	switch g := generic.(type) {
 	//events:
 	case map[interface{}]interface{}:
@@ -394,7 +403,9 @@ func (c *Config) config(generic interface{}) error {
 							if err != nil {
 								panic(err)
 							}
-							spew.Dump(event)
+							// spew.Dump(event)
+							// append event to event array
+							mainEvents = append(mainEvents, *event)
 						}
 
 					}
@@ -404,23 +415,30 @@ func (c *Config) config(generic interface{}) error {
 		}
 
 	}
-	return nil
+	//Combine all the events into a Config
+	var config Config
+	config.Events = mainEvents
+	return &config, nil
 }
 
 //Parse - parse the yaml file
-func (c *Config) Parse(filename string) error {
+func (c *Config) Parse(filename string) (*Config, error) {
 	//open the config file
 	config, err := ioutil.ReadFile(filename)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	var g interface{}
 	err = yaml.Unmarshal([]byte(config), &g)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	// spew.Dump(g)
 	//parse it beyond interface{}
-	c.config(g)
-	return nil
+	cfg, err := c.config(g)
+	if err != nil {
+		return nil, err
+	}
+
+	return cfg, nil
 }

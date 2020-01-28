@@ -2,6 +2,7 @@ package redis
 
 import (
 	common "controller2/common"
+	parser "controller2/parser"
 	"errors"
 	"flag"
 	"fmt"
@@ -19,40 +20,32 @@ type Redis struct {
 
 //Container - container type as stored in redis
 type Container struct {
-	State         string   `json:"state"`          //online?
-	ContainerName string   `json:"container_name"` //PK
-	Timestamp     int64    `json:"timestamp"`      //Timestamp
-	Events        []string `json:"events"`         //list of events in no particular order for this container (just the name, rest of the details can be queried out separately)
-	Actions       []string `json:"actions"`        //list of actions in no particular order for this container (just the name, rest of the details can be queried out separately)
+	State         string `json:"state"`          //online?
+	ContainerName string `json:"container_name"` //PK
+	Timestamp     int64  `json:"timestamp"`      //Timestamp
 }
 
 //Event - event type as stored in redis
 type Event struct {
-	State         string      `json:"state"`          //online?
-	EventName     string      `json:"event_name"`     //PK
-	ContainerName string      `json:"container_name"` //Relate an event to a container
-	Timestamp     int64       `json:"timestamp"`      //Timestamp
-	Properties    interface{} `json:"properties"`     //Properties of the event
+	State         string         `json:"state"`          //online?
+	EventName     string         `json:"event_name"`     //PK
+	ContainerName string         `json:"container_name"` //Relate an event to a container
+	Timestamp     int64          `json:"timestamp"`      //Timestamp
+	Blocks        *parser.Blocks `json:"blocks"`
 }
 
 //Action - action type as stored in redis
 type Action struct {
-	State         string      `json:"state"`          //online?
-	ActionName    string      `json:"action_name"`    //PK
-	ContainerName string      `json:"container_name"` //Relate an action to a container
-	Timestamp     int64       `json:"timestamp"`      //Timestamp
-	Properties    interface{} `json:"properties"`     //Properties of the event
+	State      string `json:"state"`       //online?
+	ActionName string `json:"action_name"` //PK
+	// TODO ContainerName string `json:"container_name"` //Containers might have actions with the same, use this to not collide
+	Timestamp int64 `json:"timestamp"` //Timestamp
 }
 
-//InstructionSet - what to reference when an event comes in (Conditionals, parallel/serial)
-type InstructionSet struct {
-	EventName   string        `json:"event_name"`  //Event Name (so we know what event this is for)
-	Instruction []interface{} `json:"instruction"` //An instruction set is an array of Instructions (which could be actions or conditions)
-}
+func (r *Redis) insert(key string, name string, obj interface{}) error {
 
-func (r *Redis) insert(key string, obj interface{}) error {
-
-	res, err := r.handler.JSONSet(key, ".", obj)
+	fmt.Println("About to insert:", key+"_"+name, obj)
+	res, err := r.handler.JSONSet(key+"_"+name, ".", obj)
 	if err != nil {
 		return err
 	}
@@ -66,9 +59,9 @@ func (r *Redis) insert(key string, obj interface{}) error {
 	return nil
 }
 
-func (r *Redis) read(typ string, name string) interface{} {
+func (r *Redis) read(key string, name string) interface{} {
 	//We don't care about errors, if msg is nil we know it's not there
-	msg, _ := redis.Bytes(r.handler.JSONGet(typ+"_"+name, "."))
+	msg, _ := r.handler.JSONGet(key+"_"+name, ".")
 	return msg
 }
 
@@ -82,9 +75,92 @@ func (r *Redis) RegisterContainer(msg *common.Message) error {
 			tf := time.Unix(e.Timestamp, 0).Local().Format("2006-01-02T15:04:05.999999-05:00")
 			return errors.New("Container already registered at" + tf)
 		}
-
 	}
-	return r.insert("container_"+msg.ContainerName, msg)
+	return r.insert("container", msg.ContainerName, msg)
+}
+
+//Prep - prep redis with things it will expect - (ex. containers, events, actions)
+func (r *Redis) Prep(config *parser.Config) error {
+	var err error
+
+	//For containers and actions, we only care if they are registered or not in the system (see if we need to block), everything else is driven by event emissions
+	containerSet := make(map[string]bool)
+	actionSet := make(map[string]string)
+
+	for _, event := range config.Events {
+		//loop through every event building objects on the way
+		var e Event
+		e.ContainerName = event.ContainerName
+		//No timestamp on prep
+		e.State = "offline"
+		e.EventName = event.EventName
+		e.Blocks = event.Blocks
+		//Insert event into redis
+		if r.read("event", e.EventName) != nil {
+			err = errors.New("Event " + e.EventName + " already pre-registered. This should only be pre-registered once")
+			break
+		} else {
+			err = r.insert("event", e.EventName, e)
+			if err != nil {
+				break
+			}
+		}
+		//Grab the Container from this event and add it to a set of containers (this pulls them out of the loop as if they were top level in the yaml)
+		containerSet[e.ContainerName] = true
+		//Drill down to the actions based on the config layout
+		for _, block := range *event.Blocks {
+			switch block.Type {
+			case "parallel", "serial":
+				//It's a block with actions in it
+				for _, c := range block.Children {
+					//Loop through each Child in the block looking for actions
+					switch a := c.(type) {
+					case parser.Action:
+						//We should get action blocks in here
+						actionSet[a.Name] = e.ContainerName
+					default:
+						//If we're here somethings wrong
+					}
+				}
+			default:
+				//If we're here somethings wrong
+			}
+		}
+	}
+	//Process the sets we made
+	//First the containers
+	for c := range containerSet {
+		//Insert container into redis
+		var o Container
+		o.ContainerName = c
+		o.State = "offline"
+		if r.read("container", c) != nil {
+			err = errors.New("Container " + c + " already pre-registered. This should only be pre-registered once")
+			break
+		} else {
+			err = r.insert("container", c, o)
+			if err != nil {
+				break
+			}
+		}
+	}
+	//Second the actions
+	for a := range actionSet {
+		//Insert container into redis
+		var o Action
+		o.ActionName = a
+		o.State = "offline"
+		if r.read("action", a) != nil {
+			err = errors.New("Action " + a + " already pre-registered. This should only be pre-registered once")
+			break
+		} else {
+			err = r.insert("action", a, o)
+			if err != nil {
+				break
+			}
+		}
+	}
+	return err
 }
 
 //Connect - connects to redis database
@@ -100,14 +176,9 @@ func (r *Redis) Connect(hostname string, port int) error {
 		s := fmt.Sprintf("Failed to connect to redis-server @ %s", *addr)
 		return errors.New(s)
 	}
-	defer func() {
-		_, err = conn.Do("FLUSHALL")
-		err = conn.Close()
-	}()
 	r.handler.SetRedigoClient(conn)
-	// fmt.Println("Executing Example_JSONSET for Redigo Client")
-	// insertJSON()
-	return nil
+	//Flush the database before we start (just in case there's leftover state)
+	return conn.Send("FLUSHDB")
 }
 
 //GetRedis - Returns a new redis object

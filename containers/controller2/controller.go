@@ -30,7 +30,7 @@ const (
 type Controller struct {
 	logger *logging.Logger
 	redis  *redis.Redis
-	parser *parser.Config
+	config *parser.Config
 }
 
 /*
@@ -77,23 +77,23 @@ Example Messages:
 		Properties = nil
 */
 
-func (c *Controller) registerContainer(msg common.Message) {
-	c.logger.Debug("In registerContainer.")
+func (c *Controller) registerContainer(msg *common.Message) {
+	c.redis.RegisterContainer(msg)
 }
 
-func (c *Controller) registerAction(msg common.Message) {
-	c.logger.Debug("In registerAction.")
+func (c *Controller) registerAction(msg *common.Message) {
+	// c.redis.registerAction(msg)
 }
 
-func (c *Controller) registerEvent(msg common.Message) {
-	c.logger.Debug("In registerEvent.")
+func (c *Controller) registerEvent(msg *common.Message) {
+	// c.redis.registerEvent(msg)
 }
 
-func (c *Controller) triggerAction(msg common.Message) {
+func (c *Controller) triggerAction(msg *common.Message) {
 	c.logger.Debug("In triggerAction.")
 }
 
-func (c *Controller) emitEvent(msg common.Message) {
+func (c *Controller) emitEvent(msg *common.Message) {
 	c.logger.Debug("In emitEvent.")
 }
 
@@ -113,15 +113,15 @@ func (c *Controller) handleConnection(conn net.Conn) {
 		//Read the type and send it to the proper function for further processing
 		switch msg.Type {
 		case REGISTERCONTAINER:
-			c.registerContainer(msg)
+			c.registerContainer(&msg)
 		case REGISTERACTION:
-			c.registerAction(msg)
+			c.registerAction(&msg)
 		case REGISTEREVENT:
-			c.registerEvent(msg)
+			c.registerEvent(&msg)
 		case EMITEVENT:
-			c.emitEvent(msg)
+			c.emitEvent(&msg)
 		case TRIGGERACTION:
-			c.triggerAction(msg)
+			c.triggerAction(&msg)
 		default:
 			c.logger.Error("Unknown Type:", msg.Type)
 			break
@@ -142,37 +142,53 @@ func (c *Controller) setupLogger() {
 
 func (c *Controller) setupRedis() {
 	c.redis = redis.GetRedis()
-	c.redis.Connect("justinpi", 6379)
+	err := c.redis.Connect("justinpi", 6379)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func (c *Controller) prepRedis() {
+	err := c.redis.Prep(c.config)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func (c *Controller) readConfig() {
-	c.parser.Parse("../../new_config.yml")
+	config, err := c.config.Parse("../../new_config.yml")
+	if err != nil {
+		panic(err)
+	}
+	c.config = config
 }
 
-//Start - starts a controler
+func (c *Controller) setupListener(port int) net.Listener {
+	PORT := ":" + strconv.Itoa(port)
+	l, err := net.Listen("tcp4", PORT)
+	if err != nil {
+		panic(err)
+	}
+	return l
+}
+
+//Start - starts a controller
 func (c *Controller) Start(port int) {
 	c.setupLogger()
 	c.setupRedis()
 	c.readConfig()
-	PORT := ":" + strconv.Itoa(port)
-	l, err := net.Listen("tcp4", PORT)
-	if err != nil {
-		c.logger.Error(err)
-		return
-	}
+	c.prepRedis()
+	l := c.setupListener(port)
 	defer l.Close()
-	if err != nil {
-		c.logger.Error(err)
-	} else {
-		c.logger.Info("Controller is up. Listening for clients on port", port)
-		for {
-			conn, err := l.Accept()
-			if err != nil {
-				c.logger.Error(err)
-			}
-			// For every conection that comes in, start a goroutine to handle their inputs
-			go c.handleConnection(conn)
+	c.logger.Info("Controller is up. Listening for clients on port", port)
+	for {
+		conn, err := l.Accept()
+		if err != nil {
+			c.logger.Error(err)
 		}
+		// For every conection that comes in, start a goroutine to handle their inputs
+		go c.handleConnection(conn)
+
 	}
 }
 
