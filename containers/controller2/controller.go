@@ -5,6 +5,7 @@ import (
 	parser "controller2/parser"
 	redis "controller2/redis"
 	"encoding/json"
+	"errors"
 	"net"
 	"os"
 	"strconv"
@@ -77,24 +78,45 @@ Example Messages:
 		Properties = nil
 */
 
-func (c *Controller) registerContainer(msg *common.Message) {
-	c.redis.RegisterContainer(msg)
+func (c *Controller) registerContainer(msg *common.Message) error {
+	err := c.redis.RegisterContainer(msg)
+	return err
 }
 
-func (c *Controller) registerAction(msg *common.Message) {
-	// c.redis.registerAction(msg)
+func (c *Controller) registerAction(msg *common.Message) error {
+	err := c.redis.RegisterAction(msg)
+	return err
 }
 
-func (c *Controller) registerEvent(msg *common.Message) {
-	// c.redis.registerEvent(msg)
+func (c *Controller) registerEvent(msg *common.Message) error {
+	err := c.redis.RegisterEvent(msg)
+	return err
 }
 
-func (c *Controller) triggerAction(msg *common.Message) {
+//triggerAction reaches out to a container and tells it to do something
+func (c *Controller) triggerAction(msg *common.Message) error {
 	c.logger.Debug("In triggerAction.")
+	return nil
 }
 
-func (c *Controller) emitEvent(msg *common.Message) {
-	c.logger.Debug("In emitEvent.")
+//handleEvent is the part of the controller responsible for goroutines that do all kinds of processes
+func (c *Controller) handleEvent(msg *common.Message) error {
+	c.logger.Debug("In handleEvent.")
+
+	//The message we were given told use to emit an event
+	//Pull the information about who what containers we should contact
+
+	//Get the event from redis
+	event, err := c.redis.GetEvent(msg.Name)
+	if event.State == "offline" {
+		return errors.New("Event " + event.EventName + " emmited before being registered")
+	} else if err != nil {
+		return err
+	} else {
+
+	}
+
+	return nil
 }
 
 func (c *Controller) handleConnection(conn net.Conn) {
@@ -113,18 +135,21 @@ func (c *Controller) handleConnection(conn net.Conn) {
 		//Read the type and send it to the proper function for further processing
 		switch msg.Type {
 		case REGISTERCONTAINER:
-			c.registerContainer(&msg)
+			err = c.registerContainer(&msg)
 		case REGISTERACTION:
-			c.registerAction(&msg)
+			err = c.registerAction(&msg)
 		case REGISTEREVENT:
-			c.registerEvent(&msg)
+			err = c.registerEvent(&msg)
 		case EMITEVENT:
-			c.emitEvent(&msg)
-		case TRIGGERACTION:
-			c.triggerAction(&msg)
+			err = c.handleEvent(&msg)
+		// case TRIGGERACTION:
+		// 	err = c.handleAction(&msg)
 		default:
 			c.logger.Error("Unknown Type:", msg.Type)
 			break
+		}
+		if err != nil {
+			panic(err)
 		}
 	}
 }
@@ -142,7 +167,7 @@ func (c *Controller) setupLogger() {
 
 func (c *Controller) setupRedis() {
 	c.redis = redis.GetRedis()
-	err := c.redis.Connect("justinpi", 6379)
+	err := c.redis.Connect("localhost", 6379)
 	if err != nil {
 		panic(err)
 	}

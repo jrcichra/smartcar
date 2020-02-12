@@ -3,6 +3,7 @@ package redis
 import (
 	common "controller2/common"
 	parser "controller2/parser"
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -36,10 +37,10 @@ type Event struct {
 
 //Action - action type as stored in redis
 type Action struct {
-	State      string `json:"state"`       //online?
-	ActionName string `json:"action_name"` //PK
-	// TODO ContainerName string `json:"container_name"` //Containers might have actions with the same, use this to not collide
-	Timestamp int64 `json:"timestamp"` //Timestamp
+	State         string `json:"state"`       //online?
+	ActionName    string `json:"action_name"` //PK
+	ContainerName string `json:"container_name"`
+	Timestamp     int64  `json:"timestamp"` //Timestamp
 }
 
 func (r *Redis) insert(key string, name string, obj interface{}) error {
@@ -59,24 +60,89 @@ func (r *Redis) insert(key string, name string, obj interface{}) error {
 	return nil
 }
 
-func (r *Redis) read(key string, name string) interface{} {
+func (r *Redis) read(key string, name string) []byte {
 	//We don't care about errors, if msg is nil we know it's not there
 	msg, _ := r.handler.JSONGet(key+"_"+name, ".")
-	return msg
+	switch t := msg.(type) {
+	case []byte:
+		return t
+	default:
+		return nil
+	}
+}
+
+//GetEvent - returns the Redis event type from what event they requested
+func (r *Redis) GetEvent(eventname string) (Event, error) {
+	existing := r.read("event", eventname)
+	// Try to unmarshal it into what we want
+	var e Event
+	err := json.Unmarshal(existing, &e)
+	return e, err
+}
+
+//RegisterEvent - registers the event inside of redis
+func (r *Redis) RegisterEvent(msg *common.Message) error {
+	existing := r.read("event", msg.Name)
+	// Try to unmarshal it into what we want
+	var e Event
+	err := json.Unmarshal(existing, &e)
+	if err == nil { //as in we didn't get an error, we need to see if it's offline or just a bad read
+		if e.State == "offline" {
+			//This is okay, we can make it online outside this condition
+		} else {
+			tf := time.Unix(e.Timestamp, 0).Local().Format("2006-01-02T15:04:05.999999-05:00")
+			return errors.New("Container already registered and not offline at " + tf)
+		}
+	}
+	//Make this stub "online"
+	e.EventName = msg.Name
+	e.State = "online"
+	e.Timestamp = msg.Timestamp
+	e.ContainerName = msg.ContainerName
+	return r.insert("action", msg.Name, &e)
+}
+
+//RegisterAction - registers the action inside of redis
+func (r *Redis) RegisterAction(msg *common.Message) error {
+	existing := r.read("action", msg.Name)
+	// Try to unmarshal it into what we want
+	var a Action
+	err := json.Unmarshal(existing, &a)
+	if err == nil { //as in we didn't get an error, we need to see if it's offline or just a bad read
+		if a.State == "offline" {
+			//This is okay, we can make it online outside this condition
+		} else {
+			tf := time.Unix(a.Timestamp, 0).Local().Format("2006-01-02T15:04:05.999999-05:00")
+			return errors.New("Container already registered and not offline at " + tf)
+		}
+	}
+	//Make this stub "online"
+	a.ActionName = msg.Name
+	a.State = "online"
+	a.Timestamp = msg.Timestamp
+	a.ContainerName = msg.ContainerName
+	return r.insert("action", msg.Name, &a)
 }
 
 //RegisterContainer - registers the container inside of redis
 func (r *Redis) RegisterContainer(msg *common.Message) error {
-	existing := r.read("container", msg.ContainerName)
-	if existing != nil {
-		//There's something already there
-		switch e := existing.(type) {
-		case Container:
-			tf := time.Unix(e.Timestamp, 0).Local().Format("2006-01-02T15:04:05.999999-05:00")
-			return errors.New("Container already registered at" + tf)
+	existing := r.read("container", msg.Name)
+	// Try to unmarshal it into what we want
+	var c Container
+	err := json.Unmarshal(existing, &c)
+	if err == nil { //as in we didn't get an error, we need to see if it's offline or just a bad read
+		if c.State == "offline" {
+			//This is okay, we can make it online outside this condition
+		} else {
+			tf := time.Unix(c.Timestamp, 0).Local().Format("2006-01-02T15:04:05.999999-05:00")
+			return errors.New("Container already registered and not offline at " + tf)
 		}
 	}
-	return r.insert("container", msg.ContainerName, msg)
+	//Make this stub "online"
+	c.ContainerName = msg.Name
+	c.State = "online"
+	c.Timestamp = msg.Timestamp
+	return r.insert("container", c.ContainerName, &c)
 }
 
 //Prep - prep redis with things it will expect - (ex. containers, events, actions)
