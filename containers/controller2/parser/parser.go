@@ -5,6 +5,7 @@ package parser
 import (
 	"errors"
 	"io/ioutil"
+	"reflect"
 	"strconv"
 	"strings"
 
@@ -188,6 +189,45 @@ func (c *Config) action(actionName string, action interface{}) (*Action, error) 
 	return &act, nil
 }
 
+//EvaluateCondition - Return the result from evaluating a condition
+func (c *Config) EvaluateCondition(cond Condition) bool {
+	var b bool
+	if reflect.TypeOf(cond.LeftOperand) == reflect.TypeOf(cond.LeftOperand) {
+		//Compare strings to strings or numbers to numbers (floats)
+		if reflect.TypeOf(cond.LeftOperand) == reflect.TypeOf("") {
+			//Do a string compare
+			switch cond.Operator {
+			case "==":
+				b = cond.LeftOperand.(string) == cond.RightOperand.(string)
+			default:
+				panic("EvaulateCondition found a conditional that cannot exist for a string compare: " + cond.Operator)
+			}
+		} else if reflect.TypeOf(cond.LeftOperand) == reflect.TypeOf(float64(0)) {
+			//Do a numberic compare
+			switch cond.Operator {
+			case "==":
+				b = cond.LeftOperand.(float64) == cond.RightOperand.(float64)
+			case "<=":
+				b = cond.LeftOperand.(float64) <= cond.RightOperand.(float64)
+			case ">=":
+				b = cond.LeftOperand.(float64) >= cond.RightOperand.(float64)
+			case "<":
+				b = cond.LeftOperand.(float64) < cond.RightOperand.(float64)
+			case ">":
+				b = cond.LeftOperand.(float64) > cond.RightOperand.(float64)
+			default:
+				panic("EvaulateCondition found a conditional that cannot exist for a numeric compare: " + cond.Operator)
+			}
+		} else {
+			panic("EvalutateCondition does not understand the type of the left and right operand")
+		}
+
+	} else {
+		panic("EvaluateCondition found that the left operand's type did not match that of the right operand")
+	}
+	return b
+}
+
 //parses a yaml "condition string" - when, and, else, etc and returns a Condition
 func (c *Config) condition(conditionName string, conditionString string) (*Condition, error) {
 	var condition Condition
@@ -271,7 +311,7 @@ func (c *Config) block(blocksArrayInterface interface{}) (*Block, error) {
 
 	//decipher the string further
 	switch block.Type {
-	case "when", "and", "else":
+	case "when", "and", "or":
 		//conditionals
 		switch b := blocksArrayInterface.(type) {
 		//make sure it's a map

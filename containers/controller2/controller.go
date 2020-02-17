@@ -6,6 +6,7 @@ import (
 	redis "controller2/redis"
 	"encoding/json"
 	"errors"
+	"log"
 	"net"
 	"os"
 	"strconv"
@@ -25,7 +26,48 @@ const (
 	EMITEVENTRESPONSE         = "emit-event-response"
 	TRIGGERACTION             = "trigger-action"
 	TRIGGERACTIONRESPONSE     = "trigger-action-response"
+	OK                        = 0
+	ERROR                     = 1
 )
+
+//connios - array of connio structs
+type connios []connio
+
+//connio - has the channels that get input/output for a connio
+type connio struct {
+	name string
+	// in   *chan string
+	out chan []byte
+}
+
+func (cio *connio) HandleConnOut(c net.Conn) {
+	for {
+		b := <-cio.out
+		c.Write(b)
+	}
+}
+
+//buildResponse - takes a message that came in and turn it into a response
+func (cio *connio) buildResponse(msg *common.Message) {
+	msg.ResponseCode = OK
+
+	//set the response code based on the message code
+	switch msg.Type {
+	case REGISTERCONTAINER:
+		msg.Type = REGISTERCONTAINERRESPONSE
+	case REGISTEREVENT:
+		msg.Type = REGISTEREVENTRESPONSE
+	case REGISTERACTION:
+		msg.Type = REGISTERACTIONRESPONSE
+	default:
+		panic("buildResponse does not understand how to respond to " + msg.Type)
+	}
+	b, err := json.Marshal(&msg)
+	if err != nil {
+		panic(err) //was unable to build a response
+	}
+	cio.out <- b
+}
 
 //Controller - controls the whole scope of containers
 type Controller struct {
@@ -78,50 +120,160 @@ Example Messages:
 		Properties = nil
 */
 
-func (c *Controller) registerContainer(msg *common.Message) error {
+func (c *Controller) registerContainer(msg *common.Message, cio connio) {
 	err := c.redis.RegisterContainer(msg)
-	return err
+	if err != nil {
+		panic(err)
+	}
+	//Send a response
+	cio.buildResponse(msg)
 }
 
-func (c *Controller) registerAction(msg *common.Message) error {
+func (c *Controller) registerAction(msg *common.Message, cio connio) {
 	err := c.redis.RegisterAction(msg)
-	return err
+	if err != nil {
+		panic(err)
+	}
+	//Send a response
+	cio.buildResponse(msg)
 }
 
-func (c *Controller) registerEvent(msg *common.Message) error {
+func (c *Controller) registerEvent(msg *common.Message, cio connio) {
 	err := c.redis.RegisterEvent(msg)
-	return err
+	if err != nil {
+		panic(err)
+	}
+	//Send a response
+	cio.buildResponse(msg)
 }
 
-//triggerAction reaches out to a container and tells it to do something
-func (c *Controller) triggerAction(msg *common.Message) error {
-	c.logger.Debug("In triggerAction.")
-	return nil
+//triggerSerialAction reaches out to a container and tells it to do something serially
+func (c *Controller) triggerSerialAction(act parser.Action) *common.Message {
+	//TODO - actually trigger actions by reading the event config
+	var err error
+	var msg common.Message
+	if err != nil {
+		panic(err)
+	}
+	return &msg
+}
+
+//triggerParallelAction reaches out to a container and tells it to do something in parallel
+func (c *Controller) triggerParallelAction(act parser.Action, ret chan common.Message) {
+	//TODO - actually trigger actions by reading the event config
+	var err error
+	if err != nil {
+		panic(err)
+	}
 }
 
 //handleEvent is the part of the controller responsible for goroutines that do all kinds of processes
-func (c *Controller) handleEvent(msg *common.Message) error {
-	c.logger.Debug("In handleEvent.")
-
+func (c *Controller) handleEvent(msg *common.Message, cio connio) {
 	//The message we were given told use to emit an event
 	//Pull the information about who what containers we should contact
-
 	//Get the event from redis
 	event, err := c.redis.GetEvent(msg.Name)
 	if event.State == "offline" {
-		return errors.New("Event " + event.EventName + " emmited before being registered")
+		panic(errors.New("Event " + event.EventName + " emmited before being registered"))
 	} else if err != nil {
-		return err
+		panic(err)
 	} else {
+		//We have a valid event we can analyze
+		blocks := *event.Blocks
+		run := true //See if the conditionals warrant a run of this event
+		for _, b := range blocks {
+			switch b.Type {
+			case "when", "and", "or":
+				//Conditionals
+				for i, children := range b.Children {
+					switch cond := children.(type) {
+					//Look for the type of each conditional
+					case parser.Condition:
+						//If we should still run it this condition should be true
+						if i == 0 {
+							if b.Type != "when" {
+								//Panic, when should be the first conditional we see
+								panic("when should be the first conditional for " + event.EventName)
+							} else {
+								//This is our first conditional, just set run to the evaulation
+								run = c.config.EvaluateCondition(cond)
+							}
+						} else {
+							//If the type is anded, we should and it with run
+							if b.Type == "and" {
+								run = run && c.config.EvaluateCondition(cond)
+							} else if b.Type == "or" {
+								run = run || c.config.EvaluateCondition(cond)
+							} else {
+								panic("Unrecognized conditional: " + b.Type)
+							}
+						}
+					default:
+						panic("Saw a recognized type: " + b.Type + ", but did not .(type) to a conditional")
+					}
+				}
+			case "serial", "parallel":
+				//No-op, don't error but don't process until after we get an idea of the run status
+			default:
+				panic("Unknown time when attempting to emit an event: " + b.Type)
+			}
 
+		}
+		//Only loop through instruction blocks
+		if run {
+			for _, b := range blocks {
+				var channels []chan common.Message
+				switch b.Type {
+				case "when", "and", "or":
+					//no-op
+				case "serial", "parallel":
+					//Blocks of instructions, we'll only run this when we get out of the block loop and check the value of run
+					for _, children := range b.Children {
+						switch act := children.(type) {
+						case parser.Action:
+							log.Println("About to execute '" + act.Name + "' in " + b.Type)
+							if b.Type == "serial" {
+								ret := c.triggerSerialAction(act)
+								log.Println("Serial job finished: " + ret.Name)
+							} else if b.Type == "parallel" {
+								channel := make(chan common.Message)
+								//Keep track of all the channels we've made that will be returning something
+								channels = append(channels, channel)
+								go c.triggerParallelAction(act, channel)
+							} else {
+								panic("Found serial/parallel earlier but now can't find it, this must be a coder error")
+							}
+						default:
+							panic("Expected action after entering an instruction block")
+						}
+					}
+					//After we loop through and we are parallel, we want to block until all the parallel things are done
+					if b.Type == "parallel" {
+						//Handle the messages from the goroutines
+						for _, channel := range channels {
+							ret := <-channel
+							if ret.ResponseCode == OK {
+								//This is good
+								log.Println("Parallel job finished: " + ret.Name)
+							} else {
+								log.Println("Got a bad return code from parallel response: " + ret.Name + ", " + strconv.Itoa(ret.ResponseCode))
+							}
+						}
+					}
+				default:
+					panic("Unknown type when running through instruction blocks after a successful run condition")
+				}
+			}
+		}
 	}
-
-	return nil
 }
 
-func (c *Controller) handleConnection(conn net.Conn) {
+func (c *Controller) handleConnection(conn net.Conn, cio connio) {
 	defer conn.Close()
 	c.logger.Infof("Handling %s\n", conn.RemoteAddr().String())
+	//Spin up a goroutine to write out to this connection (essentially an output queue)
+	go cio.HandleConnOut(conn)
+	//Handle input here directly from the socket
 	for {
 		// read directly from the socket, expecting each json message to be newline separated
 		d := json.NewDecoder(conn)
@@ -135,15 +287,13 @@ func (c *Controller) handleConnection(conn net.Conn) {
 		//Read the type and send it to the proper function for further processing
 		switch msg.Type {
 		case REGISTERCONTAINER:
-			err = c.registerContainer(&msg)
+			go c.registerContainer(&msg, cio)
 		case REGISTERACTION:
-			err = c.registerAction(&msg)
+			go c.registerAction(&msg, cio)
 		case REGISTEREVENT:
-			err = c.registerEvent(&msg)
+			go c.registerEvent(&msg, cio)
 		case EMITEVENT:
-			err = c.handleEvent(&msg)
-		// case TRIGGERACTION:
-		// 	err = c.handleAction(&msg)
+			go c.handleEvent(&msg, cio)
 		default:
 			c.logger.Error("Unknown Type:", msg.Type)
 			break
@@ -211,9 +361,15 @@ func (c *Controller) Start(port int) {
 		if err != nil {
 			c.logger.Error(err)
 		}
+		var cio connio
+		//create an input and output channel for this connection
+		// in := make(chan string)
+		out := make(chan []byte)
+		//Assign them
+		// cio.in = &in
+		cio.out = out
 		// For every conection that comes in, start a goroutine to handle their inputs
-		go c.handleConnection(conn)
-
+		go c.handleConnection(conn, cio)
 	}
 }
 
