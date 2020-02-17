@@ -14,8 +14,10 @@ import (
 )
 
 const (
+	//OFFLINE -
 	OFFLINE = "offline"
-	ONLINE  = "online"
+	//ONLINE -
+	ONLINE = "online"
 )
 
 //Container - container struct

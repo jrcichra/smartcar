@@ -15,18 +15,30 @@ import (
 )
 
 const (
-	REGISTERCONTAINER         = "register-container"
+	//REGISTERCONTAINER -
+	REGISTERCONTAINER = "register-container"
+	//REGISTERCONTAINERRESPONSE -
 	REGISTERCONTAINERRESPONSE = "register-container-response"
-	REGISTEREVENT             = "register-event"
-	REGISTEREVENTRESPONSE     = "register-event-response"
-	REGISTERACTION            = "register-action"
-	REGISTERACTIONRESPONSE    = "register-action-response"
-	EMITEVENT                 = "emit-event"
-	EMITEVENTRESPONSE         = "emit-event-response"
-	TRIGGERACTION             = "trigger-action"
-	TRIGGERACTIONRESPONSE     = "trigger-action-response"
-	OK                        = 0
-	ERROR                     = 1
+	//REGISTEREVENT -
+	REGISTEREVENT = "register-event"
+	//REGISTEREVENTRESPONSE -
+	REGISTEREVENTRESPONSE = "register-event-response"
+	//REGISTERACTION -
+	REGISTERACTION = "register-action"
+	//REGISTERACTIONRESPONSE -
+	REGISTERACTIONRESPONSE = "register-action-response"
+	//EMITEVENT -
+	EMITEVENT = "emit-event"
+	//EMITEVENTRESPONSE -
+	EMITEVENTRESPONSE = "emit-event-response"
+	//TRIGGERACTION -
+	TRIGGERACTION = "trigger-action"
+	//TRIGGERACTIONRESPONSE -
+	TRIGGERACTIONRESPONSE = "trigger-action-response"
+	//OK -
+	OK = 0
+	//ERROR -
+	ERROR = 1
 )
 
 //connios - array of connio structs
@@ -174,7 +186,7 @@ func (c *Controller) handleEvent(msg *common.Message, cio conn) {
 	//Pull the information about who what containers we should contact
 	event, err := c.config.GetEvent(msg.Name)
 	if event.State == "offline" {
-		panic(errors.New("Event " + event.EventName + " emmitted before being registered"))
+		panic(errors.New("Event " + event.EventName + " emitted before being registered"))
 	} else if err != nil {
 		panic(err)
 	} else {
