@@ -273,7 +273,7 @@ func (c *Config) condition(conditionName string, conditionString string) (*Condi
 	}
 
 	var e error
-	e = nil //just making sure initalization is right
+	e = nil //just making sure initialization is right
 
 	//when we get here, the whole object should be populated
 	if condition.Type == "" || condition.Operator == "" || condition.LeftOperand == "" || condition.RightOperand == "" {

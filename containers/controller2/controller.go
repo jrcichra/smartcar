@@ -174,7 +174,7 @@ func (c *Controller) handleEvent(msg *common.Message, cio connio) {
 	//Get the event from redis
 	event, err := c.redis.GetEvent(msg.Name)
 	if event.State == "offline" {
-		panic(errors.New("Event " + event.EventName + " emmited before being registered"))
+		panic(errors.New("Event " + event.EventName + " emmitted before being registered"))
 	} else if err != nil {
 		panic(err)
 	} else {
@@ -195,7 +195,7 @@ func (c *Controller) handleEvent(msg *common.Message, cio connio) {
 								//Panic, when should be the first conditional we see
 								panic("when should be the first conditional for " + event.EventName)
 							} else {
-								//This is our first conditional, just set run to the evaulation
+								//This is our first conditional, just set run to the evaluation
 								run = c.config.EvaluateCondition(cond)
 							}
 						} else {
@@ -368,7 +368,7 @@ func (c *Controller) Start(port int) {
 		//Assign them
 		// cio.in = &in
 		cio.out = out
-		// For every conection that comes in, start a goroutine to handle their inputs
+		// For every connection that comes in, start a goroutine to handle their inputs
 		go c.handleConnection(conn, cio)
 	}
 }
