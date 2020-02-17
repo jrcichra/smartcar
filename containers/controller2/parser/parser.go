@@ -3,6 +3,7 @@ package parser
 // This parser uses a LOT of type switches. I apologize in advance
 
 import (
+	"controller2/common"
 	"errors"
 	"io/ioutil"
 	"reflect"
@@ -11,6 +12,17 @@ import (
 
 	"gopkg.in/yaml.v2"
 )
+
+const (
+	OFFLINE = "offline"
+	ONLINE  = "online"
+)
+
+//Container - container struct
+type Container struct {
+	Name  string
+	State string
+}
 
 //Parameter - Single parameter with a name and value (of any type)
 type Parameter struct {
@@ -41,6 +53,7 @@ type Conditions []Condition
 
 //Action - Tell a container to do something
 type Action struct {
+	State      string
 	Container  string
 	Name       string
 	Parameters Parameters
@@ -60,6 +73,7 @@ type Blocks []Block
 
 //Event - single event defined in a config
 type Event struct {
+	State         string
 	ContainerName string
 	EventName     string
 	Blocks        *Blocks
@@ -70,7 +84,59 @@ type Events []Event
 
 //Config - Config file represented in a go struct
 type Config struct {
-	Events Events
+	Events     Events
+	Containers map[string]*Container
+	Actions    map[string]*Action
+	EventsMap  map[string]*Event
+}
+
+//RegisterEvent - registers an event
+func (c *Config) RegisterEvent(msg *common.Message) error {
+	var err error
+	err = nil
+	if value, ok := c.EventsMap[msg.Name]; ok {
+		value.State = ONLINE
+	} else {
+		err = errors.New("Could not find an event that matches one in the list")
+	}
+	return err
+}
+
+//RegisterAction - registers an action
+func (c *Config) RegisterAction(msg *common.Message) error {
+	var err error
+	err = nil
+	if value, ok := c.Actions[msg.Name]; ok {
+		value.State = ONLINE
+	} else {
+		err = errors.New("Could not find an action that matches one in the list")
+	}
+	return err
+}
+
+//RegisterContainer - registers a container
+func (c *Config) RegisterContainer(msg *common.Message) error {
+	var err error
+	err = nil
+	if value, ok := c.Containers[msg.ContainerName]; ok {
+		value.State = ONLINE
+	} else {
+		err = errors.New("Could not find a container that matches one in the list")
+	}
+	return err
+}
+
+//GetEvent - Return an event based on what we request
+func (c *Config) GetEvent(name string) (*Event, error) {
+	var err error
+	err = nil
+	var e *Event
+	if value, ok := c.EventsMap[name]; ok {
+		e = value
+	} else {
+		err = errors.New("Could not find a container that matches one in the list")
+	}
+	return e, err
 }
 
 //parses a yaml "parameter string" and returns a Parameter
@@ -132,6 +198,10 @@ func (c *Config) action(actionName string, action interface{}) (*Action, error) 
 					}
 					act.Container = split[0]
 					act.Name = split[1]
+					act.State = OFFLINE
+
+					//add action to map of actions
+					c.Actions[act.Name] = &act
 
 					// Now that we've disected the name of the event,
 					// let's check if there are any parameters
@@ -389,8 +459,18 @@ func (c *Config) event(eventName interface{}, eventsInterface interface{}) (*Eve
 		if err != nil {
 			return nil, err
 		}
+
+		//Add this container to the map of containers
 		event.ContainerName = split[0]
+		var cont Container
+		cont.Name = event.ContainerName
+		cont.State = OFFLINE
+		c.Containers[cont.Name] = &cont
+
 		event.EventName = split[1]
+		event.State = OFFLINE
+		c.EventsMap[event.EventName] = &event
+
 	default:
 		//Not a string, error
 		return nil, errors.New("EventName was not a string")

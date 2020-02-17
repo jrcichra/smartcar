@@ -3,7 +3,6 @@ package main
 import (
 	common "controller2/common"
 	parser "controller2/parser"
-	redis "controller2/redis"
 	"encoding/json"
 	"errors"
 	"log"
@@ -31,16 +30,16 @@ const (
 )
 
 //connios - array of connio structs
-type connios []connio
+type conns []conn
 
-//connio - has the channels that get input/output for a connio
-type connio struct {
+//Conn - local conn that handles output with a channel
+type conn struct {
 	name string
-	// in   *chan string
-	out chan []byte
+	conn net.Conn
+	out  chan []byte
 }
 
-func (cio *connio) HandleConnOut(c net.Conn) {
+func (cio *conn) HandleConnOut(c net.Conn) {
 	for {
 		b := <-cio.out
 		c.Write(b)
@@ -48,7 +47,7 @@ func (cio *connio) HandleConnOut(c net.Conn) {
 }
 
 //buildResponse - takes a message that came in and turn it into a response
-func (cio *connio) buildResponse(msg *common.Message) {
+func (cio *conn) buildResponse(msg *common.Message) {
 	msg.ResponseCode = OK
 
 	//set the response code based on the message code
@@ -71,9 +70,9 @@ func (cio *connio) buildResponse(msg *common.Message) {
 
 //Controller - controls the whole scope of containers
 type Controller struct {
-	logger *logging.Logger
-	redis  *redis.Redis
-	config *parser.Config
+	logger      *logging.Logger
+	config      *parser.Config
+	connections map[string]conn
 }
 
 /*
@@ -120,8 +119,19 @@ Example Messages:
 		Properties = nil
 */
 
-func (c *Controller) registerContainer(msg *common.Message, cio connio) {
-	err := c.redis.RegisterContainer(msg)
+func (c *Controller) registerContainer(msg *common.Message, cio conn) {
+	err := c.config.RegisterContainer(msg)
+	if err != nil {
+		panic(err)
+	}
+	//Now that they've registered, take the name they registered with and add it to the list of controller connections in the map
+	c.connections[msg.ContainerName] = cio
+	//Send a response
+	cio.buildResponse(msg)
+}
+
+func (c *Controller) registerAction(msg *common.Message, cio conn) {
+	err := c.config.RegisterAction(msg)
 	if err != nil {
 		panic(err)
 	}
@@ -129,17 +139,8 @@ func (c *Controller) registerContainer(msg *common.Message, cio connio) {
 	cio.buildResponse(msg)
 }
 
-func (c *Controller) registerAction(msg *common.Message, cio connio) {
-	err := c.redis.RegisterAction(msg)
-	if err != nil {
-		panic(err)
-	}
-	//Send a response
-	cio.buildResponse(msg)
-}
-
-func (c *Controller) registerEvent(msg *common.Message, cio connio) {
-	err := c.redis.RegisterEvent(msg)
+func (c *Controller) registerEvent(msg *common.Message, cio conn) {
+	err := c.config.RegisterEvent(msg)
 	if err != nil {
 		panic(err)
 	}
@@ -168,11 +169,10 @@ func (c *Controller) triggerParallelAction(act parser.Action, ret chan common.Me
 }
 
 //handleEvent is the part of the controller responsible for goroutines that do all kinds of processes
-func (c *Controller) handleEvent(msg *common.Message, cio connio) {
+func (c *Controller) handleEvent(msg *common.Message, cio conn) {
 	//The message we were given told use to emit an event
 	//Pull the information about who what containers we should contact
-	//Get the event from redis
-	event, err := c.redis.GetEvent(msg.Name)
+	event, err := c.config.GetEvent(msg.Name)
 	if event.State == "offline" {
 		panic(errors.New("Event " + event.EventName + " emmitted before being registered"))
 	} else if err != nil {
@@ -268,7 +268,7 @@ func (c *Controller) handleEvent(msg *common.Message, cio connio) {
 	}
 }
 
-func (c *Controller) handleConnection(conn net.Conn, cio connio) {
+func (c *Controller) handleConnection(conn net.Conn, cio conn) {
 	defer conn.Close()
 	c.logger.Infof("Handling %s\n", conn.RemoteAddr().String())
 	//Spin up a goroutine to write out to this connection (essentially an output queue)
@@ -314,22 +314,6 @@ func (c *Controller) setupLogger() {
 	logging.SetBackend(backendFormatter)
 	logging.SetLevel(logging.DEBUG, "main")
 }
-
-func (c *Controller) setupRedis() {
-	c.redis = redis.GetRedis()
-	err := c.redis.Connect("localhost", 6379)
-	if err != nil {
-		panic(err)
-	}
-}
-
-func (c *Controller) prepRedis() {
-	err := c.redis.Prep(c.config)
-	if err != nil {
-		panic(err)
-	}
-}
-
 func (c *Controller) readConfig() {
 	config, err := c.config.Parse("../../new_config.yml")
 	if err != nil {
@@ -350,26 +334,23 @@ func (c *Controller) setupListener(port int) net.Listener {
 //Start - starts a controller
 func (c *Controller) Start(port int) {
 	c.setupLogger()
-	c.setupRedis()
 	c.readConfig()
-	c.prepRedis()
 	l := c.setupListener(port)
 	defer l.Close()
 	c.logger.Info("Controller is up. Listening for clients on port", port)
 	for {
-		conn, err := l.Accept()
+		con, err := l.Accept()
 		if err != nil {
 			c.logger.Error(err)
 		}
-		var cio connio
+		var cio conn
 		//create an input and output channel for this connection
 		// in := make(chan string)
 		out := make(chan []byte)
 		//Assign them
-		// cio.in = &in
 		cio.out = out
 		// For every connection that comes in, start a goroutine to handle their inputs
-		go c.handleConnection(conn, cio)
+		go c.handleConnection(con, cio)
 	}
 }
 
