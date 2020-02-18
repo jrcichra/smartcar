@@ -92,6 +92,15 @@ type Config struct {
 	EventsMap  map[string]*Event
 }
 
+//NewConfig - allocates memory used by map pointers
+func (c *Config) NewConfig() *Config {
+	config := new(Config)
+	config.Containers = make(map[string]*Container)
+	config.Actions = make(map[string]*Action)
+	config.EventsMap = make(map[string]*Event)
+	return config
+}
+
 //RegisterEvent - registers an event
 func (c *Config) RegisterEvent(msg *common.Message) error {
 	var err error
@@ -120,7 +129,7 @@ func (c *Config) RegisterAction(msg *common.Message) error {
 func (c *Config) RegisterContainer(msg *common.Message) error {
 	var err error
 	err = nil
-	if value, ok := c.Containers[msg.ContainerName]; ok {
+	if value, ok := c.Containers[msg.Name]; ok {
 		value.State = ONLINE
 	} else {
 		err = errors.New("Could not find a container that matches one in the list")
@@ -136,7 +145,7 @@ func (c *Config) GetEvent(name string) (*Event, error) {
 	if value, ok := c.EventsMap[name]; ok {
 		e = value
 	} else {
-		err = errors.New("Could not find a container that matches one in the list")
+		err = errors.New("Could not find an event that matches one in the list")
 	}
 	return e, err
 }
@@ -201,6 +210,12 @@ func (c *Config) action(actionName string, action interface{}) (*Action, error) 
 					act.Container = split[0]
 					act.Name = split[1]
 					act.State = OFFLINE
+
+					//Make sure containers only defined as having actions are also accounted for
+					var cont Container
+					cont.Name = act.Container
+					cont.State = OFFLINE
+					c.Containers[cont.Name] = &cont
 
 					//add action to map of actions
 					c.Actions[act.Name] = &act
@@ -537,10 +552,9 @@ func (c *Config) config(generic interface{}) (*Config, error) {
 		}
 
 	}
-	//Combine all the events into a Config
-	var config Config
-	config.Events = mainEvents
-	return &config, nil
+	//Combine all the events into the Config
+	c.Events = mainEvents
+	return c, nil
 }
 
 //Parse - parse the yaml file
