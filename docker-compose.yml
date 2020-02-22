@@ -1,12 +1,5 @@
 version: "3"
 services:
-  redis:
-    environment:
-      TZ: "America/New_York"
-      GITHUB_ACTIONS: "${GITHUB_ACTIONS}"
-    hostname: redis
-    image: jrcichra/redisjson
-    restart: always
   controller:
     environment:
       TZ: "America/New_York"
@@ -15,9 +8,8 @@ services:
     image: jrcichra/smartcar_controller
     restart: always
     volumes:
-      - "${PWD}/config.yml:/config.yml"
-    depends_on:
-      - redis
+      - "${PWD}/new_config.yml:/config.yml"
+    build: ./containers/controller2
   dashcam:
     environment:
       TZ: "America/New_York"
@@ -31,6 +23,7 @@ services:
     privileged: true
     depends_on:
       - controller
+    build: ./containers/dashcam
   gpio:
     environment:
       TZ: "America/New_York"
@@ -40,6 +33,7 @@ services:
     image: jrcichra/smartcar_gpio
     depends_on:
       - controller
+    build: ./containers/gpio
   transfer:
     environment:
       TZ: "America/New_York"
@@ -52,12 +46,13 @@ services:
       - "${PWD}/settings.yml:/settings.yml"
     depends_on:
       - controller
-  cinas:
-    restart: always
-    environment:
-      TZ: "America/New_York"
-      GITHUB_ACTIONS: "${GITHUB_ACTIONS}"
-    hostname: cinas
-    image: rastasheep/ubuntu-sshd
-    volumes:
-      - "${PWD}/nas:/recordings"
+    build: ./containers/transfer
+  # cinas:
+  #   restart: always
+  #   environment:
+  #     TZ: "America/New_York"
+  #     GITHUB_ACTIONS: "${GITHUB_ACTIONS}"
+  #   hostname: cinas
+  #   image: rastasheep/ubuntu-sshd
+  #   volumes:
+  #     - "${PWD}/nas:/recordings"

@@ -440,7 +440,7 @@ func (c *Controller) setupLogger() {
 }
 func (c *Controller) readConfig() {
 	c.config = c.config.NewConfig()
-	config, err := c.config.Parse("../../new_config.yml")
+	config, err := c.config.Parse("/config.yml")
 	if err != nil {
 		panic(err)
 	}
