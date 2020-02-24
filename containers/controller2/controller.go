@@ -7,6 +7,8 @@ import (
 	"errors"
 	"log"
 	"net"
+	"net/http"
+	_ "net/http/pprof"
 	"os"
 	"strconv"
 	"time"
@@ -31,6 +33,8 @@ const (
 	REGISTERACTIONRESPONSE = "register-action-response"
 	//EMITEVENT -
 	EMITEVENT = "emit-event"
+	//DISPATCHEDEVENT -
+	DISPATCHEDEVENT = "dispatched-event"
 	//EMITEVENTRESPONSE -
 	EMITEVENTRESPONSE = "emit-event-response"
 	//TRIGGERACTION -
@@ -58,12 +62,13 @@ type conn struct {
 func (cio *conn) HandleConnOut(c net.Conn) {
 	for {
 		b := <-cio.out
+		b = append(b, '\n')
 		c.Write(b)
 	}
 }
 
 //buildResponse - takes a message that came in and turn it into a response
-func (cio *conn) buildResponse(msg *common.Message, code int) {
+func (cio *conn) buildResponse(msg *common.Message, code int, dispatched bool) {
 	var m common.Message
 	copier.Copy(&m, msg)
 	m.ResponseCode = code
@@ -77,7 +82,11 @@ func (cio *conn) buildResponse(msg *common.Message, code int) {
 	case REGISTERACTION:
 		m.Type = REGISTERACTIONRESPONSE
 	case EMITEVENT:
-		m.Type = EMITEVENTRESPONSE
+		if dispatched {
+			m.Type = DISPATCHEDEVENT
+		} else {
+			m.Type = EMITEVENTRESPONSE
+		}
 	default:
 		panic("buildResponse does not understand how to respond to " + m.Type)
 	}
@@ -150,7 +159,7 @@ func (c *Controller) registerContainer(msg *common.Message, cio conn) {
 		c.connections[msg.Name] = cio
 	}
 	//Send a response
-	cio.buildResponse(msg, code)
+	cio.buildResponse(msg, code, false)
 }
 
 func (c *Controller) registerAction(msg *common.Message, cio conn) {
@@ -161,7 +170,7 @@ func (c *Controller) registerAction(msg *common.Message, cio conn) {
 		code = ERROR
 	}
 	//Send a response
-	cio.buildResponse(msg, code)
+	cio.buildResponse(msg, code, false)
 }
 
 func (c *Controller) registerEvent(msg *common.Message, cio conn) {
@@ -172,11 +181,11 @@ func (c *Controller) registerEvent(msg *common.Message, cio conn) {
 		code = ERROR
 	}
 	//Send a response
-	cio.buildResponse(msg, code)
+	cio.buildResponse(msg, code, false)
 }
 
 //triggerSerialAction reaches out to a container and tells it to do something serially
-func (c *Controller) triggerSerialAction(act parser.Action) *common.Message {
+func (c *Controller) triggerSerialAction(act *parser.Action, id string) *common.Message {
 	//TODO - actually trigger actions by reading the event config
 	var err error
 	var msg common.Message
@@ -189,6 +198,8 @@ func (c *Controller) triggerSerialAction(act parser.Action) *common.Message {
 	msg.Timestamp = time.Now().Unix()
 	msg.ContainerName = act.Container
 	msg.Properties = act.Parameters
+	msg.Name = act.Name
+	msg.ID = id
 
 	b, err := json.Marshal(&msg)
 	if err != nil {
@@ -200,7 +211,7 @@ func (c *Controller) triggerSerialAction(act parser.Action) *common.Message {
 }
 
 //triggerParallelAction reaches out to a container and tells it to do something in parallel
-func (c *Controller) triggerParallelAction(act parser.Action, ret chan common.Message) {
+func (c *Controller) triggerParallelAction(act *parser.Action, id string, ret chan common.Message) {
 	//TODO - actually trigger actions by reading the event config
 	var err error
 	var msg common.Message
@@ -213,6 +224,8 @@ func (c *Controller) triggerParallelAction(act parser.Action, ret chan common.Me
 	msg.Timestamp = time.Now().Unix()
 	msg.ContainerName = act.Container
 	msg.Properties = act.Parameters
+	msg.ID = id
+	msg.Name = act.Name
 
 	b, err := json.Marshal(&msg)
 	if err != nil {
@@ -221,14 +234,14 @@ func (c *Controller) triggerParallelAction(act parser.Action, ret chan common.Me
 
 	good := true
 
-	//Make sure the container we want to send to is online
+	//Make sure the container & action we want to send to is online
 	if _, ok := c.connections[act.Container]; ok {
 		if act.State == ONLINE {
-			log.Println("Sent action to " + act.Container)
 			c.connections[act.Container].out <- b
+			log.Println("Sent action to " + act.Container)
 		} else {
-			//Container is offline
-			log.Println("Cannot send action to " + act.Container + ", container is offline")
+			//action is offline
+			log.Println("Cannot send action to " + act.Container + ", action " + act.Name + " is offline")
 			good = false
 		}
 
@@ -242,7 +255,11 @@ func (c *Controller) triggerParallelAction(act parser.Action, ret chan common.Me
 		//Loop through things in the input queue in case we get a different event's actionresponse (just to be safe)
 		for {
 			bretmsg := <-c.connections[act.Container].in
-			json.Unmarshal(bretmsg, &retmsg)
+			// log.Println(bretmsg)
+			err = json.Unmarshal(bretmsg, &retmsg)
+			if err != nil {
+				panic(err)
+			}
 			if retmsg.ContainerName != act.Container || retmsg.Name != act.Name {
 				//We pulled something from the channel that isn't for here, put it back on the queue
 				c.connections[act.Container].in <- bretmsg
@@ -262,12 +279,19 @@ func (c *Controller) triggerParallelAction(act parser.Action, ret chan common.Me
 //handleEvent is the part of the controller responsible for goroutines that do all kinds of processes
 func (c *Controller) handleEvent(msg *common.Message, cio conn) {
 	//The message we were given told use to emit an event
+
+	//Make a unique id for this event, so everyone can keep track
+	uuid := common.GenUUID()
+	//Send them a dispatched message so they know we're handling their message
+	msg.ID = uuid
+	cio.buildResponse(msg, OK, true)
+
 	//Pull the information about who what containers we should contact
 	event, err := c.config.GetEvent(msg.Name)
-	if event.State == "offline" {
-		panic(errors.New("Event " + event.EventName + " emitted before being registered"))
-	} else if err != nil {
+	if err != nil {
 		panic(err)
+	} else if event.State == "offline" {
+		panic(errors.New("Event " + event.EventName + " emitted before being registered"))
 	} else {
 		//We have a valid event we can analyze
 		blocks := *event.Blocks
@@ -326,16 +350,20 @@ func (c *Controller) handleEvent(msg *common.Message, cio conn) {
 					//Blocks of instructions, we'll only run this when we get out of the block loop and check the value of run
 					for _, children := range b.Children {
 						switch act := children.(type) {
-						case parser.Action:
+						case *parser.Action:
 							log.Println("About to execute '" + act.Name + "' in " + b.Type)
 							if b.Type == "serial" {
-								ret := c.triggerSerialAction(act)
+								ret := c.triggerSerialAction(act, uuid)
+								if ret.ResponseCode != OK {
+									log.Println("Got a bad return code from serial response: " + ret.Name + ", " + strconv.Itoa(ret.ResponseCode))
+									good = false
+								}
 								log.Println("Serial job finished: " + ret.Name)
 							} else if b.Type == "parallel" {
 								channel := make(chan common.Message)
 								//Keep track of all the channels we've made that will be returning something
 								channels = append(channels, channel)
-								go c.triggerParallelAction(act, channel)
+								go c.triggerParallelAction(act, uuid, channel)
 							} else {
 								good = false
 								log.Println("Found serial/parallel earlier but now can't find it, this must be a coder error")
@@ -365,16 +393,16 @@ func (c *Controller) handleEvent(msg *common.Message, cio conn) {
 			}
 			//We ran, and everything we dispatched came back, ready to respond to the caller
 			if good {
-				cio.buildResponse(msg, OK)
+				cio.buildResponse(msg, OK, false)
 			} else {
-				cio.buildResponse(msg, ERROR)
+				cio.buildResponse(msg, ERROR, false)
 			}
 		} else {
 			//We did not run, but we didn't run by the conditional, not by error
 			if good {
-				cio.buildResponse(msg, OK)
+				cio.buildResponse(msg, OK, false)
 			} else {
-				cio.buildResponse(msg, ERROR)
+				cio.buildResponse(msg, ERROR, false)
 			}
 		}
 	}
@@ -382,7 +410,7 @@ func (c *Controller) handleEvent(msg *common.Message, cio conn) {
 
 //handleActionResponse - sends action response to proper connection's pseduo-input channel
 func (c *Controller) handleActionResponse(msg *common.Message, cio conn) {
-	b, err := json.Marshal(&msg)
+	b, err := json.Marshal(msg)
 	if err != nil {
 		c.logger.Error(err)
 	} else {
@@ -470,10 +498,11 @@ func (c *Controller) Start(port int) {
 		}
 		var cio conn
 		//create an input and output channel for this connection
-		// in := make(chan string)
+		in := make(chan []byte)
 		out := make(chan []byte)
 		//Assign them
 		cio.out = out
+		cio.in = in
 		// For every connection that comes in, start a goroutine to handle their inputs
 		go c.handleConnection(con, cio)
 	}
@@ -482,5 +511,9 @@ func (c *Controller) Start(port int) {
 func main() {
 	c := Controller{}
 	c.connections = make(map[string]conn)
+	go func() {
+		log.Println(http.ListenAndServe("localhost:6060", nil))
+	}()
 	c.Start(8080)
+
 }

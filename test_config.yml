@@ -1,0 +1,8 @@
+events:
+    base_test.an_event:
+        - serial:
+              - base_test.an_action:
+                    - framerate: 10
+                    - resolution: 1280x720
+                    - rotation: 0
+              - base_test.action_no_params

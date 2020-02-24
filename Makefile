@@ -8,6 +8,6 @@ build-all-rpi:	# use docker buildx script for the rpi (which removes docker-ce a
 	bash -x build.sh rpi
 
 test:	#use docker-compose to start up all the containers and the test container
-	docker-compose -f docker-compose-test.yml up --abort-on-container-exit --exit-code-from tester
+	docker-compose -f docker-compose-test.yml up --abort-on-container-exit --exit-code-from base_test
 
 default: build

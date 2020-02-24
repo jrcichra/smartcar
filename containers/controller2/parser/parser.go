@@ -34,7 +34,7 @@ type Parameter struct {
 }
 
 //Parameters - an array of parameter objects
-type Parameters []Parameter
+type Parameters []*Parameter
 
 //Operand - part of a conditional expression
 type Operand interface{} //Could be a parameter or primitive type
@@ -51,7 +51,7 @@ type Condition struct {
 }
 
 //Conditions - a slice of Condition objects
-type Conditions []Condition
+type Conditions []*Condition
 
 //Action - Tell a container to do something
 type Action struct {
@@ -62,7 +62,7 @@ type Action struct {
 }
 
 //Actions - a slice of action objects
-type Actions []Action
+type Actions []*Action
 
 //Block - instruction block
 type Block struct {
@@ -71,7 +71,7 @@ type Block struct {
 }
 
 //Blocks - a slice of block objects
-type Blocks []Block
+type Blocks []*Block
 
 //Event - single event defined in a config
 type Event struct {
@@ -82,7 +82,7 @@ type Event struct {
 }
 
 //Events - a slice of event objects
-type Events []Event
+type Events []*Event
 
 //Config - Config file represented in a go struct
 type Config struct {
@@ -237,7 +237,7 @@ func (c *Config) action(actionName string, action interface{}) (*Action, error) 
 											return nil, err
 										}
 										// append param to list of parameters for this action
-										act.Parameters = append(act.Parameters, *param)
+										act.Parameters = append(act.Parameters, param)
 									default:
 										return nil, errors.New("Expected a string for the parameter name")
 									}
@@ -268,6 +268,7 @@ func (c *Config) action(actionName string, action interface{}) (*Action, error) 
 		}
 		act.Container = split[0]
 		act.Name = split[1]
+		act.State = OFFLINE
 
 	default:
 		return nil, errors.New("Action couldn't be recognized as a string or a map of parameters")
@@ -414,7 +415,7 @@ func (c *Config) block(blocksArrayInterface interface{}) (*Block, error) {
 							return nil, err
 						}
 						//put our new condition onto the block
-						block.Children = append(block.Children, *cond)
+						block.Children = append(block.Children, cond)
 					default:
 						return nil, errors.New("Expected string key")
 					}
@@ -442,11 +443,13 @@ func (c *Config) block(blocksArrayInterface interface{}) (*Block, error) {
 						for _, action2 := range a {
 							//we've hit the actions, process each action in a function
 							processedAction, err := c.action(k, action2)
+							//add action to map of actions
+							c.Actions[processedAction.Name] = processedAction
 							if err != nil {
 								return nil, err
 							}
 							//put our new action onto the block
-							block.Children = append(block.Children, *processedAction)
+							block.Children = append(block.Children, processedAction)
 						}
 					default:
 						return nil, errors.New("Expected string key")
@@ -484,9 +487,9 @@ func (c *Config) event(eventName interface{}, eventsInterface interface{}) (*Eve
 		cont.State = OFFLINE
 		c.Containers[cont.Name] = &cont
 
-		event.EventName = split[1]
+		//set the properties for this event
 		event.State = OFFLINE
-		c.EventsMap[event.EventName] = &event
+		event.EventName = split[1]
 
 	default:
 		//Not a string, error
@@ -506,7 +509,7 @@ func (c *Config) event(eventName interface{}, eventsInterface interface{}) (*Eve
 			//Deference the Blocks pointer, which gives a struct
 			//of []Block, appending the old blocks with the new block
 			//Deferencing to get something append() understands
-			blocks = append(blocks, *b)
+			blocks = append(blocks, b)
 		}
 	default:
 		return nil, errors.New("In event, block's type wasn't anything we expected")
@@ -537,12 +540,13 @@ func (c *Config) config(generic interface{}) (*Config, error) {
 						//if it is a map, loop through each event
 						for key, events := range e {
 							event, err := c.event(key, events)
+							c.EventsMap[event.EventName] = event
 							if err != nil {
 								panic(err)
 							}
 							// spew.Dump(event)
 							// append event to event array
-							mainEvents = append(mainEvents, *event)
+							mainEvents = append(mainEvents, event)
 						}
 
 					}
