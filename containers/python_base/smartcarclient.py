@@ -29,6 +29,8 @@ ONLINE = "online"
 OFFLINE = "offline"
 
 
+# TODO: RAISING ERRORS IN THIS PYTHON LIBRARY
+
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s.%(msecs)d:%(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
 
@@ -187,7 +189,7 @@ class Client:
         self.host = host
         self.port = port
         self.socket = socket.socket()
-        self.hostname = 'base_test'  # socket.gethostname()
+        self.hostname = socket.gethostname()
         self.inboundQueues = {
             REGISTERCONTAINERRESPONSE: queue.Queue(),
             REGISTEREVENTRESPONSE: queue.Queue(),
@@ -200,6 +202,7 @@ class Client:
         self.actions = {}       # Map of action:function for each event we support
         self.eventQueues = {}   # Map of event:queue of bools
         self.eventThreads = {}  # Map of event:thread
+        self.connect()
 
     def send(self, string):
         self.outboundQueue.put(string)
@@ -279,6 +282,7 @@ class Client:
         if err:
             logging.error(
                 "Got an error while receiving a message. Did the connection get severed?")
+        logging.debug("msg={}".format(message))
         return json.loads(message)
 
     def registerContainer(self):
@@ -346,17 +350,3 @@ def an_action(params, result):
 def action_no_params(params, result):
     logging.info("action_no_params:{}".format(params))
     result.Fail()
-
-
-logging.info("Starting the smartcar client")
-# c = Client(host="localhost")
-c = Client()
-c.connect()
-c.registerContainer()
-c.registerEvent("an_event")
-c.registerAction("an_action", an_action)
-c.registerAction("action_no_params", action_no_params)
-c.emitEvent("an_event")
-time.sleep(5)
-logging.info("Stopping the smartcar client")
-os._exit(0)

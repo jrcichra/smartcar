@@ -1,8 +1,22 @@
 events:
-    base_test.an_event:
-        - serial:
-              - base_test.an_action:
+    gpio.key_on:
+        - parallel:
+                - dashcam.start_recording:
                     - framerate: 10
                     - resolution: 1280x720
                     - rotation: 0
-              - base_test.action_no_params
+                - dashcam.start_preview
+    gpio.key_off:
+        - serial:
+            - dashcam.stop_recording
+            - dashcam.stop_preview
+            - transfer.transfer_footage
+            - transfer.start_conversion
+            - gpio.power_off
+    transfer.lost_network:
+        - parallel:
+            - dashcam.start_recording:
+                - framerate: 10
+                - resolution: 1280x720
+                - rotation: 0
+            - dashcam.start_preview

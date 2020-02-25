@@ -206,6 +206,7 @@ func (c *Controller) triggerSerialAction(act *parser.Action, id string) *common.
 		panic(err) //was unable to build a message
 	}
 	c.connections[act.Container].out <- b
+	log.Println("Sent action to " + act.Container)
 
 	return &msg
 }
@@ -232,47 +233,32 @@ func (c *Controller) triggerParallelAction(act *parser.Action, id string, ret ch
 		panic(err) //was unable to build a message
 	}
 
-	good := true
-
 	//Make sure the container & action we want to send to is online
-	if _, ok := c.connections[act.Container]; ok {
-		if act.State == ONLINE {
-			c.connections[act.Container].out <- b
-			log.Println("Sent action to " + act.Container)
-		} else {
-			//action is offline
-			log.Println("Cannot send action to " + act.Container + ", action " + act.Name + " is offline")
-			good = false
-		}
 
-	} else {
-		//Container requested doesn't exist in the configuration
-		log.Println("Cannot send action to " + act.Container + ", container requested wasn't registered")
-		good = false
-	}
+	c.connections[act.Container].out <- b
+	log.Println("Sent action to " + act.Container)
+
 	var retmsg common.Message
-	if good {
-		//Loop through things in the input queue in case we get a different event's actionresponse (just to be safe)
-		for {
-			bretmsg := <-c.connections[act.Container].in
-			// log.Println(bretmsg)
-			err = json.Unmarshal(bretmsg, &retmsg)
-			if err != nil {
-				panic(err)
-			}
-			if retmsg.ContainerName != act.Container || retmsg.Name != act.Name {
-				//We pulled something from the channel that isn't for here, put it back on the queue
-				c.connections[act.Container].in <- bretmsg
-			} else {
-				break
-			}
+	//Loop through things in the input queue in case we get a different event's actionresponse (just to be safe)
+	for {
+		bretmsg := <-c.connections[act.Container].in
+		// log.Println(bretmsg)
+		err = json.Unmarshal(bretmsg, &retmsg)
+		if err != nil {
+			panic(err)
 		}
-	} else {
-		retmsg.ContainerName = act.Container
-		retmsg.Name = act.Name
-		retmsg.Type = TRIGGERACTIONRESPONSE
-		retmsg.ResponseCode = ERROR
+		if retmsg.ContainerName != act.Container || retmsg.Name != act.Name {
+			//We pulled something from the channel that isn't for here, put it back on the queue
+			c.connections[act.Container].in <- bretmsg
+		} else {
+			break
+		}
 	}
+	retmsg.ContainerName = act.Container
+	retmsg.Name = act.Name
+	retmsg.Type = TRIGGERACTIONRESPONSE
+	retmsg.ResponseCode = OK
+
 	ret <- retmsg
 }
 
@@ -289,9 +275,9 @@ func (c *Controller) handleEvent(msg *common.Message, cio conn) {
 	//Pull the information about who what containers we should contact
 	event, err := c.config.GetEvent(msg.Name)
 	if err != nil {
-		panic(err)
+		log.Println(err)
 	} else if event.State == "offline" {
-		panic(errors.New("Event " + event.EventName + " emitted before being registered"))
+		log.Println(errors.New("Event " + event.EventName + " emitted before being registered"))
 	} else {
 		//We have a valid event we can analyze
 		blocks := *event.Blocks

@@ -145,7 +145,7 @@ func (c *Config) GetEvent(name string) (*Event, error) {
 	if value, ok := c.EventsMap[name]; ok {
 		e = value
 	} else {
-		err = errors.New("Could not find an event that matches one in the list")
+		err = errors.New("Could not find event: " + name + " that matches one in the list")
 	}
 	return e, err
 }
