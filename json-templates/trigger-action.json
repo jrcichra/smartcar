@@ -1,8 +1,0 @@
-{
-    "type": "trigger-action",
-    "timestamp": "epochhere",
-    "event_id": "uuid4",
-    "data": {
-        "name": "turn_off_pi"
-    }
-}

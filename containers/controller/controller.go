@@ -1,8 +1,8 @@
 package main
 
 import (
-	common "controller2/common"
-	parser "controller2/parser"
+	common "controller/common"
+	parser "controller/parser"
 	"encoding/json"
 	"errors"
 	"log"

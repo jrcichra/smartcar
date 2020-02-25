@@ -1,4 +1,4 @@
-module controller2
+module controller
 
 go 1.12
 

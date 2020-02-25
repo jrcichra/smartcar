@@ -10,7 +10,7 @@ services:
     restart: always
     volumes:
       - "${PWD}/test_config.yml:/config.yml"
-    build: ./containers/controller2
+    build: ./containers/controller
   gpio:
     environment:
       TZ: "America/New_York"
@@ -33,4 +33,4 @@ services:
   #   depends_on:
   #     - controller
   #   volumes:
-  #     - "${PWD}/containers/controller2:/go/controller2"
+  #     - "${PWD}/containers/controller:/go/controller"

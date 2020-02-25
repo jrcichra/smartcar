@@ -1,7 +1,7 @@
 package main
 
 import (
-	"controller2/common"
+	"controller/common"
 	"encoding/json"
 	"net"
 	"testing"

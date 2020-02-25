@@ -1,8 +1,8 @@
-FROM jrcichra/smartcar_python_base
-ARG commit
-EXPOSE 8080
-COPY requirements.txt /
-RUN pip install -r /requirements.txt
-COPY . /
-RUN echo -n $commit > /commit.txt
-CMD python -u controller.py
+FROM golang:alpine3.11 as firststage
+WORKDIR /smartcar
+ADD . .
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o controller .
+FROM alpine:3.11
+WORKDIR /smartcar
+COPY --from=firststage /smartcar/controller .
+CMD ["./controller"]

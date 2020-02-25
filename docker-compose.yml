@@ -9,7 +9,7 @@ services:
     restart: always
     volumes:
       - "${PWD}/new_config.yml:/config.yml"
-    build: ./containers/controller2
+    build: ./containers/controller
   dashcam:
     environment:
       TZ: "America/New_York"
