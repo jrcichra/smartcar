@@ -5,9 +5,10 @@ import logging
 import time
 import os
 import datetime
-import yaml
 from common import isCI
-import picamera
+
+if not isCI():
+    import picamera
 
 camera = None
 ##get_new_filename##
@@ -65,6 +66,7 @@ def stop_preview(params, result):
 
 
 def start_recording(params, result):
+    logging.debug("params for start_recording are: {}".format(params))
     HRES = params.get('hres', 1280)
     VRES = params.get('vres', 720)
     ROT = params.get('rot', 0)
@@ -130,12 +132,6 @@ sc = smartcarclient.Client()
 
 # Register ourselves and what we provide to the environment
 sc.registerContainer()
-
-sc.registerEvent("started_recording")
-sc.registerEvent("stopped_recording")
-
-sc.registerEvent("started_preview")
-sc.registerEvent("stopped_preview")
 
 sc.registerAction("start_recording", start_recording)
 sc.registerAction("stop_recording", stop_recording)

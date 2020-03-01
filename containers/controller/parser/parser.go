@@ -33,8 +33,8 @@ type Parameter struct {
 	Value interface{}
 }
 
-//Parameters - an array of parameter objects
-type Parameters []*Parameter
+//Parameters - a map of parameter objects
+type Parameters map[string]*Parameter
 
 //Operand - part of a conditional expression
 type Operand interface{} //Could be a parameter or primitive type
@@ -108,7 +108,7 @@ func (c *Config) RegisterEvent(msg *common.Message) error {
 	if value, ok := c.EventsMap[msg.Name]; ok {
 		value.State = ONLINE
 	} else {
-		err = errors.New("Could not find an event that matches one in the list")
+		err = errors.New("Could not find event " + msg.Name + " that matches one in the list")
 	}
 	return err
 }
@@ -188,6 +188,8 @@ func (c *Config) splitter(s string) ([]string, error) {
 //parses a yaml "action string" - when, and, else, etc and returns an Action
 func (c *Config) action(actionName string, action interface{}) (*Action, error) {
 	var act Action
+	//Make sure the action's parameters map pointer is allocated also
+	act.Parameters = make(map[string]*Parameter)
 
 	act.Name = actionName
 	switch a := action.(type) {
@@ -237,7 +239,7 @@ func (c *Config) action(actionName string, action interface{}) (*Action, error) 
 											return nil, err
 										}
 										// append param to list of parameters for this action
-										act.Parameters = append(act.Parameters, param)
+										act.Parameters[param.Name] = param
 									default:
 										return nil, errors.New("Expected a string for the parameter name")
 									}

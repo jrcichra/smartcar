@@ -22,15 +22,17 @@ services:
     depends_on:
       - controller
     build: ./containers/gpio
-  # tester:
-  #   restart: always
-  #   environment:
-  #     TZ: "America/New_York"
-  #     GITHUB_ACTIONS: "${GITHUB_ACTIONS}"
-  #   hostname: tester
-  #   image: jrcichra/smartcar_tester
-  #   build: ./containers/
-  #   depends_on:
-  #     - controller
-  #   volumes:
-  #     - "${PWD}/containers/controller:/go/controller"
+  dashcam:
+    environment:
+      TZ: "America/New_York"
+      GITHUB_ACTIONS: "${GITHUB_ACTIONS}"
+    hostname: dashcam
+    image: jrcichra/smartcar_dashcam
+    restart: always
+    volumes:
+      - "${PWD}/recordings:/recordings"
+      - "${PWD}/settings.yml:/settings.yml"
+    privileged: true
+    depends_on:
+      - controller
+    build: ./containers/dashcam

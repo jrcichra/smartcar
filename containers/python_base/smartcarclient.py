@@ -31,7 +31,7 @@ OFFLINE = "offline"
 
 # TODO: RAISING ERRORS IN THIS PYTHON LIBRARY
 
-logging.basicConfig(level=logging.DEBUG,
+logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s.%(msecs)d:%(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
 
 
@@ -340,13 +340,3 @@ class Client:
         else:
             logging.info(
                 "Sucessfully emitted event {}".format(event_name))
-
-
-def an_action(params, result):
-    logging.info("an_action:{}".format(params))
-    result.Pass()
-
-
-def action_no_params(params, result):
-    logging.info("action_no_params:{}".format(params))
-    result.Fail()

@@ -13,7 +13,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/jinzhu/copier"
 	"github.com/op/go-logging"
 )
@@ -208,7 +207,32 @@ func (c *Controller) triggerSerialAction(act *parser.Action, id string) *common.
 	c.connections[act.Container].out <- b
 	log.Println("Sent action to " + act.Container)
 
-	return &msg
+	//Wait for the response here
+	retMsg := c.findYourResponse(act)
+	return &retMsg
+}
+
+func (c *Controller) findYourResponse(act *parser.Action) common.Message {
+	var retmsg common.Message
+	//Loop through things in the input queue in case we get a different event's actionresponse (just to be safe)
+	for {
+		bretmsg := <-c.connections[act.Container].in
+		// log.Println(bretmsg)
+		err := json.Unmarshal(bretmsg, &retmsg)
+		if err != nil {
+			panic(err)
+		}
+		if retmsg.ContainerName != act.Container || retmsg.Name != act.Name {
+			//We pulled something from the channel that isn't for here, put it back on the queue
+			c.connections[act.Container].in <- bretmsg
+		} else {
+			break
+		}
+	}
+	retmsg.ContainerName = act.Container
+	retmsg.Name = act.Name
+	retmsg.Type = TRIGGERACTIONRESPONSE
+	return retmsg
 }
 
 //triggerParallelAction reaches out to a container and tells it to do something in parallel
@@ -238,33 +262,14 @@ func (c *Controller) triggerParallelAction(act *parser.Action, id string, ret ch
 	c.connections[act.Container].out <- b
 	log.Println("Sent action to " + act.Container)
 
-	var retmsg common.Message
-	//Loop through things in the input queue in case we get a different event's actionresponse (just to be safe)
-	for {
-		bretmsg := <-c.connections[act.Container].in
-		// log.Println(bretmsg)
-		err = json.Unmarshal(bretmsg, &retmsg)
-		if err != nil {
-			panic(err)
-		}
-		if retmsg.ContainerName != act.Container || retmsg.Name != act.Name {
-			//We pulled something from the channel that isn't for here, put it back on the queue
-			c.connections[act.Container].in <- bretmsg
-		} else {
-			break
-		}
-	}
-	retmsg.ContainerName = act.Container
-	retmsg.Name = act.Name
-	retmsg.Type = TRIGGERACTIONRESPONSE
-	retmsg.ResponseCode = OK
-
+	retmsg := c.findYourResponse(act)
 	ret <- retmsg
 }
 
 //handleEvent is the part of the controller responsible for goroutines that do all kinds of processes
 func (c *Controller) handleEvent(msg *common.Message, cio conn) {
 	//The message we were given told use to emit an event
+	log.Println("We're starting event: ", msg.Name)
 
 	//Make a unique id for this event, so everyone can keep track
 	uuid := common.GenUUID()
@@ -391,6 +396,7 @@ func (c *Controller) handleEvent(msg *common.Message, cio conn) {
 				cio.buildResponse(msg, ERROR, false)
 			}
 		}
+		log.Println("We're finishing event: ", msg.Name)
 	}
 }
 
@@ -419,7 +425,7 @@ func (c *Controller) handleConnection(conn net.Conn, cio conn) {
 			c.logger.Error(err)
 			break
 		}
-		spew.Dump(msg)
+		// spew.Dump(msg)
 		//Read the type and send it to the proper function for further processing
 		switch msg.Type {
 		case REGISTERCONTAINER:

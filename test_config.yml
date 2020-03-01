@@ -10,8 +10,6 @@ events:
         - serial:
             - dashcam.stop_recording
             - dashcam.stop_preview
-            - transfer.transfer_footage
-            - transfer.start_conversion
             - gpio.power_off
     transfer.lost_network:
         - parallel:
