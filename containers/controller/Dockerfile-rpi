@@ -1,0 +1,9 @@
+FROM balenalib/raspberrypi3:buster-20200207 as firststage
+WORKDIR /smartcar
+RUN apt install -y golang
+ADD . .
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o controller .
+FROM balenalib/raspberrypi3:buster-20200207
+WORKDIR /smartcar
+COPY --from=firststage /smartcar/controller .
+CMD ["./controller"]
