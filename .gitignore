@@ -1,2 +1,4 @@
 .vscode
-containers/controller2/controller2
+containers/controller/controller
+recordings/*
+nas/*

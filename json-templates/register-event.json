@@ -1,8 +1,0 @@
-{
-    "type": "register-event",
-    "timestamp": "epochhere",
-    "container_id": "asdfghjl;",
-    "data": {
-        "name": "key_on"
-    }
-}

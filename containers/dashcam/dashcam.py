@@ -1,12 +1,14 @@
-import smartcarsocket
+import smartcarclient
 import threading
 import queue
 import logging
 import time
 import os
 import datetime
-import yaml
 from common import isCI
+
+if not isCI():
+    import picamera
 
 camera = None
 ##get_new_filename##
@@ -33,19 +35,9 @@ def get_new_filename():
 
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s.%(msecs)d:LINE %(lineno)d:TID %(thread)d:%(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
-# Does an action based on the message we get. The calls needed are made by the container coder
 
 
-def sendResponse(msg, sc):
-    # Craft a response with the actionResponse object
-    response = sc.newActionResponse(msg['data']['name'])
-    response.setEventID(msg['event_id'])
-    response.setMessage("OK")
-    response.setStatus(0)
-    sc.sendall(response)
-
-
-def start_preview(msg, sc):
+def start_preview(params, result):
     if not isCI():
         logging.info("Starting the preview...")
         try:
@@ -56,11 +48,11 @@ def start_preview(msg, sc):
         except Exception as e:
             logging.error(e)
     else:
-        logging.info("We're in CI, we would have started the preview")
-    sendResponse(msg, sc)
+        logging.info("We're in CI, but we would have started the preview")
+    result.Pass()
 
 
-def stop_preview(msg, sc):
+def stop_preview(params, result):
     if not isCI():
         logging.info("Stopping the preview...")
         try:
@@ -70,17 +62,36 @@ def stop_preview(msg, sc):
             logging.error(e)
     else:
         logging.info("We're in CI, we would have stopped the preview")
-    sendResponse(msg, sc)
+    result.Pass()
 
 
-def start_recording(msg, sc):
+def start_recording(params, result):
+    logging.debug("params for start_recording are: {}".format(params))
+    HRES = params.get('hres', 1280)
+    VRES = params.get('vres', 720)
+    ROT = params.get('rot', 0)
+    FRAMERATE = params.get('framerate', 10)
     if not isCI():
         logging.info("Starting the recording...")
         try:
             global camera
+            # Do all the camera setup
+            if camera == None:
+                camera = picamera.PiCamera()  # the camera object
+            camera.resolution = (HRES, VRES)
+            # annotations
+            camera.annotate_foreground = picamera.Color('white')
+            camera.annotate_background = picamera.Color('black')
+            camera.annotate_frame_num = True
+            camera.annotate_text_size = 48
+            camera.annotate_text = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
+            # set the framerate
+            camera.framerate = FRAMERATE
+            # set the rotation
+            camera.rotation = ROT
             camera.start_recording(
                 '/recordings/' + get_new_filename(), sps_timing=True)
-            # spawn a thread that handles updating the annotations every second
+            # spawn a thread that handles updating the time/frame counter
             t = threading.Thread(target=update_annotations)
             t.start()
         except Exception as e:
@@ -92,10 +103,10 @@ def start_recording(msg, sc):
         f.seek(1073741824-1)
         f.write(b"\0")
         f.close()
-    sendResponse(msg, sc)
+    result.Pass()
 
 
-def stop_recording(msg, sc):
+def stop_recording(params, result):
     if not isCI():
         logging.info("Stopping the recording...")
         try:
@@ -105,35 +116,7 @@ def stop_recording(msg, sc):
             logging.error(e)
     else:
         logging.info("We're in CI, we would have stopped recording")
-    sendResponse(msg, sc)
-
-# Ideally we could get this into the library and not put it on the user? Not sure
-
-
-def getActions(sc, temp):
-    while True:
-        msg = sc.getQueue().get()
-        if msg['type'] == "trigger-action":
-            # Trigger the action
-            if msg['data']['name'] == 'start_recording':
-                a = threading.Thread(target=start_recording, args=(msg, sc))
-                a.start()
-            elif msg['data']['name'] == 'stop_recording':
-                a = threading.Thread(target=stop_recording, args=(msg, sc))
-                a.start()
-            elif msg['data']['name'] == 'start_preview':
-                a = threading.Thread(target=start_preview, args=(msg, sc))
-                a.start()
-            elif msg['data']['name'] == 'stop_preview':
-                a = threading.Thread(target=stop_preview, args=(msg, sc))
-                a.start()
-            else:
-                logging.error("I don't recognize this action:")
-                logging.error(msg)
-        else:
-            logging.warning(
-                "Got a packet response that wasn't what we expected, the library should handle this:")
-            logging.info(msg)
+    result.Pass()
 
 
 def update_annotations():
@@ -141,80 +124,20 @@ def update_annotations():
         camera.annotate_text = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
         time.sleep(.2)
 
+
 #MAIN#
 
-
-# Parse our settings
-with open('/settings.yml', 'r') as f:
-    y = yaml.safe_load(f)
-    try:
-        settings = y['dashcam']
-    except Exception as e:
-        logging.warning("No settings found for the transfer container")
-
-try:
-    FRAMERATE = settings['fps']
-except KeyError as e:
-    FRAMERATE = 10
-    logging.warning("Missing framerate, defaulting to " + FRAMERATE)
-
-try:
-    HRES = settings['hres']
-except KeyError as e:
-    HRES = 1280
-    logging.warning("Missing hres, defaulting to " + HRES)
-
-try:
-    VRES = settings['vres']
-except KeyError as e:
-    VRES = 720
-    logging.warning("Missing vres, defaulting to " + VRES)
-
-try:
-    ROT = settings['rot']
-except KeyError as e:
-    ROT = 0
-    logging.warning("Missing rot, defaulting to " + ROT)
-
-if not isCI():
-    # Do all the camera setup, this will probably come from a config file at some point...
-    import picamera
-    camera = picamera.PiCamera()  # the camera object
-    camera.resolution = (HRES, VRES)
-    # annotations
-    camera.annotate_foreground = picamera.Color('white')
-    camera.annotate_background = picamera.Color('black')
-    camera.annotate_frame_num = True
-    camera.annotate_text_size = 48
-    camera.annotate_text = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
-    # set the framerate
-    camera.framerate = FRAMERATE
-    # set the rotation
-    camera.rotation = ROT
-    current_filename = get_new_filename()
-
 # Use the library to abstract the difficulty
-sc = smartcarsocket.smartcarsocket()
+sc = smartcarclient.Client()
 
 # Register ourselves and what we provide to the environment
 sc.registerContainer()
 
-sc.registerEvent("started_recording")
-sc.registerEvent("stopped_recording")
+sc.registerAction("start_recording", start_recording)
+sc.registerAction("stop_recording", stop_recording)
 
-sc.registerEvent("started_preview")
-sc.registerEvent("stopped_preview")
+sc.registerAction("start_preview", start_preview)
+sc.registerAction("stop_preview", stop_preview)
 
-sc.registerAction("start_recording")
-sc.registerAction("stop_recording")
-
-sc.registerAction("start_preview")
-sc.registerAction("stop_preview")
-
-# Handle incoming action requests
-t = threading.Thread(target=getActions, args=(sc, True))
-t.start()
-
-# Do what you need to do here to emit events. In this case the dashcam is reactive
-# So we'll just have the main thread block for the endless getActions...
-t.join()
+while True:
+    time.sleep(10)

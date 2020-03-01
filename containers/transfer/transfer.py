@@ -1,11 +1,10 @@
 from common import isCI, secondsTillMidnight
-import smartcarsocket
+import smartcarclient
 import threading
 import queue
 import logging
 import time
 import os
-import yaml
 import glob
 import json
 import subprocess
@@ -16,16 +15,6 @@ RECORDING_PATH = '/recordings/'
 
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s.%(msecs)d:LINE %(lineno)d:TID %(thread)d:%(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
-# Does an action based on the message we get. The calls needed are made by the container coder
-
-
-def sendResponse(msg, sc):
-    # Craft a response with the actionResponse object
-    response = sc.newActionResponse(msg['data']['name'])
-    response.setEventID(msg['event_id'])
-    response.setMessage("OK")
-    response.setStatus(0)
-    sc.sendall(response)
 
 
 def system(s):
@@ -41,10 +30,17 @@ def system(s):
         return e.returncode
 
 
-def transfer_all_footage(msg, sc):
+def transfer_all_footage(params, result):
     ping_attempts = 0
     PING_SLEEP = 10
     MAX_PINGS = 3
+    HOSTNAME = params.get('hostname', 'nas')
+    USERNAME = params.get('username', 'root')
+    PASSWORD = params.get('password', 'root')
+    PATH = params.get('path', '/recordings')
+    METHOD = params.get('method', 'ssh')
+    FRAMERATE = params.get('framerate', 10)
+
     while os.system("ping " + HOSTNAME + " -c 1") != 0 and ping_attempts < MAX_PINGS:
         time.sleep(PING_SLEEP)
         ping_attempts += 1
@@ -76,7 +72,7 @@ def transfer_all_footage(msg, sc):
                         "Something went wrong with the transfer for " + video + ", keeping file where it is")
                 else:
                     logging.info("Copy was successful for " + video + ".")
-                    local_size = os.path.getsize(video)
+                    # local_size = os.path.getsize(video)
                     os.remove(video)
                     j = {}
                     j['framerate'] = FRAMERATE
@@ -94,10 +90,14 @@ def transfer_all_footage(msg, sc):
         # end for
         logging.info(
             "Finished processing all recordings. If all went well, there should be no files left")
-    sendResponse(msg, sc)
+    result.Pass()
 
 
-def kick_off_conversion(msg, sc):
+def start_conversion(params, result):
+    HOSTNAME = params.get('hostname', 'nas')
+    USERNAME = params.get('username', 'root')
+    PATH = params.get('path', '/recordings')
+    DEVELOP = params.get('develop', False)
     # Let's kick off the job on the host to start converting
     if os.system("ssh -o 'StrictHostKeyChecking=no' " + USERNAME + "@" + HOSTNAME + ' nohup bash -c "' + PATH + '/../convert.sh >> ' + PATH + '/../convert.log 2>&1 &"') != 0:
         logging.info("Could not kick off the h264->mp4 job on the backend")
@@ -110,104 +110,20 @@ def kick_off_conversion(msg, sc):
                 "DEVELOP is on - sleeping until midnight ({} seconds from now)".format(s))
             time.sleep(s)
             logging.info("Done sleeping for DEVELOP mode! Continuing...")
-    sendResponse(msg, sc)
-
-# Ideally we could get this into the library and not put it on the user? Not sure
-
-
-def getActions(sc, temp):
-    while True:
-        msg = sc.getQueue().get()
-        if msg['type'] == "trigger-action":
-            # Trigger the action
-            logging.debug("We got a trigger-action to do " +
-                          msg['data']['name'])
-            if msg['data']['name'] == 'transfer_all_footage':
-                a = threading.Thread(
-                    target=transfer_all_footage, args=(msg, sc))
-                a.start()
-            elif msg['data']['name'] == 'kick_off_conversion':
-                a = threading.Thread(
-                    target=kick_off_conversion, args=(msg, sc))
-                a.start()
-            else:
-                logging.warning(
-                    "Got a trigger-action that I don't understand: printing for debugging:")
-                logging.warning(msg)
-        else:
-            logging.warning(
-                "Got a packet response that wasn't what we expected, the library should handle this:")
-            logging.info(msg)
+    result.Pass()
 
 #MAIN#
 
 
-# Parse our settings
-with open('/settings.yml', 'r') as f:
-    y = yaml.safe_load(f)
-    try:
-        settings = y['transfer']
-    except Exception as e:
-        logging.warning("No settings found for the transfer container")
-
-try:
-    HOSTNAME = settings['hostname']
-except KeyError as e:
-    HOSTNAME = ""
-    logging.warning(
-        "Did not find a hostname in the settings, ignoring transfers")
-
-try:
-    USERNAME = settings['username']
-except KeyError as e:
-    USERNAME = ""
-    logging.warning(
-        "Did not find a username in the settings, ignoring transfers " +
-        "(we're in a container, I don't know your username outside this)")
-try:
-    PASSWORD = settings['password']
-except KeyError as e:
-    PASSWORD = ""
-    logging.warning(
-        "Did not find a password in the settings, if you haven't set up ssh keys somehow, things might not work")
-
-try:
-    METHOD = settings['method']
-except KeyError as e:
-    METHOD = "ssh"
-    logging.warning("Did not find a method in the settings, defaulting to ssh")
-
-try:
-    PATH = settings['path']
-except KeyError as e:
-    PATH = ""
-    logging.warning("Did not find a path in the settings, ignoring transfers")
-try:
-    FRAMERATE = y['dashcam']['fps']
-except KeyError as e:
-    FRAMERATE = 10
-    logging.warning(
-        "Transfer needs to know the framerate of the dashcam, didn't find one, defaulting to " + FRAMERATE)
-try:
-    if settings['develop']:
-        DEVELOP = True
-except KeyError as e:
-    DEVELOP = False
-    logging.warning(
-        "Transfer can be in develop mode, letting the car stay on past midnight for development. Default is off.")
-
-
-# Use the library to abstract the difficulty
-sc = smartcarsocket.smartcarsocket()
+# Use the library
+sc = smartcarclient.Client()
 
 # Register ourselves and what we provide to the environment
 sc.registerContainer()
 
-sc.registerAction("transfer_all_footage")
-sc.registerAction("kick_off_conversion")
+sc.registerAction("transfer_all_footage", transfer_all_footage)
+sc.registerAction("start_conversion", start_conversion)
 
-# Handle incoming action requests
-t = threading.Thread(target=getActions, args=(sc, True))
-t.start()
-
-t.join()
+# Keep the main thread alive
+while True:
+    time.sleep(10)

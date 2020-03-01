@@ -1,7 +1,0 @@
-{
-    "type": "register-action",
-    "timestamp": "epochhere",
-    "data": {
-        "name": "turn_off_pi"
-    }
-}

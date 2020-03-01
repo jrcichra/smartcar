@@ -1,7 +1,7 @@
 package main
 
 import (
-	"controller2/common"
+	"controller/common"
 	"encoding/json"
 	"net"
 	"testing"
@@ -11,7 +11,7 @@ import (
 )
 
 func connect(t *testing.T) net.Conn {
-	conn, err := net.Dial("tcp", ":8080")
+	conn, err := net.Dial("tcp", "controller:8080")
 	if err != nil {
 		t.Error("Could not connect to server: ", err)
 	}
@@ -95,12 +95,13 @@ func TestRegisterAction(t *testing.T) {
 		t.Error("Message received was not as expected")
 	}
 }
-func TestEmitEvent(t *testing.T) {
-	m, m2 := emitEvent("gpio", "key_on", t)
-	//And check if it is what we expect
-	if m2.Timestamp >= m.Timestamp && m2.ResponseCode == OK && m2.Properties == nil && m2.Name == m.Name && m2.ContainerName == m.ContainerName && m2.Type == EMITEVENTRESPONSE {
-		//Valid
-	} else {
-		t.Error("Message received was not as expected")
-	}
-}
+
+// func TestEmitEvent(t *testing.T) {
+// 	m, m2 := emitEvent("gpio", "key_on", t)
+// 	//And check if it is what we expect
+// 	if m2.Timestamp >= m.Timestamp && m2.ResponseCode == OK && m2.Properties == nil && m2.Name == m.Name && m2.ContainerName == m.ContainerName && m2.Type == EMITEVENTRESPONSE {
+// 		//Valid
+// 	} else {
+// 		t.Error("Message received was not as expected")
+// 	}
+// }
