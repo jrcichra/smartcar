@@ -36,3 +36,25 @@ services:
     depends_on:
       - controller
     build: ./containers/dashcam
+  transfer:
+    environment:
+      TZ: "America/New_York"
+      GITHUB_ACTIONS: "${GITHUB_ACTIONS}"
+    hostname: transfer
+    restart: always
+    image: jrcichra/smartcar_transfer
+    volumes:
+      - "${PWD}/recordings:/recordings"
+      - "${PWD}/settings.yml:/settings.yml"
+    depends_on:
+      - controller
+    build: ./containers/transfer
+  nas:
+    restart: always
+    environment:
+      TZ: "America/New_York"
+      GITHUB_ACTIONS: "${GITHUB_ACTIONS}"
+    hostname: nas
+    image: rastasheep/ubuntu-sshd
+    volumes:
+      - "${PWD}/nas:/recordings"

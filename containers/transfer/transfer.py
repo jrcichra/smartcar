@@ -5,7 +5,6 @@ import queue
 import logging
 import time
 import os
-import yaml
 import glob
 import json
 import subprocess
@@ -94,7 +93,7 @@ def transfer_all_footage(params, result):
     result.Pass()
 
 
-def kick_off_conversion(params, result):
+def start_conversion(params, result):
     HOSTNAME = params.get('hostname', 'nas')
     USERNAME = params.get('username', 'root')
     PATH = params.get('path', '/recordings')
@@ -113,33 +112,6 @@ def kick_off_conversion(params, result):
             logging.info("Done sleeping for DEVELOP mode! Continuing...")
     result.Pass()
 
-# Ideally we could get this into the library and not put it on the user? Not sure
-
-
-def getActions(sc, temp):
-    while True:
-        msg = sc.getQueue().get()
-        if msg['type'] == "trigger-action":
-            # Trigger the action
-            logging.debug("We got a trigger-action to do " +
-                          msg['data']['name'])
-            if msg['data']['name'] == 'transfer_all_footage':
-                a = threading.Thread(
-                    target=transfer_all_footage, args=(msg, sc))
-                a.start()
-            elif msg['data']['name'] == 'kick_off_conversion':
-                a = threading.Thread(
-                    target=kick_off_conversion, args=(msg, sc))
-                a.start()
-            else:
-                logging.warning(
-                    "Got a trigger-action that I don't understand: printing for debugging:")
-                logging.warning(msg)
-        else:
-            logging.warning(
-                "Got a packet response that wasn't what we expected, the library should handle this:")
-            logging.info(msg)
-
 #MAIN#
 
 
@@ -150,7 +122,7 @@ sc = smartcarclient.Client()
 sc.registerContainer()
 
 sc.registerAction("transfer_all_footage", transfer_all_footage)
-sc.registerAction("kick_off_conversion", kick_off_conversion)
+sc.registerAction("start_conversion", start_conversion)
 
 # Keep the main thread alive
 while True:
