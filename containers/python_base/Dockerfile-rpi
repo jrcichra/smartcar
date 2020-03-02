@@ -2,7 +2,7 @@ FROM balenalib/raspberrypi3:buster-20200207
 RUN apt update && apt install -y wireless-tools python3 python3-setuptools python3-pip libraspberrypi-bin iputils-ping && rm -rf /var/lib/apt/lists/* && usermod -a -G video root
 RUN pip3 install wheel
 ADD requirements.txt /
-RUN pip install -r /requirements.txt
+RUN pip3 install -r /requirements.txt
 ADD  smartcarclient.py common.py /
 ARG commit
 RUN echo -n $commit > /commit.txt
