@@ -22,7 +22,7 @@ cd containers
 
 if [ "$1" == "rpi" ];then
     cd python_base
-    docker buildx build --cache-from jrcichra/smartcar_python_base_rpi --platform linux/arm/v7 -t jrcichra/smartcar_python_base_rpi:${GITHUB_SHA:0:8} -f Dockerfile-rpi --push .
+    docker buildx build --platform linux/arm/v7 -t jrcichra/smartcar_python_base_rpi:${GITHUB_SHA:0:8} -f Dockerfile-rpi --push .
     docker buildx imagetools inspect jrcichra/smartcar_python_base_rpi:${GITHUB_SHA:0:8}
     # Also update :latest (should be quick since we just built)
     docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t jrcichra/smartcar_python_base_rpi:latest --push .
@@ -34,7 +34,7 @@ if [ "$1" == "rpi" ];then
         if [ "$dir" != "python_base" ];then
             cd $d
             
-            docker buildx build --cache-from jrcichra/smartcar_${dir}_rpi --platform linux/arm/v7 -t jrcichra/smartcar_${dir}_rpi:${GITHUB_SHA:0:8} -f Dockerfile-rpi --push . 
+            docker buildx build --platform linux/arm/v7 -t jrcichra/smartcar_${dir}_rpi:${GITHUB_SHA:0:8} -f Dockerfile-rpi --push . 
             docker buildx imagetools inspect jrcichra/smartcar_${dir}_rpi:${GITHUB_SHA:0:8}
             # Also update :latest (should be quick since we just built)
             docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t jrcichra/smartcar_${dir}_rpi:latest --push .
@@ -46,7 +46,7 @@ else
     for d in */; do
         dir=${d%/}
         cd python_base
-        docker buildx build --cache-from jrcichra/smartcar_python_base --platform linux/amd64,linux/arm64,linux/arm/v7 -t jrcichra/smartcar_python_base:${GITHUB_SHA:0:8} --push .
+        docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t jrcichra/smartcar_python_base:${GITHUB_SHA:0:8} --push .
         docker buildx imagetools inspect jrcichra/smartcar_python_base:${GITHUB_SHA:0:8}
         # Also update :latest (should be quick since we just built)
         docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t jrcichra/smartcar_python_base:latest --push .
@@ -55,7 +55,7 @@ else
 
         if [ "$dir" != "python_base" ];then
             cd $d
-            docker buildx build --cache-from jrcichra/smartcar_${dir} --platform linux/amd64,linux/arm64,linux/arm/v7 -t jrcichra/smartcar_${dir}:${GITHUB_SHA:0:8} --push .
+            docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t jrcichra/smartcar_${dir}:${GITHUB_SHA:0:8} --push .
             docker buildx imagetools inspect jrcichra/smartcar_${dir}:${GITHUB_SHA:0:8}
             # Also update :latest (should be quick since we just built)
             docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t jrcichra/smartcar_${dir}:latest --push .
