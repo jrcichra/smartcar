@@ -7,7 +7,7 @@
 
 ## Current Functionality
 + Starts and stops recording with ignition
-+ 
++ Transfers footage to NAS when you come home
 
 # Current containers
 + [Karmen](https://github.com/jrcichra/karmen) 
