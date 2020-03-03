@@ -15,9 +15,6 @@ jobs:
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-      - name: verify commits
-        run: |
-          bash -x check_commit.sh
       - name: test smartcar
         run: |
           mkdir ${PWD}/recordings
@@ -35,9 +32,6 @@ jobs:
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-      - name: verify commits
-        run: |
-          bash -x check_commit.sh rpi
       - name: test smartcar rpi
         run: |
           mkdir ${PWD}/recordings
