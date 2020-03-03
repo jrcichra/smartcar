@@ -20,7 +20,6 @@ services:
     image: jrcichra/smartcar_gpio
     depends_on:
       - karmen
-    build: ./containers/gpio
   dashcam:
     environment:
       TZ: "America/New_York"
@@ -34,7 +33,6 @@ services:
     privileged: true
     depends_on:
       - karmen
-    build: ./containers/dashcam
   transfer:
     environment:
       TZ: "America/New_York"
@@ -47,7 +45,6 @@ services:
       - "${PWD}/settings.yml:/settings.yml"
     depends_on:
       - karmen
-    build: ./containers/transfer
   nas:
     restart: always
     environment:
