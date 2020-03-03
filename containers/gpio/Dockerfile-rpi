@@ -1,6 +1,6 @@
 FROM jrcichra/smartcar_python_base_rpi
 EXPOSE 8080
-RUN apt update && apt install -y python3-rpi.gpio && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y python3-rpi.gpio && rm -rf /var/lib/apt/lists/*
 COPY requirements.txt /
 RUN pip3 install -r /requirements.txt 
 COPY . /
