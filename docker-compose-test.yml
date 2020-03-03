@@ -4,7 +4,6 @@ services:
     environment:
       TZ: "America/New_York"
       GITHUB_ACTIONS: "${GITHUB_ACTIONS}"
-      HOSTNAME: "${HOSTNAME}"
     hostname: karmen
     image: jrcichra/karmen:latest
     restart: always
@@ -14,7 +13,6 @@ services:
     environment:
       TZ: "America/New_York"
       GITHUB_ACTIONS: "${GITHUB_ACTIONS}"
-      HOSTNAME: "${HOSTNAME}"
     hostname: gpio
     restart: always
     image: jrcichra/smartcar_gpio
@@ -29,7 +27,6 @@ services:
     restart: always
     volumes:
       - "${PWD}/recordings:/recordings"
-      - "${PWD}/settings.yml:/settings.yml"
     privileged: true
     depends_on:
       - karmen
