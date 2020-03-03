@@ -1,4 +1,4 @@
-import smartcarclient
+import karmen
 import threading
 import queue
 import logging
@@ -128,7 +128,7 @@ def update_annotations():
 #MAIN#
 
 # Use the library to abstract the difficulty
-sc = smartcarclient.Client()
+sc = karmen.Client()
 
 # Register ourselves and what we provide to the environment
 sc.registerContainer()

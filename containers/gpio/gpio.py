@@ -1,4 +1,4 @@
-import smartcarclient
+import karmen
 import threading
 import queue
 import logging
@@ -115,9 +115,9 @@ def gpio_setup():
 
 
 #MAIN#
-logging.info("Starting the smartcar client")
+logging.info("Starting the karmen client")
 # Use the library to abstract the difficulty
-sc = smartcarclient.Client()
+sc = karmen.Client()
 
 # Register ourselves and what we provide to the environment
 sc.registerContainer()

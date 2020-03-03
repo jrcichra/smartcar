@@ -1,5 +1,5 @@
 from common import isCI, secondsTillMidnight
-import smartcarclient
+import karmen
 import threading
 import queue
 import logging
@@ -115,14 +115,14 @@ def start_conversion(params, result):
 #MAIN#
 
 
-# Use the library
-sc = smartcarclient.Client()
+# Use karmen
+k = karmen.Client()
 
 # Register ourselves and what we provide to the environment
-sc.registerContainer()
+k.registerContainer()
 
-sc.registerAction("transfer_all_footage", transfer_all_footage)
-sc.registerAction("start_conversion", start_conversion)
+k.registerAction("transfer_all_footage", transfer_all_footage)
+k.registerAction("start_conversion", start_conversion)
 
 # Keep the main thread alive
 while True:

@@ -1,16 +1,15 @@
 version: "3"
 services:
-  controller:
+  karmen:
     environment:
       TZ: "America/New_York"
       GITHUB_ACTIONS: "${GITHUB_ACTIONS}"
       HOSTNAME: "${HOSTNAME}"
-    hostname: controller
-    image: jrcichra/smartcar_controller
+    hostname: karmen
+    image: jrcichra/karmen:latest
     restart: always
     volumes:
       - "${PWD}/test_config.yml:/config.yml"
-    build: ./containers/controller
   gpio:
     environment:
       TZ: "America/New_York"
@@ -20,7 +19,7 @@ services:
     restart: always
     image: jrcichra/smartcar_gpio
     depends_on:
-      - controller
+      - karmen
     build: ./containers/gpio
   dashcam:
     environment:
@@ -34,7 +33,7 @@ services:
       - "${PWD}/settings.yml:/settings.yml"
     privileged: true
     depends_on:
-      - controller
+      - karmen
     build: ./containers/dashcam
   transfer:
     environment:
@@ -47,7 +46,7 @@ services:
       - "${PWD}/recordings:/recordings"
       - "${PWD}/settings.yml:/settings.yml"
     depends_on:
-      - controller
+      - karmen
     build: ./containers/transfer
   nas:
     restart: always

@@ -1,4 +1,4 @@
-FROM jrcichra/smartcar_python_base_rpi
+FROM jrcichra/karmen-python-client
 EXPOSE 8080
 COPY requirements.txt /
 ENV READTHEDOCS True
