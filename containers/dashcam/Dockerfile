@@ -1,8 +1,7 @@
-FROM jrcichra/karmen-python-client
-ARG commit
+FROM jrcichra/smartcar_python_base
 EXPOSE 8080
 COPY requirements.txt /
 ENV READTHEDOCS True
-RUN pip install -r /requirements.txt 
+RUN pip3 install -r /requirements.txt 
 COPY . /
 CMD python -u dashcam.py
