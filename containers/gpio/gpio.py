@@ -34,7 +34,7 @@ def power_off(params, result):
         time.sleep(3)
         # unlatch
         if not isCI():
-            GPIO.output(UNLATCH, True)
+            # GPIO.output(UNLATCH, True)
             # we shouldn't get here unless the unlatch is broken
             time.sleep(5)
             logging.error("We tried to shut off the car but it didn't work!!!")

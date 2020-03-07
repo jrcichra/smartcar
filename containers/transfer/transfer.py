@@ -54,11 +54,13 @@ def transfer_all_footage(params, result):
         # first do the ssh key
         if os.system("ssh-keygen -f $HOME/.ssh/id_rsa -t rsa -N ''") != 0:
             logging.error("Something went wrong generating an ssh key")
+            result.Fail()
         else:
             logging.info("We generated an ssh key")
         if os.system('sshpass -p ' + PASSWORD +
                      " ssh-copy-id -o StrictHostKeyChecking=no " + USERNAME + "@" + HOSTNAME) != 0:
             logging.error("Something went wrong with sshpass")
+            result.Fail()
         else:
             logging.info("We authenticated you through ssh")
 
@@ -69,7 +71,7 @@ def transfer_all_footage(params, result):
             if METHOD == "ssh":
                 if os.system("scp -o 'StrictHostKeyChecking=no' -p " + video + " " + USERNAME + "@" + HOSTNAME + ":" + PATH) != 0:
                     logging.error(
-                        "Something went wrong with the transfer for " + video + ", keeping file where it is")
+                        "Something went wrong with the transfer for " + video + ", keeping file where it is.")
                 else:
                     logging.info("Copy was successful for " + video + ".")
                     # local_size = os.path.getsize(video)
