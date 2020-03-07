@@ -3,3 +3,4 @@ containers/controller/controller
 recordings/*
 nas/*
 my_config.yml
+docker-compose-justin.yml

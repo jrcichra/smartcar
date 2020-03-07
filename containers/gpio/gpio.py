@@ -117,22 +117,23 @@ def gpio_setup():
 #MAIN#
 logging.info("Starting the karmen client")
 # Use the library to abstract the difficulty
-sc = karmen.Client()
+k = karmen.Client()
 
 # Register ourselves and what we provide to the environment
-sc.registerContainer()
+k.registerContainer()
 
-sc.registerEvent("key_on")
-sc.registerEvent("key_off")
-sc.registerAction("power_off", power_off)
-
+k.registerEvent("key_on")
+k.registerEvent("key_off")
+k.registerAction("power_off", power_off)
 
 # For debugging, a USR1 signal simulates a keyOff (software-wise)
 signal.signal(signal.SIGUSR1, pretend_key_off)
 
+k.ready()
+
 # If this code is running, the key must be on, so we'll force a key_on event
 # Change if your pi doesn't start with the car.
-sc.emitEvent("key_on")
+k.emitEvent("key_on")
 
 # Set up the GPIO pins if we're not in CI
 gpio_setup()

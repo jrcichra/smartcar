@@ -126,6 +126,8 @@ k.registerContainer()
 k.registerAction("transfer_all_footage", transfer_all_footage)
 k.registerAction("start_conversion", start_conversion)
 
+k.ready()
+
 # Keep the main thread alive
 while True:
     time.sleep(10)

@@ -128,16 +128,18 @@ def update_annotations():
 #MAIN#
 
 # Use the library to abstract the difficulty
-sc = karmen.Client()
+k = karmen.Client()
 
 # Register ourselves and what we provide to the environment
-sc.registerContainer()
+k.registerContainer()
 
-sc.registerAction("start_recording", start_recording)
-sc.registerAction("stop_recording", stop_recording)
+k.registerAction("start_recording", start_recording)
+k.registerAction("stop_recording", stop_recording)
 
-sc.registerAction("start_preview", start_preview)
-sc.registerAction("stop_preview", stop_preview)
+k.registerAction("start_preview", start_preview)
+k.registerAction("stop_preview", stop_preview)
+
+k.ready()
 
 while True:
     time.sleep(10)
