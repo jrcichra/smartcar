@@ -61,8 +61,6 @@ def is_off():
 def print_pins():
     if not isCI():
         try:
-            global KEY_OFF
-            global KEY_ON
             logging.info("##############################")
             logging.info("KEY_OFF (PIN 33)="+str(GPIO.input(KEY_OFF)))
             logging.info("KEY_ON (PIN 35)="+str(GPIO.input(KEY_ON)))

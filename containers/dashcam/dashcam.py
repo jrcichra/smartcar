@@ -41,7 +41,6 @@ def start_preview(params, result):
     if not isCI():
         logging.info("Starting the preview...")
         try:
-            global camera
             camera.start_preview()
             # The preview alpha has to be set after the preview is already active
             camera.preview.alpha = 128
@@ -56,7 +55,6 @@ def stop_preview(params, result):
     if not isCI():
         logging.info("Stopping the preview...")
         try:
-            global camera
             camera.stop_preview()
         except Exception as e:
             logging.error(e)
@@ -74,7 +72,6 @@ def start_recording(params, result):
     if not isCI():
         logging.info("Starting the recording...")
         try:
-            global camera
             # Do all the camera setup
             if camera == None:
                 camera = picamera.PiCamera()  # the camera object
@@ -110,7 +107,6 @@ def stop_recording(params, result):
     if not isCI():
         logging.info("Stopping the recording...")
         try:
-            global camera
             camera.stop_recording()
         except Exception as e:
             logging.error(e)
