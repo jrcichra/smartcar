@@ -139,7 +139,5 @@ k.registerAction("stop_recording", stop_recording)
 k.registerAction("start_preview", start_preview)
 k.registerAction("stop_preview", stop_preview)
 
-k.ready()
-
 while True:
     time.sleep(10)

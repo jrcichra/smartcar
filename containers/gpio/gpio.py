@@ -129,8 +129,6 @@ k.registerAction("power_off", power_off)
 # For debugging, a USR1 signal simulates a keyOff (software-wise)
 signal.signal(signal.SIGUSR1, pretend_key_off)
 
-k.ready()
-
 # If this code is running, the key must be on, so we'll force a key_on event
 # Change if your pi doesn't start with the car.
 k.emitEvent("key_on")
