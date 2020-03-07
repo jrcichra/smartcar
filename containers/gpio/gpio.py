@@ -71,7 +71,7 @@ def print_pins():
 
 def pretend_key_off(signalNumer, frame):
     logging.info("Pretending the key went off")
-    sc.emitEvent("key_off")
+    k.emitEvent("key_off")
 
 
 def key_went_off(self):
@@ -83,7 +83,7 @@ def key_went_off(self):
         logging.info("Yes, the key did in fact go off.")
         # We emit the event
         time.sleep(3)  # keep recording a little longer
-        sc.emitEvent("key_off")
+        k.emitEvent("key_off")
     else:
         # In some situations, we might want to send "key_on" here. Not doing this yet
         logging.info(
