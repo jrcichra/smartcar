@@ -2,7 +2,6 @@ FROM jrcichra/smartcar_python_base_rpi
 EXPOSE 8080
 RUN apt-get update && apt-get install -y python3-rpi.gpio && rm -rf /var/lib/apt/lists/*
 COPY requirements.txt /
-RUN pip3 install RPi.GPIO
 RUN pip3 install -r /requirements.txt 
 COPY . /
 CMD python3 -u gpio.py
