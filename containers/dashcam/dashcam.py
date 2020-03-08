@@ -9,9 +9,8 @@ from common import isCI
 
 if not isCI():
     import picamera
-
-camera = None
 ##get_new_filename##
+camera
 
 
 def getserial():
