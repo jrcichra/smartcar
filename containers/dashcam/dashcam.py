@@ -65,7 +65,7 @@ def stop_preview(params, result):
 
 
 def start_recording(params, result):
-    logging.debug("params for start_recording are: {}".format(params))
+    logging.info("params for start_recording are: {}".format(params))
     HRES = int(params.get('hres', 1280))
     VRES = int(params.get('vres', 720))
     ROT = int(params.get('rot', 0))
