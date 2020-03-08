@@ -99,19 +99,11 @@ def start_conversion(params, result):
     HOSTNAME = params.get('hostname', 'nas')
     USERNAME = params.get('username', 'root')
     PATH = params.get('path', '/recordings')
-    DEVELOP = params.get('develop', False)
     # Let's kick off the job on the host to start converting
     if os.system("ssh -o 'StrictHostKeyChecking=no' " + USERNAME + "@" + HOSTNAME + ' nohup bash -c "' + PATH + '/../convert.sh >> ' + PATH + '/../convert.log 2>&1 &"') != 0:
         logging.info("Could not kick off the h264->mp4 job on the backend")
     else:
         logging.info("Successfully kicked off the job")
-        logging.debug("Checking for develop mode:")
-        if DEVELOP:
-            s = secondsTillMidnight()
-            logging.info(
-                "DEVELOP is on - sleeping until midnight ({} seconds from now)".format(s))
-            time.sleep(s)
-            logging.info("Done sleeping for DEVELOP mode! Continuing...")
     result.Pass()
 
 #MAIN#
