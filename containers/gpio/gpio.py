@@ -112,7 +112,7 @@ def gpio_setup():
         key_went_off(None)
 
 
-#MAIN#
+###MAIN###
 logging.info("Starting the karmen client")
 # Use the library to abstract the difficulty
 k = karmen.Client()
