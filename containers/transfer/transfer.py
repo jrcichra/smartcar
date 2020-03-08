@@ -106,7 +106,7 @@ def start_conversion(params, result):
         logging.info("Successfully kicked off the job")
     result.Pass()
 
-#MAIN#
+###MAIN###
 
 
 # Use karmen
