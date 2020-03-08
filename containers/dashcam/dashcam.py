@@ -72,28 +72,28 @@ def start_recording(params, result):
     FRAMERATE = params.get('framerate', 10)
     if not isCI():
         logging.info("Starting the recording...")
-        try:
-            global camera
-            # Do all the camera setup
-            camera = picamera.PiCamera()  # the camera object
-            camera.resolution = (HRES, VRES)
-            # annotations
-            camera.annotate_foreground = picamera.Color('white')
-            camera.annotate_background = picamera.Color('black')
-            camera.annotate_frame_num = True
-            camera.annotate_text_size = 48
-            camera.annotate_text = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
-            # set the framerate
-            camera.framerate = FRAMERATE
-            # set the rotation
-            camera.rotation = ROT
-            camera.start_recording(
-                '/recordings/' + get_new_filename(), sps_timing=True)
-            # spawn a thread that handles updating the time/frame counter
-            t = threading.Thread(target=update_annotations)
-            t.start()
-        except Exception as e:
-            logging.error(e)
+        # try:
+        global camera
+        # Do all the camera setup
+        camera = picamera.PiCamera()  # the camera object
+        camera.resolution = (HRES, VRES)
+        # annotations
+        camera.annotate_foreground = picamera.Color('white')
+        camera.annotate_background = picamera.Color('black')
+        camera.annotate_frame_num = True
+        camera.annotate_text_size = 48
+        camera.annotate_text = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
+        # set the framerate
+        camera.framerate = FRAMERATE
+        # set the rotation
+        camera.rotation = ROT
+        camera.start_recording(
+            '/recordings/' + get_new_filename(), sps_timing=True)
+        # spawn a thread that handles updating the time/frame counter
+        t = threading.Thread(target=update_annotations)
+        t.start()
+        # except Exception as e:
+        # logging.error(e)
     else:
         logging.info(
             "We're in CI, we would have started recording. Instead creating a fake big file")
