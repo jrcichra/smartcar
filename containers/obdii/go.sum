@@ -1,0 +1,6 @@
+github.com/rzetterberg/elmobd v0.0.0-20200308140502-9c7884b8ba76 h1:TrezdN0Iqzy9nanv6Qx9HlRBgI/VHoOpALAUtaDQq4E=
+github.com/rzetterberg/elmobd v0.0.0-20200308140502-9c7884b8ba76/go.mod h1:4XcKe8qOXuZnphxBnWGDLSkQrmyyvn5zO00r8tgVVmY=
+github.com/tarm/serial v0.0.0-20180830185346-98f6abe2eb07 h1:UyzmZLoiDWMRywV4DUYb9Fbt8uiOSooupjTq10vpvnU=
+github.com/tarm/serial v0.0.0-20180830185346-98f6abe2eb07/go.mod h1:kDXzergiv9cbyO7IOYJZWg1U88JhDg3PB6klq9Hg2pA=
+golang.org/x/sys v0.0.0-20200302150141-5c8b2ff67527 h1:uYVVQ9WP/Ds2ROhcaGPeIdVq0RIXVLwsHlnvJ+cT1So=
+golang.org/x/sys v0.0.0-20200302150141-5c8b2ff67527/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=

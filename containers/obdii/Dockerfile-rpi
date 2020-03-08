@@ -1,0 +1,8 @@
+FROM balenalib/raspberrypi3-golang:1.11.13 as firststage
+WORKDIR /smartcar_obdii
+ADD . .
+RUN go build -o smartcar_obdii .
+FROM balenalib/raspberrypi3:buster-20200207
+WORKDIR /smartcar_obdii
+COPY --from=firststage /smartcar_obdii/smartcar_obdii .
+CMD ["./smartcar_obdii"]
