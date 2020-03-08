@@ -1,4 +1,4 @@
-FROM balenalib/raspberrypi3-python:3.8.0-buster-20191223
+FROM balenalib/raspberrypi3-python:3.7.4
 RUN apt-get update && apt-get install -y wireless-tools libraspberrypi-bin iputils-ping && rm -rf /var/lib/apt/lists/* && usermod -a -G video root
 ADD requirements.txt /
 RUN pip3 install -r /requirements.txt
