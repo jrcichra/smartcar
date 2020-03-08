@@ -66,10 +66,10 @@ def stop_preview(params, result):
 
 def start_recording(params, result):
     logging.debug("params for start_recording are: {}".format(params))
-    HRES = params.get('hres', 1280)
-    VRES = params.get('vres', 720)
-    ROT = params.get('rot', 0)
-    FRAMERATE = params.get('framerate', 10)
+    HRES = int(params.get('hres', 1280))
+    VRES = int(params.get('vres', 720))
+    ROT = int(params.get('rot', 0))
+    FRAMERATE = int(params.get('framerate', 10))
     if not isCI():
         logging.info("Starting the recording...")
         # try:
