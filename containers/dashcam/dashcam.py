@@ -124,7 +124,7 @@ def update_annotations():
         time.sleep(.2)
 
 
-#MAIN#
+###MAIN###
 
 # Use the library to abstract the difficulty
 k = karmen.Client()
