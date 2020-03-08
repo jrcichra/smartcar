@@ -10,7 +10,7 @@ from common import isCI
 if not isCI():
     import picamera
 ##get_new_filename##
-camera
+camera = None
 
 
 def getserial():
@@ -75,8 +75,7 @@ def start_recording(params, result):
         try:
             global camera
             # Do all the camera setup
-            if camera == None:
-                camera = picamera.PiCamera()  # the camera object
+            camera = picamera.PiCamera()  # the camera object
             camera.resolution = (HRES, VRES)
             # annotations
             camera.annotate_foreground = picamera.Color('white')
