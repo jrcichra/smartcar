@@ -16,7 +16,7 @@ func main() {
 
 	flag.Parse()
 
-	dev, err := elmobd.NewTestDevice(*serialPath, false)
+	dev, err := elmobd.NewTestDevice(*serialPath, true)
 
 	if err != nil {
 		fmt.Println("Failed to create new device", err)
@@ -31,5 +31,28 @@ func main() {
 	}
 
 	fmt.Println("Device has version", version)
-	// var _ karmen.Karmen
+
+	rpm, err := dev.RunOBDCommand(elmobd.NewEngineRPM())
+	if err != nil {
+		fmt.Println("Failed to get rpm", err)
+		return
+	}
+
+	fmt.Printf("Engine spins at %s RPMs\n", rpm.ValueAsLit())
+
+	supported, err := dev.CheckSupportedCommands()
+
+	if err != nil {
+		fmt.Println("Failed to check supported commands", err)
+		return
+	}
+
+	allCommands := elmobd.GetSensorCommands()
+	carCommands := supported.FilterSupported(allCommands)
+
+	fmt.Printf("%d of %d commands supported:\n", len(carCommands), len(allCommands))
+
+	for _, cmd := range carCommands {
+		fmt.Printf("- %s supported\n", cmd.Key())
+	}
 }
