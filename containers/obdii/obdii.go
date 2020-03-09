@@ -31,4 +31,5 @@ func main() {
 	}
 
 	fmt.Println("Device has version", version)
+	// var _ karmen.Karmen
 }

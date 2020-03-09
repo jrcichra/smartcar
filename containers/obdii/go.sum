@@ -1,3 +1,11 @@
+github.com/jrcichra/karmen v0.0.0-20200309023200-40f5625fc2b4 h1:tOF7soje9XcFGVivskvxf6n3ONmrwcWZ4GYnDBmxcZ8=
+github.com/jrcichra/karmen v0.0.0-20200309030022-e1c7a9e53151 h1:9ziE/l2C2Mfwqd+pCbWHyrjLX0YI+PH39EU830A9HAM=
+github.com/jrcichra/karmen/karmen-go-client v0.0.0-20200309023200-40f5625fc2b4 h1:p7qmOInyrwfDi36UyoxiV6tF/eA1OmoT5ichhs3CWXI=
+github.com/jrcichra/karmen/karmen-go-client v0.0.0-20200309023200-40f5625fc2b4/go.mod h1:qHjQMjkW+Kc3vLsVuhz7J61ncEWAQMXa2GX+sq6d7H8=
+github.com/jrcichra/karmen/karmen-go-client v0.0.0-20200309024928-5239ff43504f h1:crv8Ko8kuAUQU8mcfEEslJgAlo5hsT4dU3chvdfvexg=
+github.com/jrcichra/karmen/karmen-go-client v0.0.0-20200309024928-5239ff43504f/go.mod h1:qHjQMjkW+Kc3vLsVuhz7J61ncEWAQMXa2GX+sq6d7H8=
+github.com/jrcichra/karmen/karmen-go-client v0.0.0-20200309030022-e1c7a9e53151 h1:SDoW/mc2pC3BDfmiT0fiIlnE9oSci66Lmawk/Uo0U0A=
+github.com/jrcichra/karmen/karmen-go-client v0.0.0-20200309030022-e1c7a9e53151/go.mod h1:qHjQMjkW+Kc3vLsVuhz7J61ncEWAQMXa2GX+sq6d7H8=
 github.com/rzetterberg/elmobd v0.0.0-20200308140502-9c7884b8ba76 h1:TrezdN0Iqzy9nanv6Qx9HlRBgI/VHoOpALAUtaDQq4E=
 github.com/rzetterberg/elmobd v0.0.0-20200308140502-9c7884b8ba76/go.mod h1:4XcKe8qOXuZnphxBnWGDLSkQrmyyvn5zO00r8tgVVmY=
 github.com/tarm/serial v0.0.0-20180830185346-98f6abe2eb07 h1:UyzmZLoiDWMRywV4DUYb9Fbt8uiOSooupjTq10vpvnU=
