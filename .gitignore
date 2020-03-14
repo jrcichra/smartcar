@@ -5,3 +5,4 @@ nas/*
 my_config.yml
 docker-compose-justin.yml
 containers/obdii/obdii
+containers/obdii/obdii.exe
