@@ -10,4 +10,4 @@ python3 -m pip install git+https://github.com/brendan-w/python-OBD.git # this is
 # Downloading ELM327-emulator
 git clone https://github.com/ircama/ELM327-emulator.git
 cd ELM327-emulator
-python3 -m elm &
+nohup python3 -m elm &

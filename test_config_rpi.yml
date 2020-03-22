@@ -6,8 +6,10 @@ events:
                     - resolution: 1280x720
                     - rotation: 0
                 - dashcam.start_preview
+                - obdii.start_obdii
     gpio.key_off:
         - serial:
+            - obdii.stop_obdii
             - dashcam.stop_recording
             - dashcam.stop_preview
             - gpio.power_off

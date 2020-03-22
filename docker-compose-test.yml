@@ -42,6 +42,16 @@ services:
       - "${PWD}/settings.yml:/settings.yml"
     depends_on:
       - karmen
+  obdii:
+    environment:
+      TZ: "America/New_York"
+      GITHUB_ACTIONS: "${GITHUB_ACTIONS}"
+    hostname: transfer
+    restart: always
+    image: jrcichra/smartcar_obdii
+    privileged: true
+    depends_on:
+      - karmen  
   nas:
     restart: always
     environment:
