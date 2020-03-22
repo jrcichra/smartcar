@@ -1,8 +1,5 @@
-FROM balenalib/raspberrypi3-golang:1.11.13 as firststage
-WORKDIR /smartcar_obdii
-ADD . .
-RUN go build -o smartcar_obdii .
-FROM balenalib/raspberrypi3:buster-20200207
-WORKDIR /smartcar_obdii
-COPY --from=firststage /smartcar_obdii/smartcar_obdii .
-CMD ["./smartcar_obdii"]
+FROM jrcichra/smartcar_python_base_rpi
+COPY requirements.txt /
+RUN pip3 install -r /requirements.txt
+COPY . /
+CMD python3 -u obdii.py
