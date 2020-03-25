@@ -40,6 +40,14 @@ services:
     privileged: true
     depends_on:
       - karmen  
+  obd-emulator:
+    environment:
+      TZ: "America/New_York"
+      GITHUB_ACTIONS: "${GITHUB_ACTIONS}"
+    image: jrcichra/elm327-emulator
+    hostname: obd-emulator
+    restart: always
+    privileged: true
   transfer:
     environment:
       TZ: "America/New_York"

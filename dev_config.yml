@@ -12,4 +12,14 @@ events:
             - obdii.stop_obdii
             - dashcam.stop_recording
             - dashcam.stop_preview
+            - transfer.transfer_all_footage:
+                - hostname: nas
+                - username: root
+                - password: root
+                - path: /recordings/
+            - transfer.start_conversion:
+                - hostname: nas
+                - username: root
+                - password: root
+                - path: /recordings/
             - gpio.power_off

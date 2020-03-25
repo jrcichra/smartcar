@@ -1,14 +1,7 @@
 version: "3"
 services:
-  karmen:
-    environment:
-      TZ: "America/New_York"
-      GITHUB_ACTIONS: "${GITHUB_ACTIONS}"
-    hostname: karmen
-    image: jrcichra/karmen:latest
-    restart: always
-    volumes:
-      - "${PWD}/test_config.yml:/config.yml"
+  # Karmen should be started on the host with 'go build && ./controller'
+  # https://github.com/Ircama/ELM327-emulator for OBDII (make handles this)
   gpio:
     environment:
       TZ: "America/New_York"
@@ -16,8 +9,7 @@ services:
     hostname: gpio
     restart: always
     image: jrcichra/smartcar_gpio
-    depends_on:
-      - karmen
+    build: ./containers/gpio
   dashcam:
     environment:
       TZ: "America/New_York"
@@ -28,8 +20,7 @@ services:
     volumes:
       - "${PWD}/recordings:/recordings"
     privileged: true
-    depends_on:
-      - karmen
+    build: ./containers/dashcam
   transfer:
     environment:
       TZ: "America/New_York"
@@ -40,8 +31,7 @@ services:
     volumes:
       - "${PWD}/recordings:/recordings"
       - "${PWD}/settings.yml:/settings.yml"
-    depends_on:
-      - karmen
+    build: ./containers/transfer
   obdii:
     environment:
       TZ: "America/New_York"
@@ -50,16 +40,7 @@ services:
     restart: always
     image: jrcichra/smartcar_obdii
     privileged: true
-    depends_on:
-      - karmen  
-  obd-emulator:
-    environment:
-      TZ: "America/New_York"
-      GITHUB_ACTIONS: "${GITHUB_ACTIONS}"
-    image: jrcichra/elm327-emulator
-    hostname: obd-emulator
-    restart: always
-    privileged: true
+    build: ./containers/obdii
   nas:
     restart: always
     environment:
