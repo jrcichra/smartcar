@@ -60,6 +60,8 @@ services:
     hostname: obd-emulator
     restart: always
     privileged: true
+    stdin_open: true
+    tty: true
   nas:
     restart: always
     environment:

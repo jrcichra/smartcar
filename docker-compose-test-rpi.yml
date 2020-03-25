@@ -48,6 +48,8 @@ services:
     hostname: obd-emulator
     restart: always
     privileged: true
+    stdin_open: true
+    tty: true
   transfer:
     environment:
       TZ: "America/New_York"
