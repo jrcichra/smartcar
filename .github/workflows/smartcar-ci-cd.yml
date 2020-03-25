@@ -19,7 +19,6 @@ jobs:
         run: |
           mkdir ${PWD}/recordings
           mkdir -p ${PWD}/nas/.convert
-          bash -x elm327.sh
           docker-compose -f docker-compose-test.yml up &
           sleep 240
           ls -lrth "${PWD}/recordings"
@@ -37,7 +36,6 @@ jobs:
         run: |
           mkdir ${PWD}/recordings
           mkdir -p ${PWD}/nas/.convert
-          bash -x elm327.sh
           docker-compose -f docker-compose-test-rpi.yml up &
           sleep 240
           ls -lrth "${PWD}/recordings"
