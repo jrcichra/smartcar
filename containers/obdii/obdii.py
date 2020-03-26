@@ -13,7 +13,7 @@ logging.basicConfig(level=logging.DEBUG,
 
 list_of_files = glob.glob('/dev/pts/*')
 latest_file = max(list_of_files, key=os.path.getctime)
-
+logging.info("Selected {} as the most likely pts for OBDII".format(latest_file))
 connection = obd.OBD(latest_file)
 stop_thread = False
 
