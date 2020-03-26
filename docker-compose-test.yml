@@ -71,3 +71,4 @@ services:
     image: rastasheep/ubuntu-sshd
     volumes:
       - "${PWD}/nas:/recordings"
+      
