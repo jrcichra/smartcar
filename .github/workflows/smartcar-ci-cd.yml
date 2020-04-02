@@ -28,10 +28,15 @@ jobs:
       - uses: actions/checkout@v1
       - name: build & push
         run: |
+          git clone https://github.com/jrcichra/gh-actions-telegraf
+          bash gh-actions-telegraf/telegraf.sh
           bash -x build.sh rpi
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          INFLUX_URL: ${{ secrets.INFLUX_URL }}
+          INFLUX_USERNAME: ${{ secrets.INFLUX_USERNAME }}
+          INFLUX_PASSWORD: ${{ secrets.INFLUX_PASSWORD }}
       - name: test smartcar rpi
         run: |
           mkdir ${PWD}/recordings
