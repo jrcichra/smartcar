@@ -21,6 +21,8 @@ echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-
 cd containers
 
 if [ "$1" == "rpi" ];then
+    git clone https://github.com/jrcichra/gh-actions-telegraf
+    bash gh-actions-telegraf/telegraf.sh
     cd python_base
     docker buildx build --cache-from jrcichra/smartcar_python_base_rpi --platform linux/arm/v7 -t jrcichra/smartcar_python_base_rpi:${GITHUB_SHA:0:8} -f Dockerfile-rpi --push .
     docker buildx imagetools inspect jrcichra/smartcar_python_base_rpi:${GITHUB_SHA:0:8}
