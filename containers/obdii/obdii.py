@@ -11,10 +11,10 @@ import os
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s.%(msecs)d:LINE %(lineno)d:TID %(thread)d:%(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
 
-list_of_files = glob.glob('/dev/pts/[0-9]*')
-latest_file = max(list_of_files, key=os.path.getctime)
-logging.info("Selected {} as the most likely pts for OBDII".format(latest_file))
-connection = obd.OBD(latest_file)
+# list_of_files = glob.glob('/dev/pts/*')
+# latest_file = max(list_of_files, key=os.path.getctime)
+# logging.info("Selected {} as the most likely pts for OBDII".format(latest_file))
+connection = obd.OBD('/dev/pts/1')
 stop_thread = False
 
 
