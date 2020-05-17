@@ -42,16 +42,6 @@ services:
       - "${PWD}/settings.yml:/settings.yml"
     depends_on:
       - karmen
-  obdii:
-    environment:
-      TZ: "America/New_York"
-      GITHUB_ACTIONS: "${GITHUB_ACTIONS}"
-    hostname: transfer
-    restart: always
-    image: jrcichra/smartcar_obdii
-    privileged: true
-    depends_on:
-      - karmen  
   obd-emulator:
     environment:
       TZ: "America/New_York"
@@ -62,6 +52,17 @@ services:
     privileged: true
     stdin_open: true
     tty: true
+  obdii:
+    environment:
+      TZ: "America/New_York"
+      GITHUB_ACTIONS: "${GITHUB_ACTIONS}"
+    hostname: transfer
+    restart: always
+    image: jrcichra/smartcar_obdii
+    privileged: true
+    depends_on:
+      - karmen  
+      - obd-emulator
   nas:
     restart: always
     environment:
