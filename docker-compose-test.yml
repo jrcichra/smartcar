@@ -58,7 +58,7 @@ services:
     environment:
       TZ: "America/New_York"
       GITHUB_ACTIONS: "${GITHUB_ACTIONS}"
-    hostname: transfer
+    hostname: obdii
     restart: always
     image: jrcichra/smartcar_obdii
     privileged: true
