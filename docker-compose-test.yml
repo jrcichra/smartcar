@@ -60,6 +60,8 @@ services:
     restart: always
     image: jrcichra/smartcar_obdii
     privileged: true
+    volumes:
+      - "/dev/pts/1:/dev/pts/1"
     depends_on:
       - karmen  
       - obd-emulator
