@@ -43,4 +43,4 @@ jobs:
           docker-compose -f docker-compose-test-rpi.yml up &
           sleep 240
           ls -lrth "${PWD}/recordings"
-          head -9999 obdii/obdii.log
+          head -9999 obdii/obdii.log || /bin/true
