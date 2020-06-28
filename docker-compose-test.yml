@@ -51,7 +51,7 @@ services:
     restart: always
     volumes:
       - "/dev/pts:/dev/pts"
-      - "${PWD}/obdii.log:/obdii.log"
+      - "${PWD}/obdii/:/obdii/"
     privileged: true
     stdin_open: true
     tty: true

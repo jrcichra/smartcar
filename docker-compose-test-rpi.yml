@@ -52,7 +52,7 @@ services:
     privileged: true
     volumes:
       - "/dev/pts:/dev/pts"
-      - "${PWD}/obdii.log:/obdii.log"
+      - "${PWD}/obdii/:/obdii/"
     depends_on:
       - karmen
       - obd-emulator
