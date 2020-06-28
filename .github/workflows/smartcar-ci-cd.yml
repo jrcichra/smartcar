@@ -22,7 +22,7 @@ jobs:
           docker-compose -f docker-compose-test.yml up &
           sleep 240
           ls -lrth "${PWD}/recordings"
-          head -9999 obdii/obdii.log
+          head -9999 obdii/obdii.log || /bin/true
   build-rpi:
     runs-on: ubuntu-latest
     steps:
