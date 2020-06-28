@@ -49,8 +49,9 @@ services:
     image: jrcichra/elm327-emulator
     hostname: obd-emulator
     restart: always
-    volumes: 
+    volumes:
       - "/dev/pts:/dev/pts"
+      - "${PWD}/obdii.log:/obdii.log"
     privileged: true
     stdin_open: true
     tty: true
@@ -62,10 +63,10 @@ services:
     restart: always
     image: jrcichra/smartcar_obdii
     privileged: true
-    volumes: 
+    volumes:
       - "/dev/pts:/dev/pts"
     depends_on:
-      - karmen  
+      - karmen
       - obd-emulator
   nas:
     restart: always
@@ -76,4 +77,3 @@ services:
     image: rastasheep/ubuntu-sshd
     volumes:
       - "${PWD}/nas:/recordings"
-      

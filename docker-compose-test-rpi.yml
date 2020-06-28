@@ -37,7 +37,7 @@ services:
     image: jrcichra/elm327-emulator
     hostname: obd-emulator
     restart: always
-    volumes: 
+    volumes:
       - "/dev/pts:/dev/pts"
     privileged: true
     stdin_open: true
@@ -50,10 +50,11 @@ services:
     restart: always
     image: jrcichra/smartcar_obdii_rpi
     privileged: true
-    volumes: 
+    volumes:
       - "/dev/pts:/dev/pts"
+      - "${PWD}/obdii.log:/obdii.log"
     depends_on:
-      - karmen  
+      - karmen
       - obd-emulator
   transfer:
     environment:

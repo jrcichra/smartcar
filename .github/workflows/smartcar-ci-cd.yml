@@ -1,8 +1,8 @@
 name: smartcar CI/CD
 on:
   push:
-    branches:    
-    - master         # Push events on master branch
+    branches:
+      - master # Push events on master branch
 
 jobs:
   build-test-alpine:
@@ -22,6 +22,7 @@ jobs:
           docker-compose -f docker-compose-test.yml up &
           sleep 240
           ls -lrth "${PWD}/recordings"
+          head -9999 obdii.log
   build-rpi:
     runs-on: ubuntu-latest
     steps:
@@ -42,3 +43,4 @@ jobs:
           docker-compose -f docker-compose-test-rpi.yml up &
           sleep 240
           ls -lrth "${PWD}/recordings"
+          head -9999 obdii.log

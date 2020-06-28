@@ -24,7 +24,9 @@ def collect_obdii_data(params):
     while not stop_thread:
         cmd = obd.commands.SPEED
         response = connection.query(cmd)
-        logging.info(response.value.to("mph"))
+        mph = response.value.to("mph")
+        with open("/obdii.log", "a") as f:
+            f.write("{}\n".format(mph))
         time.sleep(1)
 
 
