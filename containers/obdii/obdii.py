@@ -8,6 +8,7 @@ import time
 import glob
 import os
 
+
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s.%(msecs)d:LINE %(lineno)d:TID %(thread)d:%(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
 
@@ -21,12 +22,30 @@ stop_thread = False
 def collect_obdii_data(params):
     global connection
     global stop_thread
+    fields = [obd.commands.SPEED, obd.commands.RPM, obd.commands.THROTTLE_POS]
     while not stop_thread:
-        cmd = obd.commands.SPEED
-        response = connection.query(cmd)
-        mph = str(response.value.to("mph")).split(' ')[0]
         with open("/obdii/obdii.log", "a") as f:
-            f.write("{}\n".format(mph))
+            output = ""
+            # first field is always an epoch
+            epoch = int(time.time())
+            output += "{},".format(epoch)
+            for field in fields:
+                cmd = field
+                response = connection.query(cmd)
+                # Conversion checks
+                if field == obd.commands.SPEED:
+                    # convert to mph
+                    val = response.value.to("mph").magnitude
+                else:
+                    # keep as is
+                    val = str(response.value.magnitude)
+                output += "{}".format(val)
+                # if it's the last field don't put a comma
+                if field != fields[-1]:
+                    output += ','
+            output += '\n'
+            # only call file write once
+            f.write(output)
         time.sleep(1)
 
 
