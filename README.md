@@ -18,6 +18,9 @@
   + Interfaces with the GPIO pins (for ignition)
 + [Transfer](./containers/transfer)
   + Transfers footage to NAS when you get home
++ [OBDII](./containers/obdii)
+  + Collect car sensor data (Speed, RPM, Throttle)
+  + Uses standard libarary: https://python-obd.readthedocs.io/en/latest/
 
 More containers on the way (OBDII) - make new containers and make a pull request!
 
