@@ -8,6 +8,7 @@
 ## Current Functionality
 + Starts and stops recording with ignition
 + Transfers footage to NAS when you come home
++ Collects obdii sensor data locally on an interval
 
 # Current containers
 + [Karmen](https://github.com/jrcichra/karmen) 
