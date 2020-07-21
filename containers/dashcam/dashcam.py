@@ -98,7 +98,7 @@ def start_recording(params, result):
         logging.info(
             "We're in CI, we would have started recording. Instead creating a fake big file")
         f = open('/recordings/' + get_new_filename(), "wb")
-        f.seek(1073741824-1)
+        f.seek(1000000-1)
         f.write(b"\0")
         f.close()
     result.Pass()
