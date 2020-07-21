@@ -14,6 +14,6 @@ build-all-rpi:	# use docker buildx script for the rpi (which removes docker-ce a
 
 test:	#use docker-compose to start up all the containers and the test container
 	
-	docker-compose -f docker-compose-test.yml up --abort-on-container-exit --exit-code-from gpio
+	GITHUB_ACTIONS=true docker-compose -f docker-compose-test.yml up --abort-on-container-exit --exit-code-from gpio
 
 default: build
