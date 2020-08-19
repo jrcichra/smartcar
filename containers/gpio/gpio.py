@@ -44,7 +44,8 @@ def power_off(params, result):
     else:
         # The key isn't off? let the logs know
         logging.error("Not shutting off the car because the key isn't off?")
-    result.Pass()
+    if result != None:
+        result.Pass()
 
 # Double check the key actually went off
 
@@ -74,20 +75,18 @@ def pretend_key_off(signalNumer, frame):
     k.emitEvent("key_off")
 
 
-def key_went_off(self):
-    logging.info("We got a change in key state...")
-    time.sleep(2)
-    print_pins()
-
-    if is_off():
-        logging.info("Yes, the key did in fact go off.")
-        # We emit the event
-        time.sleep(3)  # keep recording a little longer
-        k.emitEvent("key_off")
-    else:
-        # In some situations, we might want to send "key_on" here. Not doing this yet
-        logging.info(
-            "False alarm, or the owner turned the key back on within the timeout.")
+def poll_key_state():
+    # Start the previous state assuming the key was on
+    previous_state = False
+    while True:
+        # Say the key is now off if it's off now but wasn't before
+        if is_off() and previous_state:
+            k.emitEvent("key_off")
+        # Say the key is now on if it's on now but wasn't before
+        if not is_off() and not previous_state:
+            k.emitEvent("key_on")
+        # Sleep in between checks
+        time.sleep(5)
 
 
 def gpio_setup():
@@ -100,16 +99,16 @@ def gpio_setup():
         # Set up input pins
         # Used to check if ignition is on
         GPIO.setup(KEY_OFF, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-        # event handling for when KEY_OFF is triggered
-        GPIO.add_event_detect(KEY_OFF, GPIO.RISING,
-                              callback=key_went_off, bouncetime=500)
         # Used to check if ignition is onclear
         GPIO.setup(KEY_ON,  GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        # Start a polling thread that will say if the key is on or off on a state change
+        t = threading.Thread(target=poll_key_state)
+        t.start()
     else:
         logging.info(
             "We're in the CI, no GPIO setup. Sleeping for 10 seconds, and then pretending the key went off.")
         time.sleep(10)
-        key_went_off(None)
+        power_off(None, None)
 
 
 ###MAIN###

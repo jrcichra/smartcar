@@ -71,7 +71,9 @@ def transfer_all_footage(params, result):
             if METHOD == "ssh":
                 if os.system("unbuffer -p scp -o 'StrictHostKeyChecking=no' -p " + video + " " + USERNAME + "@" + HOSTNAME + ":" + PATH + "| cat") != 0:
                     logging.error(
-                        "Something went wrong with the transfer for " + video + ", keeping file where it is.")
+                        "Something went wrong with the transfer for " + video + ", keeping file where it is. Telling karmen we failed")
+                    result.Fail()
+                    return
                 else:
                     logging.info("Copy was successful for " + video + ".")
                     # local_size = os.path.getsize(video)
