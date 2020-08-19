@@ -1,0 +1,5 @@
+if [ ! -z "$GITHUB_ACTIONS" ];then
+docker-compose -f docker-compose-test.yml logs -t | ./dscl
+else
+docker-compose -f docker-compose-justin.yml logs -t | ./dscl
+fi
