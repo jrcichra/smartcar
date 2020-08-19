@@ -77,14 +77,16 @@ def pretend_key_off(signalNumer, frame):
 
 def poll_key_state():
     # Start the previous state assuming the key was on
-    previous_state = False
+    was_off = False
     while True:
         # Say the key is now off if it's off now but wasn't before
-        if is_off() and previous_state:
+        if is_off() and not was_off:
             k.emitEvent("key_off")
+            was_off = not was_off
         # Say the key is now on if it's on now but wasn't before
-        if not is_off() and not previous_state:
+        if not is_off() and was_off:
             k.emitEvent("key_on")
+            was_off = not was_off
         # Sleep in between checks
         time.sleep(5)
 
