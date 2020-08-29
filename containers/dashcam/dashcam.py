@@ -112,6 +112,7 @@ def stop_recording(params, result):
         try:
             global camera
             camera.stop_recording()
+            camera.close()
         except Exception as e:
             logging.error(e)
     else:
