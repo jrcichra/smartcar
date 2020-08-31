@@ -1,6 +1,6 @@
 <template>
   <div class="preview">
-      <p>Preview</p>
+      <span></span>
   </div>
 </template>
 
@@ -13,7 +13,6 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 .preview {
-    margin-left: 350px;
     text-align: center;
     background-color: black;
     height: 550px;

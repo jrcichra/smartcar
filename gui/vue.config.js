@@ -1,3 +1,9 @@
 module.exports = {
-    runtimeCompiler: true
+    runtimeCompiler: true,
+    pluginOptions: {
+        electronBuilder: {
+          preload: 'src/preload.js',
+          nodeIntegration: true
+        }
+      }
 }
