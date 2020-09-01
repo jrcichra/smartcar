@@ -1,6 +1,6 @@
 'use strict'
 
-import { app, protocol, BrowserWindow } from 'electron'
+import { app, protocol, BrowserWindow ,ipcRenderer,ipcMain} from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
 const isDevelopment = process.env.NODE_ENV !== 'production'
@@ -73,7 +73,15 @@ app.on('ready', async () => {
     }
   }
   createWindow()
-})
+  //Send random numbers to the gauges
+  setInterval(()=>{
+    console.log("doing math")
+    let speed = Math.floor(Math.random() * 100); 
+    let rpm = Math.floor(Math.random() * 10000);
+    win.webContents.send("speed",speed);
+    win.webContents.send("rpm",rpm);
+  },1000)
+  })
 
 // Exit cleanly on request from parent process in development mode.
 if (isDevelopment) {

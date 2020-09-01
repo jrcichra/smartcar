@@ -17,10 +17,10 @@ const store = new Vuex.Store({
     rpm: 0
   },
   mutations: {
-    updateSpeed (state,speed) {
+    speed (state,speed) {
       state.speed = speed;
     },
-     updateRPM (state,rpm) {
+     rpm (state,rpm) {
       state.rpm = rpm;
     },
   }
