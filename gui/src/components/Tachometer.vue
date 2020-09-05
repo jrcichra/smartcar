@@ -8,7 +8,7 @@
         :value=value
         :minValue="0"
         :maxValue="10000"
-        :currentValueText=title
+        :currentValueText=titleAndValue
         :ringWidth="47"
         :maxSegmentLabels="11"
         :segments="11"
@@ -37,6 +37,9 @@ export default {
       },
     }
   },
+  computed:{
+    titleAndValue: function(){return this.title + " = " + this.value}
+  }
 };
 </script>
 <style scoped>
