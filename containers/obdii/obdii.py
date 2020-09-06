@@ -23,6 +23,8 @@ def collect_obdii_data(params):
     global connection
     global stop_thread
     fields = [obd.commands.SPEED, obd.commands.RPM, obd.commands.THROTTLE_POS]
+    # What will be sent over pub
+    params = {}
     while not stop_thread:
         with open("/obdii/obdii.log", "a") as f:
             output = ""
@@ -35,17 +37,26 @@ def collect_obdii_data(params):
                 # Conversion checks
                 if field == obd.commands.SPEED:
                     # convert to mph
-                    val = response.value.to("mph").magnitude
+                    val = float(response.value.to("mph").magnitude)
+                    params['speed'] = val
+                elif field == obd.commands.RPM:
+                    val = float(response.value.magnitude)
+                    params['rpm'] = val
+                elif field == obd.commands.THROTTLE_POS:
+                    val = float(response.value.magnitude)
+                    params['throttle'] = val
                 else:
-                    # keep as is
-                    val = str(response.value.magnitude)
+                    # Fallthrough doesn't set a param
+                    val = float(response.value.magnitude)
                 output += "{}".format(val)
                 # if it's the last field don't put a comma
                 if field != fields[-1]:
                     output += ','
             output += '\n'
-            # only call file write once
+            # only call file write once per collection
             f.write(output)
+            # publish the data
+            k.emitEvent("pub",params=params)
         time.sleep(1)
 
 
@@ -60,6 +71,10 @@ def stop_obdii(params, result):
     stop_thread = True
     result.Pass()
 
+def p(params, result):
+    logging.info("In obdii.p, here's what I got:")
+    logging.info(params)
+    result.Pass()
 
 ## Main ##
 logging.info("Starting the karmen client")
@@ -69,8 +84,15 @@ k = karmen.Client()
 # Register ourselves and what we provide to the environment
 k.registerContainer()
 
+# Event that publishes obdii data
+k.registerEvent("pub")
+
+# Actions obdii can perform
 k.registerAction("start_obdii", start_obdii)
 k.registerAction("stop_obdii", stop_obdii)
+
+# Temporary action
+k.registerAction("print",p)
 
 while True:
     time.sleep(10)

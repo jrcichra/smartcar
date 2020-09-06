@@ -15,3 +15,6 @@ events:
             - transfer.transfer_all_footage
             - transfer.start_conversion
             - gpio.power_off
+    obdii.pub:
+        - serial:
+            - obdii.print
