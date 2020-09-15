@@ -1,16 +1,14 @@
 <template>
   <div class="dashboard">
-      <div class="stats">
-        <h1 id="title">Smartcar</h1>
-        <Speedometer id="speedometer" :value=speed title="Speed (mph)"/>
-        <Tachometer id="tachometer" :value=rpm title="RPM"/>
-        <input type="button" value="Button">
-      </div>
+    <div class="stats">
+      <h1 id="title">Smartcar</h1>
+      <Speedometer id="speedometer" :value="speed" title="Speed (mph)" />
+      <Tachometer id="tachometer" :value="rpm" title="RPM" />
+    </div>
     <div class="preview">
-       <Preview id="preview"/> 
-       </div>
+      <Preview id="preview" />
+    </div>
   </div>
- 
 </template>
 
 <script>
@@ -31,21 +29,21 @@ export default {
     speed() {
       return this.$store.state.speed;
     },
-    rpm(){
+    rpm() {
       return this.$store.state.rpm;
-    }
+    },
   },
   mounted() {
-    window.ipcRenderer.on("speed",(event,speed) =>{
+    window.ipcRenderer.on("speed", (event, speed) => {
       console.log("new speed: " + speed);
-      this.$store.commit('speed',speed);
+      this.$store.commit("speed", speed);
     });
-    window.ipcRenderer.on("rpm",(event,rpm) =>{
+    window.ipcRenderer.on("rpm", (event, rpm) => {
       console.log("new rpm: " + rpm);
-      this.$store.commit('rpm',rpm);
+      this.$store.commit("rpm", rpm);
     });
     console.log(window.ipcRenderer);
-  }
+  },
 };
 </script>
 
@@ -54,13 +52,13 @@ export default {
 a {
   color: #42b983;
 }
-.dashboard{
+.dashboard {
   display: flex;
 }
 #title {
-  color:#42b983;
+  color: #42b983;
   text-align: center;
-  font-family: 'Courier New', Courier, monospace;
+  font-family: "Courier New", Courier, monospace;
   font-style: italic;
 }
 .stats {
