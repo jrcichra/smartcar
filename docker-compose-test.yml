@@ -9,6 +9,8 @@ services:
     restart: always
     volumes:
       - "${PWD}/test_config.yml:/config.yml"
+    ports:
+      - "8080:8080"
   gpio:
     environment:
       TZ: "America/New_York"

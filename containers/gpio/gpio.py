@@ -108,8 +108,8 @@ def gpio_setup():
         t.start()
     else:
         logging.info(
-            "We're in the CI, no GPIO setup. Sleeping for 10 seconds, and then pretending the key went off.")
-        time.sleep(10)
+            "We're in the CI, no GPIO setup. Sleeping for 60 seconds, and then pretending the key went off.")
+        time.sleep(60)
         k.emitEvent("key_off")
 
 
