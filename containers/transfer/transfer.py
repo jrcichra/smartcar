@@ -41,7 +41,7 @@ def transfer_all_footage(params, result):
     METHOD = params.get('method', 'ssh')
     FRAMERATE = params.get('framerate', 10)
 
-    while os.system("ping " + HOSTNAME + " -c 1") != 0 and ping_attempts < MAX_PINGS:
+    while os.system(f"ping {HOSTNAME} -c 1") != 0 and ping_attempts < MAX_PINGS:
         time.sleep(PING_SLEEP)
         ping_attempts += 1
     if ping_attempts >= MAX_PINGS:
@@ -57,25 +57,24 @@ def transfer_all_footage(params, result):
             result.Fail()
         else:
             logging.info("We generated an ssh key")
-        if os.system('sshpass -p ' + PASSWORD +
-                     " ssh-copy-id -o StrictHostKeyChecking=no " + USERNAME + "@" + HOSTNAME) != 0:
+        if os.system(f"sshpass -p {PASSWORD} ssh-copy-id -o StrictHostKeyChecking=no {USERNAME}@{HOSTNAME}") != 0:
             logging.error("Something went wrong with sshpass")
             result.Fail()
         else:
             logging.info("We authenticated you through ssh")
 
         logging.info("Going through all h264 files and transfering them")
-        videos = glob.glob(RECORDING_PATH + "*.h264")
+        videos = glob.glob(f"{RECORDING_PATH}*.h264")
         for video in videos:
             # loop through every video
             if METHOD == "ssh":
-                if os.system("scp -o 'StrictHostKeyChecking=no' -p " + video + " " + USERNAME + "@" + HOSTNAME + ":" + PATH) != 0:
+                if os.system(f"scp -o 'StrictHostKeyChecking=no' -p {video} {USERNAME}@{HOSTNAME}:{PATH}") != 0:
                     logging.error(
-                        "Something went wrong with the transfer for " + video + ", keeping file where it is. Telling karmen we failed")
+                        f"Something went wrong with the transfer for {video}, keeping file where it is. Telling karmen we failed")
                     result.Fail()
                     return
                 else:
-                    logging.info("Copy was successful for " + video + ".")
+                    logging.info(f"Copy was successful for {video}.")
                     # only delete the local copy if the filesizes match
                     local_size = os.path.getsize(video)
                     if os.system(f"ssh -o 'StrictHostKeyChecking=no' {USERNAME}@{HOSTNAME} test {local_size} == $(stat -c \"%s\" {video})") == 0:
@@ -87,8 +86,8 @@ def transfer_all_footage(params, result):
                     j = {}
                     j['framerate'] = FRAMERATE
                     vname = video.rsplit('/', 1)[1]
-                    if os.system("ssh -o 'StrictHostKeyChecking=no' " + USERNAME + "@" + HOSTNAME + " echo '" + json.dumps(j).replace(
-                            '"', '\\"') + " > " + PATH + "/.convert/" + vname.rsplit('.', 1)[0] + '.json' + "'") != 0:
+                    if os.system(f"ssh -o 'StrictHostKeyChecking=no' {USERNAME}@{HOSTNAME} echo '" + json.dumps(j).replace(
+                            '"', '\\"') + f" > {PATH}/.convert/{vname.rsplit('.', 1)[0]}.json'") != 0:
                         logging.info(
                             "We couldn't place the JSON file...note the video might not be converted to mp4 now...")
                     else:
@@ -108,7 +107,7 @@ def start_conversion(params, result):
     USERNAME = params.get('username', 'root')
     PATH = params.get('path', '/recordings')
     # Let's kick off the job on the host to start converting
-    if os.system("ssh -o 'StrictHostKeyChecking=no' " + USERNAME + "@" + HOSTNAME + ' nohup bash -c "' + PATH + '/../convert.sh >> ' + PATH + '/../convert.log 2>&1 &"') != 0:
+    if os.system(f"ssh -o 'StrictHostKeyChecking=no' {USERNAME}@{HOSTNAME}" + ' nohup bash -c "' + PATH + '/../convert.sh >> ' + PATH + '/../convert.log 2>&1 &"') != 0:
         logging.info("Could not kick off the h264->mp4 job on the backend")
     else:
         logging.info("Successfully kicked off the job")

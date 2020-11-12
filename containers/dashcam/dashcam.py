@@ -67,7 +67,7 @@ def stop_preview(params, result):
 
 
 def start_recording(params, result):
-    logging.info("params for start_recording are: {}".format(params))
+    logging.info(f"params for start_recording are: {params}")
     HRES = int(params.get('hres', 1280))
     VRES = int(params.get('vres', 720))
     ROT = int(params.get('rot', 0))
@@ -90,7 +90,7 @@ def start_recording(params, result):
         # set the rotation
         camera.rotation = ROT
         camera.start_recording(
-            '/recordings/' + get_new_filename(), sps_timing=True)
+            f"/recordings/{get_new_filename()}", sps_timing=True)
         # spawn a thread that handles updating the time/frame counter
         t = threading.Thread(target=update_annotations)
         t.start()
@@ -99,7 +99,7 @@ def start_recording(params, result):
     else:
         logging.info(
             "We're in CI, we would have started recording. Instead creating a fake big file")
-        f = open('/recordings/' + get_new_filename(), "wb")
+        f = open(f'/recordings/{get_new_filename()}', "wb")
         f.seek(1000000-1)
         f.write(b"\0")
         f.close()

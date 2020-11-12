@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.DEBUG,
 
 list_of_files = glob.glob('/dev/pts/*')
 latest_file = max(list_of_files, key=os.path.getctime)
-logging.info("Selected {} as the most likely pts for OBDII".format(latest_file))
+logging.info(f"Selected {latest_file} as the most likely pts for OBDII")
 connection = obd.OBD(latest_file)
 stop_thread = False
 
@@ -56,7 +56,7 @@ def collect_obdii_data(params):
             # only call file write once per collection
             f.write(output)
             # publish the data
-            k.emitEvent("pub",params=params)
+            k.emitEvent("pub", params=params)
         time.sleep(1)
 
 
@@ -71,10 +71,12 @@ def stop_obdii(params, result):
     stop_thread = True
     result.Pass()
 
+
 def p(params, result):
     logging.info("In obdii.p, here's what I got:")
     logging.info(params)
     result.Pass()
+
 
 ## Main ##
 logging.info("Starting the karmen client")
@@ -92,7 +94,7 @@ k.registerAction("start_obdii", start_obdii)
 k.registerAction("stop_obdii", stop_obdii)
 
 # Temporary action
-k.registerAction("print",p)
+k.registerAction("print", p)
 
 while True:
     time.sleep(10)

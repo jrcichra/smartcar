@@ -63,8 +63,8 @@ def print_pins():
     if not isCI():
         try:
             logging.info("##############################")
-            logging.info("KEY_OFF (PIN 33)="+str(GPIO.input(KEY_OFF)))
-            logging.info("KEY_ON (PIN 35)="+str(GPIO.input(KEY_ON)))
+            logging.info(f"KEY_OFF (PIN 33)={str(GPIO.input(KEY_OFF))}")
+            logging.info(f"KEY_ON (PIN 35)={str(GPIO.input(KEY_ON))}")
             logging.info("##############################")
         except Exception as e:
             logging.error(e)
