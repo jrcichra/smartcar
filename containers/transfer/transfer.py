@@ -76,8 +76,14 @@ def transfer_all_footage(params, result):
                     return
                 else:
                     logging.info("Copy was successful for " + video + ".")
-                    # local_size = os.path.getsize(video)
-                    os.remove(video)
+                    # only delete the local copy if the filesizes match
+                    local_size = os.path.getsize(video)
+                    if os.system(f"ssh -o 'StrictHostKeyChecking=no' {USERNAME}@{HOSTNAME} test {local_size} == $(stat -c \"%s\" {video})"):
+                        logging.info("File sizes match: deleting local video")
+                        os.remove(video)
+                    else:
+                        logging.info(
+                            "File sizes do not match: keeping local video")
                     j = {}
                     j['framerate'] = FRAMERATE
                     vname = video.rsplit('/', 1)[1]
