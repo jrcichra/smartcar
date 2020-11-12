@@ -1,8 +1,5 @@
 name: smartcar CI/CD
-on:
-  push:
-    branches:
-      - master # Push events on master branch
+on: [push, pull_request]
 
 jobs:
   build-test-alpine:
