@@ -1,21 +1,21 @@
 events:
-    gpio.key_on:
-        - serial:
-              - dashcam.start_recording:
-                    - framerate: 10
-                    - resolution: 1280x720
-                    - rotation: 0
-              - dashcam.start_preview
-              - obdii.start_obdii
-    gpio.key_off:
-        - serial:
-              #   - obdii.stop_obdii
-              - dashcam.stop_recording
-              - dashcam.stop_preview
-              - transfer.transfer_all_footage
-              - transfer.start_conversion
-              - gpio.power_off
-    obdii.pub:
-        - serial:
-              - obdii.print
-              - gui.update_gauges
+  gpio.key_on:
+    - serial:
+        - dashcam.start_recording:
+            - framerate: 10
+            - resolution: 1280x720
+            - rotation: 0
+        - dashcam.start_preview
+        - obdii.start_obdii
+  gpio.key_off:
+    - serial:
+        - obdii.stop_obdii
+        - dashcam.stop_recording
+        - dashcam.stop_preview
+        - transfer.transfer_all_footage
+        - transfer.start_conversion
+        - gpio.power_off
+  obdii.pub:
+    - serial:
+        - obdii.print
+        #   - gui.update_gauges
