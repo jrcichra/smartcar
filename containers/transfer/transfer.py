@@ -69,7 +69,7 @@ def transfer_all_footage(params, result):
         for video in videos:
             # loop through every video
             if METHOD == "ssh":
-                if os.system("unbuffer -p scp -o 'StrictHostKeyChecking=no' -p " + video + " " + USERNAME + "@" + HOSTNAME + ":" + PATH + "| cat") != 0:
+                if os.system("scp -v -o 'StrictHostKeyChecking=no' -p " + video + " " + USERNAME + "@" + HOSTNAME + ":" + PATH) != 0:
                     logging.error(
                         "Something went wrong with the transfer for " + video + ", keeping file where it is. Telling karmen we failed")
                     result.Fail()
