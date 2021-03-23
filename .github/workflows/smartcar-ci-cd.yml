@@ -154,7 +154,7 @@ jobs:
         with:
           context: ./containers/${{matrix.containers}}
           file: ./containers/${{matrix.containers}}/${{ matrix.dockerfile == 'dev' && 'Dockerfile' || 'Dockerfile-rpi' }}
-          platforms: linux/amd64,linux/arm/v7,linux/arm64
+          platforms: ${{ matrix.dockerfile == 'dev' && 'linux/amd64' || 'linux/arm/v7' }}
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.prep.outputs.tags }}
           build-args: |
