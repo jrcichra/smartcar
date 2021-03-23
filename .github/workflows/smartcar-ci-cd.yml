@@ -23,9 +23,6 @@ jobs:
         id: prep
         run: |
           DOCKER_IMAGE=jrcichra/smartcar_python_base${OS}
-          if [ "${DOCKERFILE}" == "rpi" ];then
-            DOCKER_IMAGE="${DOCKER_IMAGE}_rpi"
-          fi
           VERSION=noop
           if [ "${{ github.event_name }}" = "schedule" ]; then
             VERSION=nightly
@@ -51,7 +48,6 @@ jobs:
           echo ::set-output name=tags::${TAGS}
           echo ::set-output name=created::$(date -u +'%Y-%m-%dT%H:%M:%SZ')
         env:
-          DOCKERFILE: ${{matrix.dockerfile}}
           OS: ${{ matrix.dockerfile == 'dev' && '' || '_rpi' }}
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
