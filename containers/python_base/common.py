@@ -6,10 +6,10 @@ def isCI():
     res = os.environ.get('GITHUB_ACTIONS')
     host = os.environ.get('HOSTNAME')
     if (res == None or res == "" or res is None) and host != 'justin-3900x':
-        print("We're not in CI")
+        # print("We're not in CI")
         return False
     else:
-        print("We're in CI")
+        # print("We're in CI")
         return True
 
 
