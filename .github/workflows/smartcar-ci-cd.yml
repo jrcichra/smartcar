@@ -8,7 +8,7 @@ jobs:
     strategy:
       matrix:
         # Dockerfiles to target
-        dockerfile: [default, rpi]
+        dockerfile: [dev, rpi]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -71,8 +71,8 @@ jobs:
       - uses: docker/build-push-action@v2
         with:
           context: ./containers/python_base
-          file: ${{ matrix.dockerfile == 'default' && './containers/python_base/Dockerfile' || './containers/python_base/Dockerfile-rpi' }}
-          platforms: ${{ matrix.dockerfile == 'default' && 'linux/amd64' || 'linux/arm/v7' }}
+          file: ${{ matrix.dockerfile == 'dev' && './containers/python_base/Dockerfile' || './containers/python_base/Dockerfile-rpi' }}
+          platforms: ${{ matrix.dockerfile == 'dev' && 'linux/amd64' || 'linux/arm/v7' }}
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.prep.outputs.tags }}
           labels: |
@@ -93,7 +93,7 @@ jobs:
         # containers to build
         containers: [dashcam, gpio, obdii, transfer]
         # Dockerfiles to target
-        dockerfile: [default, rpi]
+        dockerfile: [dev, rpi]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -153,7 +153,7 @@ jobs:
       - uses: docker/build-push-action@v2
         with:
           context: ./containers/${{matrix.containers}}
-          file: ./containers/${{matrix.containers}}/${{ matrix.dockerfile == 'default' && 'Dockerfile' || 'Dockerfile-rpi' }}
+          file: ./containers/${{matrix.containers}}/${{ matrix.dockerfile == 'dev' && 'Dockerfile' || 'Dockerfile-rpi' }}
           platforms: linux/amd64,linux/arm/v7,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.prep.outputs.tags }}
