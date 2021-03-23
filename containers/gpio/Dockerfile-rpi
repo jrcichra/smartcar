@@ -1,4 +1,5 @@
-FROM jrcichra/smartcar_python_base_rpi
+ARG VERSION=latest
+FROM jrcichra/smartcar_python_base:${VERSION}
 EXPOSE 8080
 RUN apt-get update && apt-get install -y python3-rpi.gpio && rm -rf /var/lib/apt/lists/*
 COPY requirements.txt /
