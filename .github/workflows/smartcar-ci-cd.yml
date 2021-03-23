@@ -22,7 +22,7 @@ jobs:
       - name: Prepare
         id: prep
         run: |
-          DOCKER_IMAGE="jrcichra/smartcar_python_base"
+          DOCKER_IMAGE=jrcichra/smartcar_python_base${OS}
           if [ "${DOCKERFILE}" == "rpi" ];then
             DOCKER_IMAGE="${DOCKER_IMAGE}_rpi"
           fi
@@ -52,6 +52,7 @@ jobs:
           echo ::set-output name=created::$(date -u +'%Y-%m-%dT%H:%M:%SZ')
         env:
           DOCKERFILE: ${{matrix.dockerfile}}
+          OS: ${{ matrix.dockerfile == 'dev' && '' || '_rpi' }}
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
       - name: Set up Docker Buildx
