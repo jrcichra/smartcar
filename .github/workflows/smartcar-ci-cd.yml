@@ -48,7 +48,7 @@ jobs:
           echo ::set-output name=tags::${TAGS}
           echo ::set-output name=created::$(date -u +'%Y-%m-%dT%H:%M:%SZ')
         env:
-          OS: ${{ matrix.dockerfile == 'dev' && ' ' || '_rpi' }}
+          OS: ${{ matrix.dockerfile == 'dev' && '' || '_rpi' }}
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
       - name: Set up Docker Buildx
@@ -133,7 +133,7 @@ jobs:
           echo ::set-output name=created::$(date -u +'%Y-%m-%dT%H:%M:%SZ')
         env:
           CONTAINER: ${{ matrix.containers }}
-          OS: ${{ matrix.dockerfile == 'dev' && ' ' || '_rpi' }}
+          OS: ${{ matrix.dockerfile == 'dev' && '' || '_rpi' }}
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
       - name: Set up Docker Buildx
