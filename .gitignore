@@ -1,9 +1,6 @@
 .vscode
-containers/controller/controller
-recordings/*
-nas/*
-my_config.yml
-docker-compose-justin.yml
+recordings/
+nas/
 containers/obdii/obdii
 containers/obdii/obdii.exe
 obdii/

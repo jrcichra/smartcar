@@ -17,7 +17,7 @@ services:
       GITHUB_ACTIONS: "${GITHUB_ACTIONS}"
     hostname: gpio
     restart: always
-    image: jrcichra/smartcar_gpio
+    image: jrcichra/smartcar_gpio${VARIANT}:${SHA}
     depends_on:
       - karmen
   dashcam:
@@ -25,7 +25,7 @@ services:
       TZ: "America/New_York"
       GITHUB_ACTIONS: "${GITHUB_ACTIONS}"
     hostname: dashcam
-    image: jrcichra/smartcar_dashcam
+    image: jrcichra/smartcar_dashcam${VARIANT}:${SHA}
     restart: always
     volumes:
       - "${PWD}/recordings:/recordings"
@@ -38,10 +38,9 @@ services:
       GITHUB_ACTIONS: "${GITHUB_ACTIONS}"
     hostname: transfer
     restart: always
-    image: jrcichra/smartcar_transfer
+    image: jrcichra/smartcar_transfer${VARIANT}:${SHA}
     volumes:
       - "${PWD}/recordings:/recordings"
-      - "${PWD}/settings.yml:/settings.yml"
     depends_on:
       - karmen
   obd-emulator:
@@ -63,7 +62,7 @@ services:
       GITHUB_ACTIONS: "${GITHUB_ACTIONS}"
     hostname: obdii
     restart: always
-    image: jrcichra/smartcar_obdii
+    image: jrcichra/smartcar_obdii${VARIANT}:${SHA}
     privileged: true
     volumes:
       - "/dev/pts:/dev/pts"

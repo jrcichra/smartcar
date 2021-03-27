@@ -178,7 +178,49 @@ jobs:
         # variants to target
         variant: [dev, rpi]
     steps:
+      - name: Prepare
+        id: prep
+        run: |
+          SHORT_SHA="sha-${GITHUB_SHA::8}"
+          echo ::set-output name=short_sha::${SHORT_SHA}
       - name: Scan image
         uses: anchore/scan-action@v2
         with:
-          image: jrcichra/smartcar_${{ matrix.containers }}${{ matrix.variant != 'dev' && '_rpi' || '' }} # arg after && needs to be truthy
+          image: jrcichra/smartcar_${{ matrix.containers }}${{ matrix.variant != 'dev' && '_rpi' || '' }}:${{ steps.prep.outputs.short_sha }} # arg after && needs to be truthy
+  test:
+    runs-on: ubuntu-latest
+    needs: [build]
+    strategy:
+      matrix:
+        # variants to target
+        variant: [dev, rpi]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Repo metadata
+        id: repo
+        uses: actions/github-script@v3
+        with:
+          script: |
+            const repo = await github.repos.get(context.repo)
+            return repo.data
+      - name: Prepare
+        id: prep
+        run: |
+          SHORT_SHA="sha-${GITHUB_SHA::8}"
+          echo ::set-output name=short_sha::${SHORT_SHA}
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      - name: Test
+        run: |
+          set -x
+          mkdir ${PWD}/recordings
+          mkdir -p ${PWD}/nas/.convert
+          docker-compose -f docker-compose-test.yml up &
+          sleep 240
+          ls -lrth "${PWD}/recordings"
+          ls -lrth "${PWD}/nas"
+          head -9999 obdii/obdii.log
+        env:
+          VARIANT: ${{ matrix.variant != 'dev' && '_rpi' || '' }} # arg after && needs to be truthy
+          SHA: ${{ steps.prep.outputs.short_sha }}

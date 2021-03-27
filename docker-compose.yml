@@ -1,0 +1,51 @@
+version: "3"
+services:
+  karmen:
+    environment:
+      TZ: "America/New_York"
+    hostname: karmen
+    image: jrcichra/karmen:latest
+    restart: always
+    volumes:
+      - "${PWD}/config.yml:/config.yml"
+  gpio:
+    environment:
+      TZ: "America/New_York"
+    hostname: gpio
+    restart: always
+    image: jrcichra/smartcar_gpio
+    depends_on:
+      - karmen
+  dashcam:
+    environment:
+      TZ: "America/New_York"
+    hostname: dashcam
+    image: jrcichra/smartcar_dashcam
+    restart: always
+    volumes:
+      - "${PWD}/recordings:/recordings"
+    privileged: true
+    depends_on:
+      - karmen
+  transfer:
+    environment:
+      TZ: "America/New_York"
+    hostname: transfer
+    restart: always
+    image: jrcichra/smartcar_transfer$
+    volumes:
+      - "${PWD}/recordings:/recordings"
+    depends_on:
+      - karmen
+  obdii:
+    environment:
+      TZ: "America/New_York"
+    hostname: obdii
+    restart: always
+    image: jrcichra/smartcar_obdii
+    privileged: true
+    volumes:
+      - "/dev/pts:/dev/pts"
+      - "${PWD}/obdii/:/obdii/"
+    depends_on:
+      - karmen
