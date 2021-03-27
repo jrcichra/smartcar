@@ -168,3 +168,17 @@ jobs:
             org.opencontainers.image.created=${{ steps.prep.outputs.created }}
             org.opencontainers.image.revision=${{ github.sha }}
             org.opencontainers.image.licenses=${{ fromJson(steps.repo.outputs.result).license.spdx_id }}
+  scan:
+    runs-on: ubuntu-latest
+    needs: [build]
+    strategy:
+      matrix:
+        # containers to scan
+        containers: [dashcam, gpio, obdii, transfer]
+        # variants to target
+        variant: [dev, rpi]
+    steps:
+      - name: Scan image
+        uses: anchore/scan-action@v2
+        with:
+          image: jrcichra/smartcar_${{ matrix.containers }}${{ matrix.variant != 'dev' && '_rpi' || '' }} # arg after && needs to be truthy
