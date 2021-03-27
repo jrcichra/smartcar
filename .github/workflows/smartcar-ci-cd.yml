@@ -187,8 +187,6 @@ jobs:
     needs: [build]
     strategy:
       matrix:
-        # containers to scan
-        containers: [dashcam, gpio, obdii, transfer]
         # variants to target
         variant: [dev, rpi]
     steps:
