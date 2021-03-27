@@ -48,7 +48,7 @@ jobs:
           echo ::set-output name=tags::${TAGS}
           echo ::set-output name=created::$(date -u +'%Y-%m-%dT%H:%M:%SZ')
         env:
-          OS: ${{ matrix.dockerfile == 'dev' && '' || '_rpi' }}
+          OS: ${{ matrix.dockerfile != 'dev' && '_rpi' || '' }} # arg after && needs to be truthy
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
       - name: Set up Docker Buildx
@@ -133,7 +133,7 @@ jobs:
           echo ::set-output name=created::$(date -u +'%Y-%m-%dT%H:%M:%SZ')
         env:
           CONTAINER: ${{ matrix.containers }}
-          OS: ${{ matrix.dockerfile == 'dev' && '' || '_rpi' }}
+          OS: ${{ matrix.dockerfile != 'dev' && '_rpi' || '' }} # arg after && needs to be truthy
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
       - name: Set up Docker Buildx
@@ -167,5 +167,4 @@ jobs:
             org.opencontainers.image.version=${{ steps.prep.outputs.version }}
             org.opencontainers.image.created=${{ steps.prep.outputs.created }}
             org.opencontainers.image.revision=${{ github.sha }}
-            org.opencontainers.image.short_sha=${{ steps.prep.outputs.short_sha }}
             org.opencontainers.image.licenses=${{ fromJson(steps.repo.outputs.result).license.spdx_id }}
