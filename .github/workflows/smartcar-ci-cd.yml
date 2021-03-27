@@ -204,6 +204,11 @@ jobs:
           script: |
             const repo = await github.repos.get(context.repo)
             return repo.data
+      - name: Prepare
+        id: prep
+        run: |
+          SHORT_SHA="sha-${GITHUB_SHA::8}"
+          echo ::set-output name=short_sha::${SHORT_SHA}
       - name: Test
         run: |
           mkdir ${PWD}/recordings
@@ -214,4 +219,4 @@ jobs:
           head -9999 obdii/obdii.log
         env:
           VARIANT: ${{ matrix.variant != 'dev' && '_rpi' || '' }} # arg after && needs to be truthy
-          SHA: "sha-${GITHUB_SHA::8}"
+          SHA: ${{ steps.prep.outputs.short_sha }}
