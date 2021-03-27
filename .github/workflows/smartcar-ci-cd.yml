@@ -182,3 +182,24 @@ jobs:
         uses: anchore/scan-action@v2
         with:
           image: jrcichra/smartcar_${{ matrix.containers }}${{ matrix.variant != 'dev' && '_rpi' || '' }} # arg after && needs to be truthy
+  test:
+    runs-on: ubuntu-latest
+    needs: [build]
+    strategy:
+      matrix:
+        # containers to scan
+        containers: [dashcam, gpio, obdii, transfer]
+        # variants to target
+        variant: [dev, rpi]
+    steps:
+      - name: Test
+        run: |
+          mkdir ${PWD}/recordings
+          mkdir -p ${PWD}/nas/.convert
+          docker-compose -f docker-compose-test.yml up &
+          sleep 240
+          ls -lrth "${PWD}/recordings"
+          head -9999 obdii/obdii.log
+        env:
+          VARIANT: ${{ matrix.variant != 'dev' && '_rpi' || '' }} # arg after && needs to be truthy
+          SHA: "sha-${GITHUB_SHA::8}"
