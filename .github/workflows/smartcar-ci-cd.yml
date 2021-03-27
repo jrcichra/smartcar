@@ -181,7 +181,7 @@ jobs:
       - name: Scan image
         uses: anchore/scan-action@v2
         with:
-          image: jrcichra/smartcar_${{ matrix.containers }}${{ matrix.variant != 'dev' && '_rpi' || '' }}:sha-${GITHUB_SHA::8} # arg after && needs to be truthy
+          image: jrcichra/smartcar_${{ matrix.containers }}${{ matrix.variant != 'dev' && '_rpi' || '' }}:sha-${{GITHUB_SHA::8}} # arg after && needs to be truthy
   test:
     runs-on: ubuntu-latest
     needs: [build]
