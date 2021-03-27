@@ -195,6 +195,15 @@ jobs:
         # variants to target
         variant: [dev, rpi]
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Repo metadata
+        id: repo
+        uses: actions/github-script@v3
+        with:
+          script: |
+            const repo = await github.repos.get(context.repo)
+            return repo.data
       - name: Test
         run: |
           mkdir ${PWD}/recordings
