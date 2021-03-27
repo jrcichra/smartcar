@@ -1,4 +1,5 @@
-FROM jrcichra/smartcar_python_base_rpi
+ARG VERSION=latest
+FROM jrcichra/smartcar_python_base_rpi:${VERSION}
 EXPOSE 8080
 COPY requirements.txt /
 ENV READTHEDOCS True

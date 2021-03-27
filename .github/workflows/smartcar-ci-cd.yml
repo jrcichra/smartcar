@@ -1,43 +1,184 @@
 name: smartcar CI/CD
+
 on: [push, pull_request]
 
 jobs:
-  build-test-alpine:
+  build-base:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # Dockerfiles to target
+        dockerfile: [dev, rpi]
     steps:
-      - uses: actions/checkout@v1
-      - name: build & push
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Repo metadata
+        id: repo
+        uses: actions/github-script@v3
+        with:
+          script: |
+            const repo = await github.repos.get(context.repo)
+            return repo.data
+      - name: Prepare
+        id: prep
         run: |
-          bash -x build.sh
+          DOCKER_IMAGE=jrcichra/smartcar_python_base${OS}
+          VERSION=noop
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            VERSION=nightly
+          elif [[ $GITHUB_REF == refs/tags/* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/}
+          elif [[ $GITHUB_REF == refs/heads/* ]]; then
+            VERSION=$(echo ${GITHUB_REF#refs/heads/} | sed -r 's#/+#-#g')
+            if [ "${{ github.event.repository.default_branch }}" = "$VERSION" ]; then
+              VERSION=latest
+            fi
+          elif [[ $GITHUB_REF == refs/pull/* ]]; then
+            VERSION=pr-${{ github.event.number }}
+          fi
+          TAGS="${DOCKER_IMAGE}:${VERSION}"
+          if [[ $VERSION =~ ^v[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+            MINOR=${VERSION%.*}
+            MAJOR=${MINOR%.*}
+            TAGS="$TAGS,${DOCKER_IMAGE}:${MINOR},${DOCKER_IMAGE}:${MAJOR},${DOCKER_IMAGE}:latest"
+          elif [ "${{ github.event_name }}" = "push" ]; then
+            TAGS="$TAGS,${DOCKER_IMAGE}:sha-${GITHUB_SHA::8}"
+          fi
+          echo ::set-output name=version::${VERSION}
+          echo ::set-output name=tags::${TAGS}
+          echo ::set-output name=created::$(date -u +'%Y-%m-%dT%H:%M:%SZ')
         env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-      - name: test smartcar
-        run: |
-          mkdir ${PWD}/recordings
-          mkdir -p ${PWD}/nas/.convert
-          docker-compose -f docker-compose-test.yml up &
-          sleep 240
-          ls -lrth "${PWD}/recordings"
-          head -9999 obdii/obdii.log || /bin/true
-  build-rpi:
+          OS: ${{ matrix.dockerfile != 'dev' && '_rpi' || '' }} # arg after && needs to be truthy
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - uses: docker/build-push-action@v2
+        with:
+          context: ./containers/python_base
+          file: ${{ matrix.dockerfile == 'dev' && './containers/python_base/Dockerfile' || './containers/python_base/Dockerfile-rpi' }}
+          platforms: ${{ matrix.dockerfile == 'dev' && 'linux/amd64' || 'linux/arm/v7' }}
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.prep.outputs.tags }}
+          labels: |
+            org.opencontainers.image.title=${{ fromJson(steps.repo.outputs.result).name }}
+            org.opencontainers.image.description=${{ fromJson(steps.repo.outputs.result).description }}
+            org.opencontainers.image.url=${{ fromJson(steps.repo.outputs.result).html_url }}
+            org.opencontainers.image.source=${{ fromJson(steps.repo.outputs.result).clone_url }}
+            org.opencontainers.image.version=${{ steps.prep.outputs.version }}
+            org.opencontainers.image.created=${{ steps.prep.outputs.created }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.licenses=${{ fromJson(steps.repo.outputs.result).license.spdx_id }}
+
+  build:
     runs-on: ubuntu-latest
+    needs: [build-base]
+    strategy:
+      matrix:
+        # containers to build
+        containers: [dashcam, gpio, obdii, transfer]
+        # Dockerfiles to target
+        dockerfile: [dev, rpi]
     steps:
-      - uses: actions/checkout@v1
-      - name: build & push
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Repo metadata
+        id: repo
+        uses: actions/github-script@v3
+        with:
+          script: |
+            const repo = await github.repos.get(context.repo)
+            return repo.data
+      - name: Prepare
+        id: prep
         run: |
-          bash -x build.sh rpi
+          DOCKER_IMAGE=jrcichra/smartcar_${CONTAINER}${OS}
+          VERSION=noop
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            VERSION=nightly
+          elif [[ $GITHUB_REF == refs/tags/* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/}
+          elif [[ $GITHUB_REF == refs/heads/* ]]; then
+            VERSION=$(echo ${GITHUB_REF#refs/heads/} | sed -r 's#/+#-#g')
+            if [ "${{ github.event.repository.default_branch }}" = "$VERSION" ]; then
+              VERSION=latest
+            fi
+          elif [[ $GITHUB_REF == refs/pull/* ]]; then
+            VERSION=pr-${{ github.event.number }}
+          fi
+          TAGS="${DOCKER_IMAGE}:${VERSION}"
+          if [[ $VERSION =~ ^v[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+            MINOR=${VERSION%.*}
+            MAJOR=${MINOR%.*}
+            TAGS="$TAGS,${DOCKER_IMAGE}:${MINOR},${DOCKER_IMAGE}:${MAJOR},${DOCKER_IMAGE}:latest"
+          elif [ "${{ github.event_name }}" = "push" ]; then
+            TAGS="$TAGS,${DOCKER_IMAGE}:sha-${GITHUB_SHA::8}"
+          fi
+          SHORT_SHA="sha-${GITHUB_SHA::8}"
+          echo ::set-output name=version::${VERSION}
+          echo ::set-output name=tags::${TAGS}
+          echo ::set-output name=short_sha::${SHORT_SHA}
+          echo ::set-output name=created::$(date -u +'%Y-%m-%dT%H:%M:%SZ')
         env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-          INFLUX_URL: ${{ secrets.INFLUX_URL }}
-          INFLUX_USERNAME: ${{ secrets.INFLUX_USERNAME }}
-          INFLUX_PASSWORD: ${{ secrets.INFLUX_PASSWORD }}
-      - name: test smartcar rpi
-        run: |
-          mkdir ${PWD}/recordings
-          mkdir -p ${PWD}/nas/.convert
-          docker-compose -f docker-compose-test-rpi.yml up &
-          sleep 240
-          ls -lrth "${PWD}/recordings"
-          head -9999 obdii/obdii.log
+          CONTAINER: ${{ matrix.containers }}
+          OS: ${{ matrix.dockerfile != 'dev' && '_rpi' || '' }} # arg after && needs to be truthy
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - uses: docker/build-push-action@v2
+        with:
+          context: ./containers/${{matrix.containers}}
+          file: ./containers/${{matrix.containers}}/${{ matrix.dockerfile == 'dev' && 'Dockerfile' || 'Dockerfile-rpi' }}
+          platforms: ${{ matrix.dockerfile == 'dev' && 'linux/amd64' || 'linux/arm/v7' }}
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.prep.outputs.tags }}
+          build-args: |
+            VERSION=${{ steps.prep.outputs.short_sha }}
+          labels: |
+            org.opencontainers.image.title=${{ fromJson(steps.repo.outputs.result).name }}
+            org.opencontainers.image.description=${{ fromJson(steps.repo.outputs.result).description }}
+            org.opencontainers.image.url=${{ fromJson(steps.repo.outputs.result).html_url }}
+            org.opencontainers.image.source=${{ fromJson(steps.repo.outputs.result).clone_url }}
+            org.opencontainers.image.version=${{ steps.prep.outputs.version }}
+            org.opencontainers.image.created=${{ steps.prep.outputs.created }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.licenses=${{ fromJson(steps.repo.outputs.result).license.spdx_id }}
+  scan:
+    runs-on: ubuntu-latest
+    needs: [build]
+    strategy:
+      matrix:
+        # containers to scan
+        containers: [dashcam, gpio, obdii, transfer]
+        # variants to target
+        variant: [dev, rpi]
+    steps:
+      - name: Scan image
+        uses: anchore/scan-action@v2
+        with:
+          image: jrcichra/smartcar_${{ matrix.containers }}${{ matrix.variant != 'dev' && '_rpi' || '' }} # arg after && needs to be truthy
