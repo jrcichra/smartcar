@@ -32,8 +32,8 @@ def system(s):
 
 def transfer_all_footage(params, result):
     ping_attempts = 0
-    PING_SLEEP = 10
-    MAX_PINGS = 3
+    PING_SLEEP = 3
+    MAX_PINGS = 10
     HOSTNAME = params.get('hostname', 'nas')
     USERNAME = params.get('username', 'root')
     PASSWORD = params.get('password', 'root')
@@ -46,7 +46,7 @@ def transfer_all_footage(params, result):
         ping_attempts += 1
     if ping_attempts >= MAX_PINGS:
         logging.warning(
-            "We did not find the host specified. Keeping the files on the local system.")
+            f"We did not find {HOSTNAME}. Keeping the files on the local system.")
     else:
         logging.info("We found the host")
         os.system("iwconfig")
