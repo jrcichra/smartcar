@@ -1,0 +1,23 @@
+events:
+    gpio.key_on:
+        - serial:
+                - dashcam.start_recording:
+                    - framerate: 10
+                    - resolution: 1280x720
+                    - rotation: 0
+                - dashcam.start_preview
+    gpio.key_off:
+        - serial:
+            - dashcam.stop_recording
+            - dashcam.stop_preview
+            - transfer.transfer_all_footage:
+                - hostname: dvrpi
+                - username: pi
+                - password: test
+                - path: /media/5tb/dashcam/recordings/
+            - transfer.start_conversion:
+                - hostname: dvrpi
+                - username: pi
+                - password: test
+                - path: /media/5tb/dashcam/recordings/
+            - gpio.power_off

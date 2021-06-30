@@ -1,0 +1,3 @@
+#!/bin/bash
+cd /home/pi/smartcar
+docker-compose -f docker-compose-rpi.yml logs -f
