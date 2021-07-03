@@ -5,11 +5,16 @@ events:
                     - framerate: 10
                     - resolution: 1280x720
                     - rotation: 0
-                - dashcam.start_preview
+                 - host_runner.execute
+                    - hostname: 172.18.0.1
+                    - username: pi
+                    - password: test
+                    - command: date
+            #    - dashcam.start_preview
     gpio.key_off:
         - serial:
             - dashcam.stop_recording
-            - dashcam.stop_preview
+            #- dashcam.stop_preview
             - transfer.transfer_all_footage:
                 - hostname: dvrpi
                 - username: pi
