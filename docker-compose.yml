@@ -4,7 +4,7 @@ services:
     environment:
       TZ: "America/New_York"
     hostname: karmen
-    image: jrcichra/karmen:latest
+    image: jrcichra/karmen:sha-51c4c77a
     restart: always
     volumes:
       - "${PWD}/config.yml:/config.yml"

@@ -5,7 +5,7 @@ services:
       TZ: "America/New_York"
       GITHUB_ACTIONS: "${GITHUB_ACTIONS}"
     hostname: karmen
-    image: jrcichra/karmen:latest
+    image: jrcichra/karmen:sha-51c4c77a
     restart: always
     ports:
       - "6060:6060"
