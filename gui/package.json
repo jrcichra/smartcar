@@ -13,24 +13,24 @@
   },
   "main": "background.js",
   "dependencies": {
-    "core-js": "^3.9.1",
+    "core-js": "^3.16.1",
     "karmen-node-client": "^1.0.28",
-    "vue": "^2.6.12",
-    "vue-router": "^3.5.1",
+    "vue": "^2.6.14",
+    "vue-router": "^3.5.2",
     "vue-speedometer": "^1.8.0",
     "vuex": "^3.6.2"
   },
   "devDependencies": {
-    "@vue/cli-plugin-babel": "~4.5.12",
-    "@vue/cli-plugin-eslint": "~4.5.12",
-    "@vue/cli-service": "~4.5.12",
+    "@vue/cli-plugin-babel": "~4.5.13",
+    "@vue/cli-plugin-eslint": "~4.5.13",
+    "@vue/cli-service": "~4.5.13",
     "babel-eslint": "^10.1.0",
-    "electron": "^12.0.1",
-    "electron-devtools-installer": "^3.1.1",
-    "eslint": "^7.22.0",
-    "eslint-plugin-vue": "^7.8.0",
-    "vue-cli-plugin-electron-builder": "~2.0.0-rc.6",
-    "vue-template-compiler": "^2.6.12"
+    "electron": "^13.1.9",
+    "electron-devtools-installer": "^3.2.0",
+    "eslint": "^7.32.0",
+    "eslint-plugin-vue": "^7.16.0",
+    "vue-cli-plugin-electron-builder": "~2.1.1",
+    "vue-template-compiler": "^2.6.14"
   },
   "eslintConfig": {
     "root": true,
