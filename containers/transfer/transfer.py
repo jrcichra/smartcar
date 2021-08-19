@@ -1,5 +1,5 @@
 from common import isCI, secondsTillMidnight
-import karmen
+from karmen.karmen import Karmen
 import threading
 import queue
 import logging
@@ -113,17 +113,12 @@ def start_conversion(params, result):
         logging.info("Successfully kicked off the job")
     result.Pass()
 
+
 ###MAIN###
-
-
-# Use karmen
-k = karmen.Client()
-
-# Register ourselves and what we provide to the environment
-k.registerContainer()
-
-k.registerAction("transfer_all_footage", transfer_all_footage)
-k.registerAction("start_conversion", start_conversion)
+k = Karmen(hostname="karmen")
+k.addAction(transfer_all_footage, "transfer_all_footage")
+k.addAction(start_conversion, "start_conversion")
+k.register()
 
 # Keep the main thread alive
 while True:

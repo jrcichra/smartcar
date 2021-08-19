@@ -1,5 +1,5 @@
 FROM balenalib/raspberrypi3:buster
-RUN apt update && apt install -y wireless-tools python3 python3-setuptools python3-pip libraspberrypi-bin iputils-ping openssh-client sshpass expect && rm -rf /var/lib/apt/lists/* && usermod -a -G video root
+RUN apt update && apt install -y g++ git wireless-tools python3 python3-setuptools python3-pip libraspberrypi-bin iputils-ping openssh-client sshpass expect && rm -rf /var/lib/apt/lists/* && usermod -a -G video root
 ADD requirements.txt /
 RUN pip3 install -r /requirements.txt
-ADD common.py /
+ADD common.py mockcamera.py mockgpio.py /

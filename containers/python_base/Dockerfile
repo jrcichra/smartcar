@@ -1,4 +1,5 @@
-FROM python:3.7.9-alpine3.12
+FROM python:3.9.6-slim
+RUN apt-get update && apt-get install -y git wireless-tools iputils-ping openssh-client sshpass expect && rm -rf /var/lib/apt/lists/*
 ADD requirements.txt /
-RUN pip3 install -r /requirements.txt && apk add --update --no-cache openssh sshpass expect
-ADD common.py /
+RUN pip3 install -r /requirements.txt
+ADD common.py mockcamera.py mockgpio.py /

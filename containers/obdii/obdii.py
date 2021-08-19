@@ -1,8 +1,7 @@
 #!/usr/bin/python3
 import obd
-import karmen
+from karmen.karmen import Karmen
 import logging
-from common import isCI
 import threading
 import time
 import glob
@@ -38,13 +37,13 @@ def collect_obdii_data(params):
                 if field == obd.commands.SPEED:
                     # convert to mph
                     val = float(response.value.to("mph").magnitude)
-                    params['speed'] = val
+                    params['speed'] = str(val)
                 elif field == obd.commands.RPM:
                     val = float(response.value.magnitude)
-                    params['rpm'] = val
+                    params['rpm'] = str(val)
                 elif field == obd.commands.THROTTLE_POS:
                     val = float(response.value.magnitude)
-                    params['throttle'] = val
+                    params['throttle'] = str(val)
                 else:
                     # Fallthrough doesn't set a param
                     val = float(response.value.magnitude)
@@ -56,45 +55,42 @@ def collect_obdii_data(params):
             # only call file write once per collection
             f.write(output)
             # publish the data
-            k.emitEvent("pub", params=params)
+            result = k.runEvent("pub", parameters=params)
+            if result.result.code != 200:
+                logging.error(result.result.message)
         time.sleep(1)
 
 
 def start_obdii(params, result):
     obd_thread = threading.Thread(target=collect_obdii_data, args=(params,))
     obd_thread.start()
-    result.Pass()
+    result.code = 200
 
 
 def stop_obdii(params, result):
     global stop_thread
     stop_thread = True
-    result.Pass()
+    result.code = 200
 
 
 def p(params, result):
     logging.info("In obdii.p, here's what I got:")
     logging.info(params)
-    result.Pass()
+    result.code = 200
 
 
 ## Main ##
 logging.info("Starting the karmen client")
-# Use the library to abstract the difficulty
-k = karmen.Client()
-
-# Register ourselves and what we provide to the environment
-k.registerContainer()
-
-# Event that publishes obdii data
-k.registerEvent("pub")
+k = Karmen(hostname="karmen")
 
 # Actions obdii can perform
-k.registerAction("start_obdii", start_obdii)
-k.registerAction("stop_obdii", stop_obdii)
+k.addAction(start_obdii, "start_obdii")
+k.addAction(stop_obdii, "stop_obdii")
 
 # Temporary action
-k.registerAction("print", p)
+k.addAction(p, "print")
+
+k.register()
 
 while True:
     time.sleep(10)

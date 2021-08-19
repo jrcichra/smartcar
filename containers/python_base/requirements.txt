@@ -1,1 +1,4 @@
-karmen
+git+https://github.com/jrcichra/karmen.git@master#subdirectory=pythonclient
+grpcio
+google
+google-api-core

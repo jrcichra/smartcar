@@ -1,4 +1,4 @@
-import karmen
+from karmen.karmen import Karmen
 import threading
 import queue
 import logging
@@ -7,7 +7,10 @@ import os
 import signal
 from common import isCI
 
-if not isCI():
+# runtime check if we should mock GPIO
+if isCI():
+    import mockgpio as GPIO
+else:
     import RPi.GPIO as GPIO
 
 logging.basicConfig(level=logging.DEBUG,
@@ -33,14 +36,10 @@ def power_off(params, result):
         # sleep a little
         time.sleep(3)
         # unlatch
-        if not isCI():
-            GPIO.output(UNLATCH, True)
-            # we shouldn't get here unless the unlatch is broken
-            time.sleep(5)
-            logging.error("We tried to shut off the car but it didn't work!!!")
-        else:
-            logging.info(
-                "This is where the car would be shut down, but we're in a CI environment")
+        GPIO.output(UNLATCH, True)
+        # we shouldn't get here unless the unlatch is broken
+        time.sleep(5)
+        logging.error("We tried to shut off the car but it didn't work!!!")
     else:
         # The key isn't off? let the logs know
         logging.error("Not shutting off the car because the key isn't off?")
@@ -51,28 +50,24 @@ def power_off(params, result):
 
 
 def is_off():
-    if not isCI():
-        return GPIO.input(KEY_OFF) and not GPIO.input(KEY_ON)
-    else:
-        return True
+    return GPIO.input(KEY_OFF) and not GPIO.input(KEY_ON)
 
 ##print pins##
 
 
 def print_pins():
-    if not isCI():
-        try:
-            logging.info("##############################")
-            logging.info(f"KEY_OFF (PIN 33)={str(GPIO.input(KEY_OFF))}")
-            logging.info(f"KEY_ON (PIN 35)={str(GPIO.input(KEY_ON))}")
-            logging.info("##############################")
-        except Exception as e:
-            logging.error(e)
+    try:
+        logging.info("##############################")
+        logging.info(f"KEY_OFF (PIN 33)={str(GPIO.input(KEY_OFF))}")
+        logging.info(f"KEY_ON (PIN 35)={str(GPIO.input(KEY_ON))}")
+        logging.info("##############################")
+    except Exception as e:
+        logging.error(e)
 
 
 def pretend_key_off(signalNumer, frame):
     logging.info("Pretending the key went off")
-    k.emitEvent("key_off")
+    k.runEvent("key_off")
 
 
 def poll_key_state():
@@ -84,60 +79,57 @@ def poll_key_state():
             f"Polling key state. is_off()={is_off_value}. was_off={was_off}")
         # Say the key is now off if it's off now but wasn't before
         if is_off_value and not was_off:
-            k.emitEvent("key_off")
+            k.runEvent("key_off")
             was_off = not was_off
         # Say the key is now on if it's on now but wasn't before
         if not is_off_value and was_off:
-            k.emitEvent("key_on")
+            k.runEvent("key_on")
             was_off = not was_off
         # Sleep in between checks
         time.sleep(5)
 
 
 def gpio_setup():
-    if not isCI():
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setwarnings(True)
-        # Set up output pins
-        GPIO.setup(GREEN_LED, GPIO.OUT)
-        GPIO.setup(UNLATCH, GPIO.OUT)
-        # Set up input pins
-        # Used to check if ignition is on
-        GPIO.setup(KEY_OFF, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-        # Used to check if ignition is onclear
-        GPIO.setup(KEY_ON,  GPIO.IN, pull_up_down=GPIO.PUD_UP)
-        # Start a polling thread that will say if the key is on or off on a state change
-        t = threading.Thread(target=poll_key_state)
-        t.start()
-    else:
-        logging.info(
-            "We're in the CI, no GPIO setup. Sleeping for 60 seconds, and then pretending the key went off.")
-        time.sleep(60)
-        k.emitEvent("key_off")
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setwarnings(True)
+    # Set up output pins
+    GPIO.setup(GREEN_LED, GPIO.OUT)
+    GPIO.setup(UNLATCH, GPIO.OUT)
+    # Set up input pins
+    # Used to check if ignition is on
+    GPIO.setup(KEY_OFF, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    # Used to check if ignition is onclear
+    GPIO.setup(KEY_ON,  GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    # Start a polling thread that will say if the key is on or off on a state change
+    threading.Thread(target=poll_key_state).start()
 
 
 ###MAIN###
 logging.info("Starting the karmen client")
 # Use the library to abstract the difficulty
-k = karmen.Client()
-
-# Register ourselves and what we provide to the environment
-k.registerContainer()
-
-k.registerEvent("key_on")
-k.registerEvent("key_off")
-k.registerAction("power_off", power_off)
+k = Karmen(hostname="karmen")
+k.addAction(power_off, "power_off")
+k.register()
 
 # For debugging, a USR1 signal simulates a keyOff (software-wise)
 signal.signal(signal.SIGUSR1, pretend_key_off)
 
-# If this code is running, the key must be on, so we'll force a key_on event
-# Change if your pi doesn't start with the car.
-k.emitEvent("key_on")
-
 # Set up the GPIO pins if we're not in CI
 gpio_setup()
 
+# If this code is running, the key must be on, so we'll force a key_on event
+# Change if your pi doesn't start with the car.
+while True:
+    result = k.runEvent("key_on")
+    if result.result.code == k.Pass():
+        logging.info("Initial key_on was successful")
+        break
+    else:
+        logging.error(
+            "Error occurred when turning the key on. Trying again in a few seconds...")
+        time.sleep(5)
+
+# Sit here after key_on is done
+
 while True:
     signal.pause()
-# os._exit(0)

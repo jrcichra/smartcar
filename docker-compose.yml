@@ -32,7 +32,7 @@ services:
       TZ: "America/New_York"
     hostname: transfer
     restart: always
-    image: jrcichra/smartcar_transfer$
+    image: jrcichra/smartcar_transfer
     volumes:
       - "${PWD}/recordings:/recordings"
     depends_on:
