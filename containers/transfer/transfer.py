@@ -54,12 +54,12 @@ def transfer_all_footage(params, result):
         # first do the ssh key
         if os.system("ssh-keygen -f $HOME/.ssh/id_rsa -t rsa -N ''") != 0:
             logging.error("Something went wrong generating an ssh key")
-            result.Fail()
+            result.code = 500
         else:
             logging.info("We generated an ssh key")
         if os.system(f"sshpass -p {PASSWORD} ssh-copy-id -o StrictHostKeyChecking=no {USERNAME}@{HOSTNAME}") != 0:
             logging.error("Something went wrong with sshpass")
-            result.Fail()
+            result.code = 500
         else:
             logging.info("We authenticated you through ssh")
 
@@ -71,7 +71,7 @@ def transfer_all_footage(params, result):
                 if os.system(f"scp -o 'StrictHostKeyChecking=no' -p {video} {USERNAME}@{HOSTNAME}:{PATH}") != 0:
                     logging.error(
                         f"Something went wrong with the transfer for {video}, keeping file where it is. Telling karmen we failed")
-                    result.Fail()
+                    result.code = 500
                     return
                 else:
                     logging.info(f"Copy was successful for {video}.")
@@ -99,7 +99,7 @@ def transfer_all_footage(params, result):
         # end for
         logging.info(
             "Finished processing all recordings. If all went well, there should be no files left")
-    result.Pass()
+    result.code = 200
 
 
 def start_conversion(params, result):
@@ -111,7 +111,7 @@ def start_conversion(params, result):
         logging.info("Could not kick off the h264->mp4 job on the backend")
     else:
         logging.info("Successfully kicked off the job")
-    result.Pass()
+    result.code = 200
 
 
 ###MAIN###
