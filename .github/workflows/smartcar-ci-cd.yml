@@ -218,7 +218,7 @@ jobs:
           mkdir -p ${PWD}/nas/.convert
           docker-compose -f docker-compose-test.yml up &
           sleep 240
-          docker-compose -f docker-compose-test.yml kill -s SIGUSR1 gpio
+          docker-compose -f docker-docker-compose-test.yml exec gpio killall -USR1 gpio.py
           sleep 240
           ls -lrth "${PWD}/recordings"
           ls -lrth "${PWD}/nas"
