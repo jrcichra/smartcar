@@ -67,7 +67,7 @@ def print_pins():
 
 def pretend_key_off(signalNumer, frame):
     logging.info("Pretending the key went off")
-    k.runEvent("key_off")
+    k.runEventAsync("key_off")
 
 
 def poll_key_state():
@@ -79,11 +79,11 @@ def poll_key_state():
             f"Polling key state. is_off()={is_off_value}. was_off={was_off}")
         # Say the key is now off if it's off now but wasn't before
         if is_off_value and not was_off:
-            k.runEvent("key_off")
+            k.runEventAsync("key_off")
             was_off = not was_off
         # Say the key is now on if it's on now but wasn't before
         if not is_off_value and was_off:
-            k.runEvent("key_on")
+            k.runEventAsync("key_on")
             was_off = not was_off
         # Sleep in between checks
         time.sleep(5)
