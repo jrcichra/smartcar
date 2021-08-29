@@ -43,8 +43,8 @@ def start_preview(params, result):
     try:
         global camera
         # Cheat and place the preview inside a window that the GUI will have a black box around
-        # camera.start_preview(fullscreen=False, window=(100, 100, 400, 600))
-        camera.start_preview()
+        camera.start_preview(fullscreen=False, window=(100, 100, 400, 600))
+        # camera.start_preview()
         # The preview alpha has to be set after the preview is already active
         camera.preview.alpha = 128
     except Exception as e:
@@ -115,7 +115,11 @@ def stop_recording(params, result):
 def update_annotations():
     global camera
     while True:
-        camera.annotate_text = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
+        try:
+            camera.annotate_text = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
+        except Exception as e:
+            logging.error(e)
+            break
         time.sleep(.2)
 
 
