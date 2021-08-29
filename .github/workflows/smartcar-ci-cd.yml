@@ -218,6 +218,8 @@ jobs:
           mkdir -p ${PWD}/nas/.convert
           docker-compose -f docker-compose-test.yml up &
           sleep 240
+          docker-compose -f docker-compose-test.yml kill -s SIGUSR1 gpio
+          sleep 240
           ls -lrth "${PWD}/recordings"
           ls -lrth "${PWD}/nas"
           head -9999 obdii/obdii.log
