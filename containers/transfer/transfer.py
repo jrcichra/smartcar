@@ -125,10 +125,7 @@ def start_conversion(params, result):
     result.code = 200
 
 
-def cancel_all_transfers(params, result):
-
-
-    ###MAIN###
+###MAIN###
 k = Karmen(hostname="karmen")
 k.addAction(transfer_all_footage, "transfer_all_footage")
 k.addAction(start_conversion, "start_conversion")
