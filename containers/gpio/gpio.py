@@ -50,7 +50,7 @@ def power_off(params, result):
 
 
 def is_off():
-    return GPIO.input(KEY_OFF) and not GPIO.input(KEY_ON)
+    return bool(GPIO.input(KEY_OFF)) and not bool(GPIO.input(KEY_ON))
 
 ##print pins##
 
@@ -71,7 +71,6 @@ def pretend_key_off(signalNumer, frame):
 
 
 def poll_key_state():
-    # Start the previous state assuming the key was on
     was_off = False
     while True:
         is_off_value = is_off()
@@ -80,11 +79,11 @@ def poll_key_state():
         # Say the key is now off if it's off now but wasn't before
         if is_off_value and not was_off:
             k.runEventAsync("key_off")
-            was_off = not was_off
+            was_off = is_off_value
         # Say the key is now on if it's on now but wasn't before
         if not is_off_value and was_off:
             k.runEventAsync("key_on")
-            was_off = not was_off
+            was_off = is_off_value
         # Sleep in between checks
         time.sleep(5)
 

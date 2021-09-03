@@ -17,6 +17,9 @@ logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s.%(msecs)d:LINE %(lineno)d:TID %(thread)d:%(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
 
 
+already_transferring = False
+
+
 def system(s):
     try:
         outp = subprocess.check_output(
@@ -31,6 +34,13 @@ def system(s):
 
 
 def transfer_all_footage(params, result):
+    global already_transferring
+    if already_transferring:
+        logging.warning("Already transferring, not starting another")
+        result.code = 500
+        return
+    else:
+        already_transferring = True
     ping_attempts = 0
     PING_SLEEP = 3
     MAX_PINGS = 10
@@ -99,6 +109,7 @@ def transfer_all_footage(params, result):
         # end for
         logging.info(
             "Finished processing all recordings. If all went well, there should be no files left")
+    already_transferring = False
     result.code = 200
 
 
@@ -114,7 +125,10 @@ def start_conversion(params, result):
     result.code = 200
 
 
-###MAIN###
+def cancel_all_transfers(params, result):
+
+
+    ###MAIN###
 k = Karmen(hostname="karmen")
 k.addAction(transfer_all_footage, "transfer_all_footage")
 k.addAction(start_conversion, "start_conversion")
