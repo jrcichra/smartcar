@@ -28,7 +28,7 @@ More containers on the way (OBDII) - make new containers and make a pull request
 
 ## Getting started
 You need some hardware and handywork to get this started in your car.
-1. Look at your car's wiring diagram. Find out where you can tap into 5V (preferable but harder) or 12V (w/ a buck converter and probably a fuse)
+1. Look at your car's wiring diagram. Find out where you can tap into 12V (w/ a buck converter and a fuse)
 2. Also see what wire corelates to your ignition
 3. (I used wires going to my car radio (12V & ignition on/off))
 4. You'll need a latch relay that is triggered with ignition on. This powers the Pi
