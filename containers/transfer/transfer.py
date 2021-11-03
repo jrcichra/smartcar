@@ -51,6 +51,11 @@ def transfer_all_footage(params, result):
     METHOD = params.get('method', 'ssh')
     FRAMERATE = params.get('framerate', 10)
 
+    # bounce the wifi interface
+    os.system("ifconfig wlan0 down")
+    time.sleep(10)
+    os.system("ifconfig wlan0 up")
+
     while os.system(f"ping {HOSTNAME} -c 1") != 0 and ping_attempts < MAX_PINGS:
         time.sleep(PING_SLEEP)
         ping_attempts += 1
