@@ -1,4 +1,4 @@
-FROM python:3.10-slim-bullseye
+FROM python:3.9.7-bullseye
 RUN apt-get update && apt-get install -y git wireless-tools iputils-ping openssh-client sshpass expect && rm -rf /var/lib/apt/lists/*
 ADD requirements.txt /
 RUN pip3 install -r /requirements.txt
