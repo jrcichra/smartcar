@@ -52,9 +52,9 @@ def transfer_all_footage(params, result):
     FRAMERATE = params.get('framerate', 10)
 
     # bounce the wifi interface
-    os.system("ifconfig wlan0 down")
-    time.sleep(10)
-    os.system("ifconfig wlan0 up")
+    # os.system("ifconfig wlan0 down")
+    # time.sleep(10)
+    # os.system("ifconfig wlan0 up")
 
     while os.system(f"ping {HOSTNAME} -c 1") != 0 and ping_attempts < MAX_PINGS:
         time.sleep(PING_SLEEP)
@@ -83,6 +83,7 @@ def transfer_all_footage(params, result):
         for video in videos:
             # loop through every video
             if METHOD == "ssh":
+                logging.info(f"Copying {video}...")
                 if os.system(f"scp -o 'StrictHostKeyChecking=no' -p {video} {USERNAME}@{HOSTNAME}:{PATH}") != 0:
                     logging.error(
                         f"Something went wrong with the transfer for {video}, keeping file where it is. Telling karmen we failed")
