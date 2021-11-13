@@ -1,7 +1,6 @@
-FROM balenalib/raspberrypi3:bullseye
+FROM balenalib/raspberrypi3:buster-20211030
 RUN install_packages python3-grpcio g++ git wireless-tools python3 python3-setuptools \
     python3-pip libraspberrypi-bin iputils-ping openssh-client sshpass expect \
-    libraspberrypi0 libraspberrypi-dev libraspberrypi-doc \
     && usermod -a -G video root
 ADD requirements.txt /
 RUN pip3 install -r /requirements.txt
