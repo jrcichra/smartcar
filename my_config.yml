@@ -1,16 +1,16 @@
 events:
   gpio.key_on:
     - serial:
-        - dashcam.start_recording:
+        - dashcam.start_recording.10:
             - framerate: 10
             - hres: 1280
             - vres: 720
             - rot: 0
-        - dashcam.start_preview
+        - dashcam.start_preview.10
   gpio.key_off:
     - serial:
-        - dashcam.stop_recording
-        - dashcam.stop_preview
+        - dashcam.stop_recording.10
+        - dashcam.stop_preview.10
         - transfer.transfer_all_footage:
             - hostname: dvrpi
             - username: pi
