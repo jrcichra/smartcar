@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import obd
 from karmen.karmen import Karmen
+from common import isCI
 import logging
 import threading
 import time
@@ -11,10 +12,15 @@ import os
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s.%(msecs)d:LINE %(lineno)d:TID %(thread)d:%(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
 
-list_of_files = glob.glob('/dev/pts/*')
-latest_file = max(list_of_files, key=os.path.getctime)
-logging.info(f"Selected {latest_file} as the most likely pts for OBDII")
-connection = obd.OBD(latest_file)
+# /dev/pts if isCI. Otherwise rfcomm0
+if isCI():
+    list_of_files = glob.glob('/dev/pts/*')
+    latest_file = max(list_of_files, key=os.path.getctime)
+    connection = obd.OBD(latest_file)
+else:
+    latest_file = '/dev/rfcomm0'
+    connection = obd.OBD(latest_file)
+
 stop_thread = False
 
 
@@ -29,7 +35,7 @@ def collect_obdii_data(params):
             output = ""
             # first field is always an epoch
             epoch = int(time.time())
-            output += "{},".format(epoch)
+            output += f"{epoch},"
             for field in fields:
                 cmd = field
                 response = connection.query(cmd)
@@ -47,7 +53,7 @@ def collect_obdii_data(params):
                 else:
                     # Fallthrough doesn't set a param
                     val = float(response.value.magnitude)
-                output += "{}".format(val)
+                output += f"{val}"
                 # if it's the last field don't put a comma
                 if field != fields[-1]:
                     output += ','
