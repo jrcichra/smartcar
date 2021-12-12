@@ -1,4 +1,4 @@
-from karmen.karmen import Karmen
+from karmen import Karmen
 import threading
 import queue
 import logging
@@ -19,9 +19,9 @@ def getserial():
     # Extract serial from cpuinfo file
     cpuserial = "0000000000000000"
     try:
-        f = open('/proc/cpuinfo', 'r')
+        f = open("/proc/cpuinfo", "r")
         for line in f:
-            if line[0:6] == 'Serial':
+            if line[0:6] == "Serial":
                 cpuserial = line[10:26]
         f.close()
     except:
@@ -31,11 +31,20 @@ def getserial():
 
 
 def get_new_filename():
-    return "travel__" + datetime.datetime.now().strftime("%Y--%m--%d__%H--%M--%S") + "__" + str(getserial()) + ".h264"
+    return (
+        "travel__"
+        + datetime.datetime.now().strftime("%Y--%m--%d__%H--%M--%S")
+        + "__"
+        + str(getserial())
+        + ".h264"
+    )
 
 
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s.%(msecs)d:LINE %(lineno)d:TID %(thread)d:%(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s.%(msecs)d:LINE %(lineno)d:TID %(thread)d:%(levelname)s - %(message)s",
+    datefmt="%d-%b-%y %H:%M:%S",
+)
 
 
 def start_preview(params, result):
@@ -67,10 +76,10 @@ def stop_preview(params, result):
 
 def start_recording(params, result):
     logging.info(f"params for start_recording are: {params}")
-    HRES = int(params.get('hres', 1280))
-    VRES = int(params.get('vres', 720))
-    ROT = int(params.get('rot', 0))
-    FRAMERATE = int(params.get('framerate', 10))
+    HRES = int(params.get("hres", 1280))
+    VRES = int(params.get("vres", 720))
+    ROT = int(params.get("rot", 0))
+    FRAMERATE = int(params.get("framerate", 10))
     logging.info("Starting the recording...")
     # try:
     global camera
@@ -78,8 +87,8 @@ def start_recording(params, result):
     camera = picamera.PiCamera()  # the camera object
     camera.resolution = (HRES, VRES)
     # annotations
-    camera.annotate_foreground = picamera.Color('white')
-    camera.annotate_background = picamera.Color('black')
+    camera.annotate_foreground = picamera.Color("white")
+    camera.annotate_background = picamera.Color("black")
     camera.annotate_frame_num = True
     camera.annotate_text_size = 48
     camera.annotate_text = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
@@ -88,8 +97,7 @@ def start_recording(params, result):
     # set the rotation
     camera.rotation = ROT
     try:
-        camera.start_recording(
-            f"/recordings/{get_new_filename()}", sps_timing=True)
+        camera.start_recording(f"/recordings/{get_new_filename()}", sps_timing=True)
     except Exception as e:
         logging.error(e)
         result.code = 500
@@ -120,7 +128,7 @@ def update_annotations():
         except Exception as e:
             logging.error(e)
             break
-        time.sleep(.2)
+        time.sleep(0.2)
 
 
 ###MAIN###

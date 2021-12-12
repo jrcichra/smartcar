@@ -1,4 +1,4 @@
-from karmen.karmen import Karmen
+from karmen import Karmen
 import threading
 import queue
 import logging
@@ -13,16 +13,19 @@ if isCI():
 else:
     import RPi.GPIO as GPIO
 
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s.%(msecs)d:LINE %(lineno)d:TID %(thread)d:%(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s.%(msecs)d:LINE %(lineno)d:TID %(thread)d:%(levelname)s - %(message)s",
+    datefmt="%d-%b-%y %H:%M:%S",
+)
 # Does an action based on the message we get. The calls needed are made by the container coder
 
-GREEN_LED = 5           # PIN 29 turn on green light on feather latchable relay board
+GREEN_LED = 5  # PIN 29 turn on green light on feather latchable relay board
 # PIN 31 used to unlatch the power relay (on feather board)
 UNLATCH = 6
 #                The relay was latched with 12v power from 'key'
-KEY_OFF = 13             # PIN 33 used to see if the key is off
-KEY_ON = 19              # PIN 35 used to see if the key is on
+KEY_OFF = 13  # PIN 33 used to see if the key is off
+KEY_ON = 19  # PIN 35 used to see if the key is on
 
 
 def power_off(params, result):
@@ -46,11 +49,13 @@ def power_off(params, result):
     if result != None:
         result.Pass()
 
+
 # Double check the key actually went off
 
 
 def is_off():
     return bool(GPIO.input(KEY_OFF)) and not bool(GPIO.input(KEY_ON))
+
 
 ##print pins##
 
@@ -74,8 +79,7 @@ def poll_key_state():
     was_off = False
     while True:
         is_off_value = is_off()
-        logging.info(
-            f"Polling key state. is_off()={is_off_value}. was_off={was_off}")
+        logging.info(f"Polling key state. is_off()={is_off_value}. was_off={was_off}")
         # Say the key is now off if it's off now but wasn't before
         if is_off_value and not was_off:
             k.runEventAsync("key_off")
@@ -98,7 +102,7 @@ def gpio_setup():
     # Used to check if ignition is on
     GPIO.setup(KEY_OFF, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     # Used to check if ignition is onclear
-    GPIO.setup(KEY_ON,  GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY_ON, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     # Start a polling thread that will say if the key is on or off on a state change
     threading.Thread(target=poll_key_state).start()
 
@@ -125,7 +129,8 @@ while True:
         break
     else:
         logging.error(
-            "Error occurred when turning the key on. Trying again in a few seconds...")
+            "Error occurred when turning the key on. Trying again in a few seconds..."
+        )
         time.sleep(5)
 
 # Sit here after key_on is done

@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import obd
-from karmen.karmen import Karmen
+from karmen import Karmen
 from common import isCI
 import logging
 import threading
