@@ -46,3 +46,25 @@ services:
       - "${PWD}/recordings:/recordings"
     depends_on:
       - karmen
+  # obdii:
+  #   environment:
+  #     TZ: "America/New_York"
+  #     GITHUB_ACTIONS: "${GITHUB_ACTIONS}"
+  #     OBD_DEVICE: "/dev/rfcomm0"
+  #   hostname: obdii
+  #   restart: always
+  #   image: jrcichra/smartcar_obdii_rpi
+  #   privileged: true
+  #   volumes:
+  #     - "/dev/rfcomm0:/dev/rfcomm0"
+  #     - "${PWD}/obdii/:/obdii/"
+  #   depends_on:
+  #     - karmen
+  # # Capturing logs with promtail + loki
+  # promtail:
+  #   image: grafana/promtail
+  #   volumes:
+  #     - /var/log:/var/log
+  #     - /helios/docker:/var/lib/docker:ro
+  #     - ./promtail:/etc/promtail-config/
+  #   command: -config.file=/etc/promtail-config/my_promtail.yml

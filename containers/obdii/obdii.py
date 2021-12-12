@@ -9,16 +9,20 @@ import glob
 import os
 
 
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s.%(msecs)d:LINE %(lineno)d:TID %(thread)d:%(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s.%(msecs)d:LINE %(lineno)d:TID %(thread)d:%(levelname)s - %(message)s",
+    datefmt="%d-%b-%y %H:%M:%S",
+)
 
 # /dev/pts if isCI. Otherwise rfcomm0
 if isCI():
-    list_of_files = glob.glob('/dev/pts/*')
+    list_of_files = glob.glob("/dev/pts/*")
     latest_file = max(list_of_files, key=os.path.getctime)
     connection = obd.OBD(latest_file)
 else:
-    latest_file = '/dev/rfcomm0'
+    # read the ODB_DEVICE env
+    latest_file = os.environ.get("OBD_DEVICE")
     connection = obd.OBD(latest_file)
 
 stop_thread = False
@@ -43,21 +47,21 @@ def collect_obdii_data(params):
                 if field == obd.commands.SPEED:
                     # convert to mph
                     val = float(response.value.to("mph").magnitude)
-                    params['speed'] = str(val)
+                    params["speed"] = str(val)
                 elif field == obd.commands.RPM:
                     val = float(response.value.magnitude)
-                    params['rpm'] = str(val)
+                    params["rpm"] = str(val)
                 elif field == obd.commands.THROTTLE_POS:
                     val = float(response.value.magnitude)
-                    params['throttle'] = str(val)
+                    params["throttle"] = str(val)
                 else:
                     # Fallthrough doesn't set a param
                     val = float(response.value.magnitude)
                 output += f"{val}"
                 # if it's the last field don't put a comma
                 if field != fields[-1]:
-                    output += ','
-            output += '\n'
+                    output += ","
+            output += "\n"
             # only call file write once per collection
             f.write(output)
             # publish the data
