@@ -12,12 +12,12 @@ events:
         - dashcam.stop_recording.10
         - dashcam.stop_preview.10
         - transfer.transfer_all_footage:
-            - hostname: dvrpi
+            - hostname: 10.0.0.223
             - username: pi
             - password: test
             - path: /media/5tb/dashcam/recordings/
         - transfer.start_conversion:
-            - hostname: dvrpi
+            - hostname: 10.0.0.223
             - username: pi
             - password: test
             - path: /media/5tb/dashcam/recordings/
