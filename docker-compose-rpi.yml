@@ -5,7 +5,7 @@ services:
       TZ: "America/New_York"
       GITHUB_ACTIONS: "${GITHUB_ACTIONS}"
     hostname: karmen
-    image: jrcichra/karmen
+    image: ghcr.io/jrcichra/karmen
     restart: always
     environment: 
        KARMEN_CONFIG: "/config.yml"
@@ -19,7 +19,7 @@ services:
       GITHUB_ACTIONS: "${GITHUB_ACTIONS}"
     hostname: gpio
     restart: always
-    image: jrcichra/smartcar_gpio_rpi
+    image: ghcr.io/jrcichra/smartcar_gpio_rpi
     privileged: true
     depends_on:
       - karmen
@@ -28,7 +28,7 @@ services:
       TZ: "America/New_York"
       GITHUB_ACTIONS: "${GITHUB_ACTIONS}"
     hostname: dashcam
-    image: jrcichra/smartcar_dashcam_rpi
+    image: ghcr.io/jrcichra/smartcar_dashcam_rpi
     restart: always
     volumes:
       - "${PWD}/recordings:/recordings"
@@ -41,7 +41,7 @@ services:
       GITHUB_ACTIONS: "${GITHUB_ACTIONS}"
     hostname: transfer
     restart: always
-    image: jrcichra/smartcar_transfer_rpi
+    image: ghcr.io/jrcichra/smartcar_transfer_rpi
     volumes:
       - "${PWD}/recordings:/recordings"
     depends_on:
@@ -53,7 +53,7 @@ services:
   #     OBD_DEVICE: "/dev/rfcomm0"
   #   hostname: obdii
   #   restart: always
-  #   image: jrcichra/smartcar_obdii_rpi
+  #   image: ghcr.io/jrcichra/smartcar_obdii_rpi
   #   privileged: true
   #   volumes:
   #     - "/dev/rfcomm0:/dev/rfcomm0"

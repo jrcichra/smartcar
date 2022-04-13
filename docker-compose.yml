@@ -4,7 +4,7 @@ services:
     environment:
       TZ: "America/New_York"
     hostname: karmen
-    image: jrcichra/karmen
+    image: ghcr.io/jrcichra/karmen
     restart: always
     volumes:
       - "${PWD}/config.yml:/config.yml"
@@ -13,14 +13,14 @@ services:
       TZ: "America/New_York"
     hostname: gpio
     restart: always
-    image: jrcichra/smartcar_gpio
+    image: ghcr.io/jrcichra/smartcar_gpio
     depends_on:
       - karmen
   dashcam:
     environment:
       TZ: "America/New_York"
     hostname: dashcam
-    image: jrcichra/smartcar_dashcam
+    image: ghcr.io/jrcichra/smartcar_dashcam
     restart: always
     volumes:
       - "${PWD}/recordings:/recordings"
@@ -32,7 +32,7 @@ services:
       TZ: "America/New_York"
     hostname: transfer
     restart: always
-    image: jrcichra/smartcar_transfer
+    image: ghcr.io/jrcichra/smartcar_transfer
     volumes:
       - "${PWD}/recordings:/recordings"
     depends_on:
@@ -42,7 +42,7 @@ services:
       TZ: "America/New_York"
     hostname: obdii
     restart: always
-    image: jrcichra/smartcar_obdii
+    image: ghcr.io/jrcichra/smartcar_obdii
     privileged: true
     volumes:
       - "/dev/pts:/dev/pts"
