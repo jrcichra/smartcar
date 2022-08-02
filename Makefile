@@ -1,9 +1,9 @@
 build:	#build for the current platform (on that platform)
-	docker build -t jrcichra/smartcar_python_base containers/python_base
-	docker build -t jrcichra/smartcar_dashcam containers/dashcam
-	docker build -t jrcichra/smartcar_gpio containers/gpio
-	docker build -t jrcichra/smartcar_obdii containers/obdii
-	docker build -t jrcichra/smartcar_transfer containers/transfer
+	docker build -t ghcr.io/jrcichra/smartcar_python_base containers/python_base
+	docker build -t ghcr.io/jrcichra/smartcar_dashcam containers/dashcam
+	docker build -t ghcr.io/jrcichra/smartcar_gpio containers/gpio
+	docker build -t ghcr.io/jrcichra/smartcar_obdii containers/obdii
+	docker build -t ghcr.io/jrcichra/smartcar_transfer containers/transfer
 # build-rpi:	# build for a pi (on a pi)
 # 	docker build -t jrcichra/smartcar_python_base containers/python_base
 # 	docker-compose -f docker-compose-rpi.yml build
