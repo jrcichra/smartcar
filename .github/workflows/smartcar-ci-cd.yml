@@ -51,7 +51,7 @@ jobs:
         env:
           OS: ${{ matrix.dockerfile != 'dev' && '_rpi' || '' }} # arg after && needs to be truthy
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
+        uses: docker/setup-qemu-action@v2
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
       - name: Cache Docker layers
@@ -137,7 +137,7 @@ jobs:
           CONTAINER: ${{ matrix.containers }}
           OS: ${{ matrix.dockerfile != 'dev' && '_rpi' || '' }} # arg after && needs to be truthy
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
+        uses: docker/setup-qemu-action@v2
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
       - name: Cache Docker layers
@@ -213,7 +213,7 @@ jobs:
           SHORT_SHA="sha-${GITHUB_SHA::8}"
           echo ::set-output name=short_sha::${SHORT_SHA}
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
+        uses: docker/setup-qemu-action@v2
       - name: Test
         run: |
           set -x
