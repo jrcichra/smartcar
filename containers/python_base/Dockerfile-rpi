@@ -1,4 +1,4 @@
-FROM balenalib/raspberrypi3:buster-20220714
+FROM balenalib/raspberrypi3:buster-20221109
 RUN install_packages python3-grpcio g++ git wireless-tools python3 python3-setuptools \
     python3-pip libraspberrypi-bin iputils-ping openssh-client sshpass expect \
     && usermod -a -G video root
