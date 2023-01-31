@@ -66,7 +66,7 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/build-push-action@v3
+      - uses: docker/build-push-action@v4
         with:
           context: ./containers/python_base
           file: ${{ matrix.dockerfile == 'dev' && './containers/python_base/Dockerfile' || './containers/python_base/Dockerfile-rpi' }}
@@ -151,7 +151,7 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/build-push-action@v3
+      - uses: docker/build-push-action@v4
         with:
           context: ./containers/${{matrix.containers}}
           file: ./containers/${{matrix.containers}}/${{ matrix.dockerfile == 'dev' && 'Dockerfile' || 'Dockerfile-rpi' }}
